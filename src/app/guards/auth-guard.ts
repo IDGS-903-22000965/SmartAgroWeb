@@ -1,14 +1,13 @@
-// src/app/guards/auth.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { Auth } from '../services/auth';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
   constructor(
-    private authService: AuthService,
+    private auth: Auth,
     private router: Router
   ) {}
 
@@ -16,11 +15,10 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean {
-    if (this.authService.isLoggedIn()) {
+    if (this.auth.isAuthenticated()) {  
       return true;
     }
 
-    // Guardar la URL a la que intentaba acceder para redirigir después del login
     this.router.navigate(['/login'], { 
       queryParams: { returnUrl: state.url } 
     });

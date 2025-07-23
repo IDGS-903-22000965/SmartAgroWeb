@@ -1,23 +1,21 @@
-// src/app/guards/admin.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { Auth } from '../services/auth';  
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminGuard implements CanActivate {
   constructor(
-    private authService: AuthService,
+    private auth: Auth,  
     private router: Router
   ) {}
 
   canActivate(): boolean {
-    if (this.authService.isAdmin()) {
+    if (this.auth.isAdmin()) {
       return true;
     }
 
-    // Redirigir a dashboard del cliente si no es admin
     this.router.navigate(['/cliente/dashboard']);
     return false;
   }
