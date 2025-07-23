@@ -18,26 +18,26 @@
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card pending">
-      <div class="stat-icon">⏳</div>
-      <div class="stat-content">
-        <h3>Pendientes</h3>
-        <div class="stat-value">{{ cotizaciones().filter(c => c.estado === 'Pendiente').length }}</div>
-      </div>
-    </div>
+  <div class="stat-icon">🕒</div>
+  <div class="stat-content">
+    <h3>Pendientes</h3>
+    <div class="stat-value">{{ contarPendientes() }}</div>
+  </div>
+</div>
     <div class="stat-card approved">
-      <div class="stat-icon">✅</div>
-      <div class="stat-content">
-        <h3>Aprobadas</h3>
-        <div class="stat-value">{{ cotizaciones().filter(c => c.estado === 'Aprobada').length }}</div>
-      </div>
-    </div>
+  <div class="stat-icon">✅</div>
+  <div class="stat-content">
+    <h3>Aprobadas</h3>
+    <div class="stat-value">{{ contarAprobadas() }}</div>
+  </div>
+</div>
     <div class="stat-card expired">
-      <div class="stat-icon">⏰</div>
-      <div class="stat-content">
-        <h3>Expiradas</h3>
-        <div class="stat-value">{{ cotizaciones().filter(c => isExpired(c)).length }}</div>
-      </div>
-    </div>
+  <div class="stat-icon">⏰</div>
+  <div class="stat-content">
+    <h3>Expiradas</h3>
+    <div class="stat-value">{{ contarExpiradas() }}</div>
+  </div>
+</div>
     <div class="stat-card total">
       <div class="stat-icon">📋</div>
       <div class="stat-content">
@@ -61,24 +61,24 @@
       </div>
       
       <div class="filter-selects">
-        <select 
-          [value]="selectedEstado()"
-          (change)="onEstadoChange($event.target.value)"
-          class="filter-select">
-          @for (option of estadoOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
+  <select
+    [value]="selectedEstado()"
+    (change)="onEstadoChange($event)"
+    class="filter-select">
+    <option *ngFor="let option of estadoOptions; trackBy: trackByValue" [value]="option.value">
+      {{ option.label }}
+    </option>
+  </select>
         
-        <select 
-          [value]="selectedDateRange()"
-          (change)="onDateRangeChange($event.target.value)"
-          class="filter-select">
-          @for (option of dateRangeOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </div>
+        <select
+    [value]="selectedDateRange()"
+    (change)="onDateRangeChange($event)"
+    class="filter-select">
+    <option *ngFor="let option of dateRangeOptions; trackBy: trackByValue" [value]="option.value">
+      {{ option.label }}
+    </option>
+  </select>
+</div>
     </div>
   </div>
 

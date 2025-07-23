@@ -12,7 +12,7 @@ import { Producto } from '../../models/models';
   templateUrl: './productos.html',
   styleUrl: './productos.scss'
 })
-export class Productos implements OnInit {
+export class ProductosComponent implements OnInit { // Cambio: Renombrar por consistencia
   protected productos = signal<Producto[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
@@ -146,7 +146,16 @@ export class Productos implements OnInit {
 
   protected getProductFeatures(producto: Producto): string[] {
     try {
-      return producto.caracteristicas ? JSON.parse(producto.caracteristicas) : [];
+      if (!producto.caracteristicas) return [];
+      
+      // El backend puede enviar array directamente o string JSON
+      if (Array.isArray(producto.caracteristicas)) {
+        return producto.caracteristicas;
+      }
+      if (typeof producto.caracteristicas === 'string') {
+        return JSON.parse(producto.caracteristicas);
+      }
+      return [];
     } catch {
       return [];
     }

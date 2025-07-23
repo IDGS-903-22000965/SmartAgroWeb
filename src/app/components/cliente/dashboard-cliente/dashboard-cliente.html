@@ -1,1 +1,222 @@
-<p>dashboard-cliente works!</p>
+<!-- src/app/components/cliente/dashboard-cliente/dashboard-cliente.html -->
+<div class="dashboard-cliente">
+  <!-- Header de Bienvenida -->
+  <div class="welcome-header">
+    <div class="welcome-content">
+      <h1>¡Hola, {{ nombreUsuario }}!</h1>
+      <p>Bienvenido a tu panel de control de SmartAgro</p>
+    </div>
+    <div class="quick-actions">
+      <button (click)="solicitarCotizacion()" class="btn btn-primary">
+        💰 Nueva Cotización
+      </button>
+      <button (click)="verProductos()" class="btn btn-outline">
+        🛍️ Ver Productos
+      </button>
+    </div>
+  </div>
+
+  <!-- Estadísticas Rápidas -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <h3>{{ estadisticas.cotizaciones }}</h3>
+        <p>Cotizaciones</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-content">
+        <h3>{{ estadisticas.compras }}</h3>
+        <p>Compras</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">💵</div>
+      <div class="stat-content">
+        <h3>${{ estadisticas.totalGastado | number:'1.2-2' }}</h3>
+        <p>Total Gastado</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-content">
+        <h3>{{ estadisticas.puntuacionPromedio }}/5</h3>
+        <p>Mi Calificación</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secciones Principales -->
+  <div class="main-sections">
+    <!-- Cotizaciones Recientes -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Mis Cotizaciones Recientes</h2>
+        <button (click)="verTodasCotizaciones()" class="btn btn-text">
+          Ver todas →
+        </button>
+      </div>
+      
+      @if (loadingCotizaciones()) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando cotizaciones...</p>
+        </div>
+      } @else if (cotizacionesRecientes.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No tienes cotizaciones</h3>
+          <p>Solicita tu primera cotización para comenzar</p>
+          <button (click)="solicitarCotizacion()" class="btn btn-primary">
+            Solicitar Cotización
+          </button>
+        </div>
+      } @else {
+        <div class="cotizaciones-list">
+          @for (cotizacion of cotizacionesRecientes; track cotizacion.id) {
+            <div class="cotizacion-item" (click)="verCotizacion(cotizacion.id)">
+              <div class="cotizacion-info">
+                <div class="cotizacion-header">
+                  <span class="cotizacion-numero">{{ cotizacion.numero }}</span>
+                  <span class="cotizacion-estado" [class]="'estado-' + cotizacion.estado.toLowerCase()">
+                    {{ cotizacion.estado }}
+                  </span>
+                </div>
+                <p class="cotizacion-descripcion">{{ cotizacion.descripcion }}</p>
+                <div class="cotizacion-meta">
+                  <span class="cotizacion-fecha">{{ cotizacion.fecha | date:'dd/MM/yyyy' }}</span>
+                  <span class="cotizacion-total">${{ cotizacion.total | number:'1.2-2' }}</span>
+                </div>
+              </div>
+              <div class="cotizacion-arrow">→</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Compras Recientes -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Mis Compras Recientes</h2>
+        <button (click)="verTodasCompras()" class="btn btn-text">
+          Ver todas →
+        </button>
+      </div>
+      
+      @if (loadingCompras()) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando compras...</p>
+        </div>
+      } @else if (comprasRecientes.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🛒</div>
+          <h3>No tienes compras</h3>
+          <p>Explora nuestros productos y realiza tu primera compra</p>
+          <button (click)="verProductos()" class="btn btn-primary">
+            Ver Productos
+          </button>
+        </div>
+      } @else {
+        <div class="compras-list">
+          @for (compra of comprasRecientes; track compra.id) {
+            <div class="compra-item" (click)="verCompra(compra.id)">
+              <div class="compra-info">
+                <div class="compra-header">
+                  <span class="compra-numero">Orden {{ compra.numero }}</span>
+                  <span class="compra-estado" [class]="'estado-' + compra.estado.toLowerCase()">
+                    {{ compra.estado }}
+                  </span>
+                </div>
+                <p class="compra-productos">{{ compra.productos }}</p>
+                <div class="compra-meta">
+                  <span class="compra-fecha">{{ compra.fecha | date:'dd/MM/yyyy' }}</span>
+                  <span class="compra-total">${{ compra.total | number:'1.2-2' }}</span>
+                </div>
+              </div>
+              <div class="compra-arrow">→</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Productos Recomendados -->
+  <div class="section-card full-width">
+    <div class="section-header">
+      <h2>Productos Recomendados para Ti</h2>
+      <button (click)="verProductos()" class="btn btn-text">
+        Ver todos →
+      </button>
+    </div>
+    
+    @if (loadingProductos()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando productos...</p>
+      </div>
+    } @else {
+      <div class="productos-grid">
+        @for (producto of productosRecomendados; track producto.id) {
+          <div class="producto-card" (click)="verProducto(producto.id)">
+            <div class="producto-image">
+              <img [src]="producto.imagen || '/assets/images/default-product.jpg'" 
+                   [alt]="producto.nombre">
+            </div>
+            <div class="producto-info">
+              <h3>{{ producto.nombre }}</h3>
+              <p>{{ producto.descripcion }}</p>
+              <div class="producto-precio">
+                <span class="precio">${{ producto.precio | number:'1.2-2' }}</span>
+                <button class="btn btn-sm btn-primary">Ver Detalles</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Soporte y Ayuda -->
+  <div class="support-section">
+    <div class="support-card">
+      <div class="support-icon">🎧</div>
+      <div class="support-content">
+        <h3>¿Necesitas Ayuda?</h3>
+        <p>Nuestro equipo de soporte está listo para asistirte</p>
+        <button (click)="contactarSoporte()" class="btn btn-outline">
+          Contactar Soporte
+        </button>
+      </div>
+    </div>
+    
+    <div class="support-card">
+      <div class="support-icon">📚</div>
+      <div class="support-content">
+        <h3>Documentación</h3>
+        <p>Guías y manuales para sacar el máximo provecho</p>
+        <button (click)="verDocumentacion()" class="btn btn-outline">
+          Ver Documentación
+        </button>
+      </div>
+    </div>
+    
+    <div class="support-card">
+      <div class="support-icon">💬</div>
+      <div class="support-content">
+        <h3>Comunidad</h3>
+        <p>Conecta con otros usuarios y comparte experiencias</p>
+        <button (click)="verComunidad()" class="btn btn-outline">
+          Unirse a la Comunidad
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,1 +1,276 @@
-<p>productos-admin works!</p>
+<!-- src/app/components/admin/productos-admin/productos-admin.html -->
+<div class="productos-admin-page">
+  <div class="page-header">
+    <h1>Gestión de Productos</h1>
+    <button (click)="abrirModalCrear()" class="btn btn-primary">
+      <span class="btn-icon">➕</span>
+      Nuevo Producto
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-section">
+    <div class="filtros-container">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="Buscar productos..." 
+          [(ngModel)]="filtros.busqueda"
+          (input)="aplicarFiltros()"
+          class="form-input">
+      </div>
+      <div class="filter-group">
+        <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()" class="form-select">
+          <option value="">Todos los estados</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Productos -->
+  <div class="table-container">
+    @if (loading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando productos...</p>
+      </div>
+    } @else if (productosFiltrados.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No hay productos</h3>
+        <p>No se encontraron productos que coincidan con los filtros aplicados.</p>
+        <button (click)="limpiarFiltros()" class="btn btn-outline">
+          Limpiar Filtros
+        </button>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Precio Base</th>
+              <th>Precio Venta</th>
+              <th>Estado</th>
+              <th>Fecha Creación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (producto of productosFiltrados; track producto.id) {
+              <tr>
+                <td>
+                  <div class="product-image">
+                    <img [src]="producto.imagenPrincipal || '/assets/images/default-product.jpg'" 
+                         [alt]="producto.nombre">
+                  </div>
+                </td>
+                <td>
+                  <div class="product-name">
+                    <strong>{{ producto.nombre }}</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="product-description">
+                    {{ producto.descripcion | slice:0:100 }}{{ producto.descripcion && producto.descripcion.length > 100 ? '...' : '' }}
+                  </div>
+                </td>
+                <td>
+                  <span class="price">${{ producto.precioBase | number:'1.2-2' }}</span>
+                </td>
+                <td>
+                  <span class="price price-sale">${{ producto.precioVenta | number:'1.2-2' }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="producto.activo" [class.inactive]="!producto.activo">
+                    {{ producto.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date">{{ producto.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button (click)="verDetalles(producto)" class="btn-action btn-view" title="Ver detalles">
+                      👁️
+                    </button>
+                    <button (click)="editarProducto(producto)" class="btn-action btn-edit" title="Editar">
+                      ✏️
+                    </button>
+                    <button (click)="toggleEstado(producto)" class="btn-action btn-toggle" 
+                            [title]="producto.activo ? 'Desactivar' : 'Activar'">
+                      {{ producto.activo ? '🚫' : '✅' }}
+                    </button>
+                    <button (click)="eliminarProducto(producto)" class="btn-action btn-delete" title="Eliminar">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Paginación -->
+  @if (totalProductos > pageSize) {
+    <div class="pagination-container">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalProductos) }} de {{ totalProductos }} productos
+      </div>
+      <div class="pagination-controls">
+        <button 
+          (click)="cambiarPagina(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="btn btn-outline btn-sm">
+          ← Anterior
+        </button>
+        
+        @for (page of getPaginas(); track page) {
+          <button 
+            (click)="cambiarPagina(page)"
+            [class.active]="page === currentPage"
+            class="btn btn-outline btn-sm page-btn">
+            {{ page }}
+          </button>
+        }
+        
+        <button 
+          (click)="cambiarPagina(currentPage + 1)" 
+          [disabled]="currentPage === totalPaginas"
+          class="btn btn-outline btn-sm">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal para crear/editar producto -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ modoEdicion ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+        <button (click)="cerrarModal()" class="btn-close">✕</button>
+      </div>
+      
+      <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()" class="modal-body">
+        @if (error()) {
+          <div class="alert alert-error">
+            <span class="alert-icon">⚠️</span>
+            {{ error() }}
+          </div>
+        }
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nombre" class="form-label">Nombre *</label>
+            <input
+              type="text"
+              id="nombre"
+              formControlName="nombre"
+              class="form-input"
+              [class.error]="isFieldInvalid('nombre')"
+              placeholder="Nombre del producto">
+            @if (getFieldError('nombre')) {
+              <span class="field-error">{{ getFieldError('nombre') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="precioBase" class="form-label">Precio Base *</label>
+            <input
+              type="number"
+              id="precioBase"
+              formControlName="precioBase"
+              class="form-input"
+              [class.error]="isFieldInvalid('precioBase')"
+              placeholder="0.00"
+              min="0"
+              step="0.01">
+            @if (getFieldError('precioBase')) {
+              <span class="field-error">{{ getFieldError('precioBase') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="porcentajeGanancia" class="form-label">% Ganancia *</label>
+            <input
+              type="number"
+              id="porcentajeGanancia"
+              formControlName="porcentajeGanancia"
+              class="form-input"
+              [class.error]="isFieldInvalid('porcentajeGanancia')"
+              placeholder="30"
+              min="0"
+              max="100">
+            @if (getFieldError('porcentajeGanancia')) {
+              <span class="field-error">{{ getFieldError('porcentajeGanancia') }}</span>
+            }
+          </div>
+
+          <div class="form-group calculated-price">
+            <label class="form-label">Precio de Venta</label>
+            <div class="price-display">
+              ${{ calcularPrecioVenta() | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            class="form-textarea"
+            placeholder="Descripción breve del producto"
+            rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcionDetallada" class="form-label">Descripción Detallada</label>
+          <textarea
+            id="descripcionDetallada"
+            formControlName="descripcionDetallada"
+            class="form-textarea"
+            placeholder="Descripción completa del producto"
+            rows="5"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="imagenPrincipal" class="form-label">URL Imagen Principal</label>
+          <input
+            type="url"
+            id="imagenPrincipal"
+            formControlName="imagenPrincipal"
+            class="form-input"
+            placeholder="https://ejemplo.com/imagen.jpg">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" (click)="cerrarModal()" class="btn btn-outline">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="loadingModal() || !productoForm.valid">
+            @if (loadingModal()) {
+              <span class="btn-spinner"></span>
+              Guardando...
+            } @else {
+              {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

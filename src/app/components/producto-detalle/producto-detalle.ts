@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto';
 import { Auth } from '../../services/auth';
-import { ProductoDetalle, ComentarioCreateDto } from '../../models/models';
+// Cambio: Renombrar la interfaz para evitar conflicto de nombres
+import { ProductoDetalle as ProductoDetalleModel, ComentarioCreateDto } from '../../models/models';
 
 @Component({
   selector: 'app-producto-detalle',
@@ -13,8 +14,8 @@ import { ProductoDetalle, ComentarioCreateDto } from '../../models/models';
   templateUrl: './producto-detalle.html',
   styleUrl: './producto-detalle.scss'
 })
-export class ProductoDetalle implements OnInit {
-  protected producto = signal<ProductoDetalle | null>(null);
+export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar la clase
+  protected producto = signal<ProductoDetalleModel | null>(null);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
   protected selectedImage = signal(0);
@@ -25,15 +26,18 @@ export class ProductoDetalle implements OnInit {
   // Form para comentarios
   protected commentForm: FormGroup;
   
-  // Usuario actual
-  protected currentUser = this.authService.currentUser;
+  // Usuario actual - Cambio: Inicializar en el constructor
+  protected currentUser = computed(() => this.authService.currentUser());
   protected isAuthenticated = computed(() => !!this.currentUser());
+
+  // Cambio: Hacer Math accesible en el template
+  protected Math = Math;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private productoService: ProductoService,
-    private authService: Auth,
+    private authService: Auth, // Cambio: Mover la inicialización aquí
     private fb: FormBuilder
   ) {
     this.commentForm = this.fb.group({
@@ -81,9 +85,23 @@ export class ProductoDetalle implements OnInit {
     if (producto.imagenPrincipal) {
       images.push(producto.imagenPrincipal);
     }
+    
     if (producto.imagenesSecundarias) {
-      images.push(...producto.imagenesSecundarias);
+      try {
+        // El backend puede enviar array directamente o string JSON
+        if (Array.isArray(producto.imagenesSecundarias)) {
+          images.push(...producto.imagenesSecundarias);
+        } else if (typeof producto.imagenesSecundarias === 'string') {
+          const parsed = JSON.parse(producto.imagenesSecundarias);
+          if (Array.isArray(parsed)) {
+            images.push(...parsed);
+          }
+        }
+      } catch {
+        // Si falla el parse, ignorar las imágenes secundarias
+      }
     }
+    
     return images;
   }
 
@@ -92,7 +110,14 @@ export class ProductoDetalle implements OnInit {
     if (!producto?.caracteristicas) return [];
     
     try {
-      return JSON.parse(producto.caracteristicas);
+      // El backend puede enviar array directamente o string JSON
+      if (Array.isArray(producto.caracteristicas)) {
+        return producto.caracteristicas;
+      }
+      if (typeof producto.caracteristicas === 'string') {
+        return JSON.parse(producto.caracteristicas);
+      }
+      return [];
     } catch {
       return [];
     }
@@ -103,7 +128,14 @@ export class ProductoDetalle implements OnInit {
     if (!producto?.beneficios) return [];
     
     try {
-      return JSON.parse(producto.beneficios);
+      // El backend puede enviar array directamente o string JSON
+      if (Array.isArray(producto.beneficios)) {
+        return producto.beneficios;
+      }
+      if (typeof producto.beneficios === 'string') {
+        return JSON.parse(producto.beneficios);
+      }
+      return [];
     } catch {
       return [];
     }
@@ -151,7 +183,7 @@ export class ProductoDetalle implements OnInit {
     return Array(5).fill(false).map((_, index) => index < rating);
   }
 
-  protected formatDate(date: Date): string {
+  protected formatDate(date: Date | string): string {
     return new Date(date).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',

@@ -1,1 +1,501 @@
-<p>proveedores works!</p>
+<!-- src/app/components/admin/proveedores/proveedores.html -->
+<div class="proveedores-admin">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Gestión de Proveedores</h1>
+      <p>Administrar proveedores y proveedurías</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openCreateModal()" class="btn btn-primary">
+        ➕ Nuevo Proveedor
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <div class="stat-icon">🏢</div>
+      <div class="stat-content">
+        <h3>Total Proveedores</h3>
+        <div class="stat-value">{{ proveedores().length }}</div>
+      </div>
+    </div>
+<div class="stat-card active">
+  <div class="stat-icon">✅</div>
+  <div class="stat-content">
+    <h3>Activos</h3>
+    <div class="stat-value">{{ contarActivos() }}</div>
+  </div>
+</div>
+
+<div class="stat-card inactive">
+  <div class="stat-icon">❌</div>
+  <div class="stat-content">
+    <h3>Inactivos</h3>
+    <div class="stat-value">{{ contarInactivos() }}</div>
+  </div>
+</div>
+
+<div class="stat-card new">
+  <div class="stat-icon">📅</div>
+  <div class="stat-content">
+    <h3>Nuevos (30 días)</h3>
+    <div class="stat-value">{{ contarNuevos30Dias() }}</div>
+  </div>
+</div>
+
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Buscar por nombre, razón social, RFC o contacto..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          class="search-input">
+      </div>
+      
+      <div class="filter-selects">
+        <select 
+  [value]="selectedEstado()" 
+  (change)="onEstadoChange($event)" 
+  class="filter-select">
+  <option *ngFor="let option of estadoOptions; trackBy: trackByValue" [value]="option.value">
+    {{ option.label }}
+  </option>
+</select>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando proveedores...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h3>Error al cargar proveedores</h3>
+      <p>{{ error() }}</p>
+      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
+    </div>
+  } @else if (filteredProveedores().length === 0) {
+    <div class="empty-container">
+      <div class="empty-icon">🏢</div>
+      <h3>No hay proveedores</h3>
+      <p>No se encontraron proveedores que coincidan con los filtros aplicados</p>
+      <button (click)="openCreateModal()" class="btn btn-primary">Crear Primer Proveedor</button>
+    </div>
+  } @else {
+    <div class="proveedores-table">
+      <div class="table-header">
+        <div class="col">Proveedor</div>
+        <div class="col">Contacto</div>
+        <div class="col">RFC</div>
+        <div class="col">Estado</div>
+        <div class="col">Registro</div>
+        <div class="col">Acciones</div>
+      </div>
+      
+      @for (proveedor of filteredProveedores(); track proveedor.id) {
+        <div class="table-row" [class.inactive]="!proveedor.activo">
+          <div class="col proveedor-info">
+            <div class="proveedor-data">
+              <strong>{{ proveedor.nombre }}</strong>
+              <span class="razon-social">{{ proveedor.razonSocial }}</span>
+              @if (proveedor.direccion) {
+                <small class="direccion">📍 {{ proveedor.direccion }}</small>
+              }
+            </div>
+          </div>
+          
+          <div class="col contacto-info">
+            @if (proveedor.contactoPrincipal) {
+              <div class="contacto-principal">👤 {{ proveedor.contactoPrincipal }}</div>
+            }
+            @if (proveedor.telefono) {
+              <div class="telefono">📞 {{ proveedor.telefono }}</div>
+            }
+            @if (proveedor.email) {
+              <div class="email">📧 {{ proveedor.email }}</div>
+            }
+          </div>
+          
+          <div class="col rfc">
+            @if (proveedor.rfc) {
+              <span class="rfc-badge">{{ proveedor.rfc }}</span>
+            } @else {
+              <span class="no-rfc">Sin RFC</span>
+            }
+          </div>
+          
+          <div class="col estado">
+            <span class="status-badge" [class]="getEstadoBadgeClass(proveedor.activo)">
+              {{ proveedor.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          
+          <div class="col fecha">
+            {{ formatDate(proveedor.fechaRegistro) }}
+          </div>
+          
+          <div class="col acciones">
+            <button 
+              (click)="openDetailsModal(proveedor)"
+              class="btn btn-sm btn-outline"
+              title="Ver detalles">
+              👁️
+            </button>
+            <button 
+              (click)="openEditModal(proveedor)"
+              class="btn btn-sm btn-primary"
+              title="Editar">
+              ✏️
+            </button>
+            <button 
+              (click)="toggleProveedorEstado(proveedor)"
+              class="btn btn-sm"
+              [class]="proveedor.activo ? 'btn-warning' : 'btn-success'"
+              [title]="proveedor.activo ? 'Desactivar' : 'Activar'">
+              {{ proveedor.activo ? '⏸️' : '▶️' }}
+            </button>
+            <button 
+              (click)="deleteProveedor(proveedor)"
+              class="btn btn-sm btn-danger"
+              title="Eliminar">
+              🗑️
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Create Modal -->
+  @if (showCreateModal()) {
+    <div class="modal-overlay" (click)="closeCreateModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Crear Nuevo Proveedor</h2>
+          <button (click)="closeCreateModal()" class="close-btn">✕</button>
+        </div>
+        
+        <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nombre">Nombre Comercial *</label>
+                <input
+                  id="nombre"
+                  type="text"
+                  formControlName="nombre"
+                  class="form-control"
+                  placeholder="Ej: TechAgro Solutions">
+                @if (createForm.get('nombre')?.errors && createForm.get('nombre')?.touched) {
+                  <div class="error-message">El nombre es requerido</div>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="razonSocial">Razón Social *</label>
+                <input
+                  id="razonSocial"
+                  type="text"
+                  formControlName="razonSocial"
+                  class="form-control"
+                  placeholder="Ej: TechAgro Solutions S.A. de C.V.">
+                @if (createForm.get('razonSocial')?.errors && createForm.get('razonSocial')?.touched) {
+                  <div class="error-message">La razón social es requerida</div>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="rfc">RFC</label>
+                <input
+                  id="rfc"
+                  type="text"
+                  formControlName="rfc"
+                  class="form-control"
+                  placeholder="Ej: TAS123456789"
+                  maxlength="13"
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label for="contactoPrincipal">Contacto Principal</label>
+                <input
+                  id="contactoPrincipal"
+                  type="text"
+                  formControlName="contactoPrincipal"
+                  class="form-control"
+                  placeholder="Ej: Juan Pérez">
+              </div>
+
+              <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input
+                  id="telefono"
+                  type="tel"
+                  formControlName="telefono"
+                  class="form-control"
+                  placeholder="Ej: +52 477 123 4567">
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  formControlName="email"
+                  class="form-control"
+                  placeholder="Ej: contacto@proveedor.com">
+                @if (createForm.get('email')?.errors?.['email'] && createForm.get('email')?.touched) {
+                  <div class="error-message">Email inválido</div>
+                }
+              </div>
+
+              <div class="form-group full-width">
+                <label for="direccion">Dirección</label>
+                <textarea
+                  id="direccion"
+                  formControlName="direccion"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Dirección completa del proveedor"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" (click)="closeCreateModal()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="!createForm.valid || submitting()">
+              @if (submitting()) {
+                <span class="spinner-sm"></span>
+              }
+              Crear Proveedor
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Edit Modal -->
+  @if (showEditModal() && selectedProveedor()) {
+    <div class="modal-overlay" (click)="closeEditModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Editar Proveedor</h2>
+          <button (click)="closeEditModal()" class="close-btn">✕</button>
+        </div>
+        
+        <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="editNombre">Nombre Comercial *</label>
+                <input
+                  id="editNombre"
+                  type="text"
+                  formControlName="nombre"
+                  class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="editRazonSocial">Razón Social *</label>
+                <input
+                  id="editRazonSocial"
+                  type="text"
+                  formControlName="razonSocial"
+                  class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="editRfc">RFC</label>
+                <input
+                  id="editRfc"
+                  type="text"
+                  formControlName="rfc"
+                  class="form-control"
+                  maxlength="13"
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label for="editContactoPrincipal">Contacto Principal</label>
+                <input
+                  id="editContactoPrincipal"
+                  type="text"
+                  formControlName="contactoPrincipal"
+                  class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="editTelefono">Teléfono</label>
+                <input
+                  id="editTelefono"
+                  type="tel"
+                  formControlName="telefono"
+                  class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="editEmail">Email</label>
+                <input
+                  id="editEmail"
+                  type="email"
+                  formControlName="email"
+                  class="form-control">
+              </div>
+
+              <div class="form-group full-width">
+                <label for="editDireccion">Dirección</label>
+                <textarea
+                  id="editDireccion"
+                  formControlName="direccion"
+                  class="form-control"
+                  rows="3"></textarea>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    formControlName="activo"
+                    class="checkbox">
+                  <span class="checkmark"></span>
+                  Proveedor activo
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" (click)="closeEditModal()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="!editForm.valid || submitting()">
+              @if (submitting()) {
+                <span class="spinner-sm"></span>
+              }
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Details Modal -->
+  @if (showDetailsModal() && selectedProveedor()) {
+    <div class="modal-overlay" (click)="closeDetailsModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ selectedProveedor()!.nombre }}</h2>
+          <button (click)="closeDetailsModal()" class="close-btn">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="proveedor-details">
+            <div class="details-section">
+              <h3>Información General</h3>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Nombre Comercial:</label>
+                  <span>{{ selectedProveedor()!.nombre }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Razón Social:</label>
+                  <span>{{ selectedProveedor()!.razonSocial }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>RFC:</label>
+                  <span>{{ selectedProveedor()!.rfc || 'No proporcionado' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Estado:</label>
+                  <span class="status-badge" [class]="getEstadoBadgeClass(selectedProveedor()!.activo)">
+                    {{ selectedProveedor()!.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <label>Fecha de Registro:</label>
+                  <span>{{ formatDate(selectedProveedor()!.fechaRegistro) }}</span>
+                </div>
+                @if (selectedProveedor()!.direccion) {
+                  <div class="detail-item full-width">
+                    <label>Dirección:</label>
+                    <span>{{ selectedProveedor()!.direccion }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="details-section">
+              <h3>Información de Contacto</h3>
+              <div class="details-grid">
+                @if (selectedProveedor()!.contactoPrincipal) {
+                  <div class="detail-item">
+                    <label>Contacto Principal:</label>
+                    <span>{{ selectedProveedor()!.contactoPrincipal }}</span>
+                  </div>
+                }
+                @if (selectedProveedor()!.telefono) {
+                  <div class="detail-item">
+                    <label>Teléfono:</label>
+                    <span>{{ selectedProveedor()!.telefono }}</span>
+                  </div>
+                }
+                @if (selectedProveedor()!.email) {
+                  <div class="detail-item">
+                    <label>Email:</label>
+                    <span>{{ selectedProveedor()!.email }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="details-section">
+              <h3>Estadísticas</h3>
+              <div class="stats-row">
+                <div class="stat-box">
+                  <div class="stat-number">{{ selectedProveedor()!.materiasPrimas?.length || 0 }}</div>
+                  <div class="stat-label">Materias Primas</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">{{ selectedProveedor()!.compras?.length || 0 }}</div>
+                  <div class="stat-label">Compras Realizadas</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button (click)="openEditModal(selectedProveedor()!)" class="btn btn-primary">
+            ✏️ Editar Proveedor
+          </button>
+          <button (click)="closeDetailsModal()" class="btn btn-outline">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -7,11 +7,11 @@
     </div>
     <div class="header-stats">
       <div class="stat-item">
-        <span class="stat-number">{{ comentarios().filter(c => !c.aprobado && c.activo).length }}</span>
+<span class="stat-number">{{ contarPendientes() }}</span>
         <span class="stat-label">Pendientes</span>
       </div>
       <div class="stat-item">
-        <span class="stat-number">{{ comentarios().filter(c => c.aprobado).length }}</span>
+<span class="stat-number">{{ contarAprobados() }}</span>
         <span class="stat-label">Aprobados</span>
       </div>
     </div>
@@ -68,7 +68,7 @@
           <div class="card-header">
             <div class="user-info">
               <div class="user-avatar">
-                {{ comentario.nombreUsuario.split(' ').map(n => n[0]).join('').toUpperCase() }}
+{{ getIniciales(comentario.nombreUsuario) }}
               </div>
               <div class="user-details">
                 <h3>{{ comentario.nombreUsuario }}</h3>

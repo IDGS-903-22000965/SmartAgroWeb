@@ -1,18 +1,18 @@
+// src/app/services/contacto.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ContactoRequest, ApiResponse } from '../models/models';
-import { environment } from '../../environments/environment';
+import { ApiResponse, ContactoRequest } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactoService {
-  private apiUrl = `${environment.apiUrl}/contacto`;
+  private readonly API_URL = 'https://localhost:7001/api/contacto';
 
   constructor(private http: HttpClient) {}
 
-  enviarMensaje(contacto: ContactoRequest): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(this.apiUrl, contacto);
+  enviarContacto(request: ContactoRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(this.API_URL, request);
   }
 }
