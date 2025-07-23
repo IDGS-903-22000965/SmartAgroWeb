@@ -1,1 +1,113 @@
-<p>footer works!</p>
+<!-- src/app/shared/footer/footer.html -->
+<footer class="footer">
+  <div class="footer-main">
+    <div class="container">
+      <div class="footer-content">
+        <!-- Company Info -->
+        <div class="footer-section company-info">
+          <div class="footer-logo">
+            <span class="logo-icon">🌱</span>
+            <span class="logo-text">SmartAgro</span>
+          </div>
+          <p class="company-description">{{ companyInfo.description }}</p>
+          
+          <div class="contact-info">
+            <div class="contact-item">
+              <span class="contact-icon">📍</span>
+              <span>{{ companyInfo.address }}</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📞</span>
+              <a href="tel:{{ companyInfo.phone }}">{{ companyInfo.phone }}</a>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📧</span>
+              <a href="mailto:{{ companyInfo.email }}">{{ companyInfo.email }}</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-section">
+          <h3 class="footer-title">Enlaces Rápidos</h3>
+          <ul class="footer-links">
+            @for (link of quickLinks; track link.route) {
+              <li>
+                <a [routerLink]="link.route" class="footer-link">
+                  {{ link.label }}
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Services -->
+        <div class="footer-section">
+          <h3 class="footer-title">Nuestros Servicios</h3>
+          <ul class="footer-links">
+            @for (service of services; track service) {
+              <li>
+                <span class="footer-link">{{ service }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Newsletter & Social -->
+        <div class="footer-section newsletter-section">
+          <h3 class="footer-title">Mantente Conectado</h3>
+          <p class="newsletter-description">
+            Suscríbete para recibir noticias sobre nuevos productos y tecnologías.
+          </p>
+          
+          <div class="newsletter-form">
+            <div class="input-group">
+              <input 
+                type="email" 
+                placeholder="Tu email"
+                class="newsletter-input">
+              <button class="newsletter-button">Suscribirse</button>
+            </div>
+          </div>
+
+          <div class="social-links">
+            <h4 class="social-title">Síguenos</h4>
+            <div class="social-icons">
+              @for (social of socialLinks; track social.name) {
+                <a 
+                  [href]="social.url" 
+                  [title]="social.name"
+                  class="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <span class="social-icon">{{ social.icon }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="footer-bottom-content">
+        <div class="copyright">
+          <p>&copy; {{ currentYear }} {{ companyInfo.name }}. Todos los derechos reservados.</p>
+        </div>
+        
+        <div class="footer-bottom-links">
+          <a href="#" class="bottom-link">Política de Privacidad</a>
+          <a href="#" class="bottom-link">Términos de Servicio</a>
+          <a href="#" class="bottom-link">Cookies</a>
+        </div>
+
+        <button class="back-to-top" (click)="scrollToTop()" title="Volver arriba">
+          <span>⬆️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</footer>

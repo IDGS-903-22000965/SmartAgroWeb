@@ -1,1 +1,104 @@
-<p>header works!</p>
+<header class="header">
+  <nav class="navbar">
+    <div class="container">
+      <!-- Logo y nombre de la empresa -->
+      <div class="navbar-brand">
+        <a routerLink="/" class="brand-link" (click)="closeMenu()">
+          <div class="logo">
+            <span class="logo-icon">🌱</span>
+            <span class="logo-text">SmartAgro</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Botón de menú móvil -->
+      <button 
+        class="mobile-menu-toggle"
+        (click)="toggleMenu()"
+        [class.active]="isMenuOpen()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Menú de navegación -->
+      <div class="navbar-menu" [class.active]="isMenuOpen()">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" 
+               class="nav-link" (click)="closeMenu()">
+              Inicio
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/productos" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+              Productos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/cotizacion" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+              Cotización
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/testimonios" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+              Testimonios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/contacto" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+              Contacto
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/faq" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+              FAQ
+            </a>
+          </li>
+        </ul>
+
+        <!-- Menú de usuario -->
+        <div class="navbar-user">
+          @if (isAuthenticated()) {
+            <div class="user-menu">
+              <div class="user-avatar">{{ getUserInitials() }}</div>
+              <div class="user-dropdown">
+                <div class="user-info">
+                  <span class="user-name">{{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}</span>
+                  <span class="user-email">{{ currentUser()?.email }}</span>
+                </div>
+                <div class="user-actions">
+                  @if (isAdmin()) {
+                    <a routerLink="/admin" class="dropdown-link" (click)="closeMenu()">
+                      <span class="icon">⚙️</span>
+                      Panel Admin
+                    </a>
+                  }
+                  @if (isCliente()) {
+                    <a routerLink="/cliente" class="dropdown-link" (click)="closeMenu()">
+                      <span class="icon">👤</span>
+                      Mi Cuenta
+                    </a>
+                  }
+                  <button class="dropdown-link logout-btn" (click)="logout()">
+                    <span class="icon">🚪</span>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="auth-buttons">
+              <a routerLink="/login" class="btn btn-outline" (click)="closeMenu()">
+                Iniciar Sesión
+              </a>
+              <a routerLink="/register" class="btn btn-primary" (click)="closeMenu()">
+                Registrarse
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

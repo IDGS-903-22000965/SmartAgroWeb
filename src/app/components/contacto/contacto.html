@@ -1,1 +1,253 @@
-<p>contacto works!</p>
+<!-- src/app/components/contacto/contacto.html -->
+<div class="contacto-page">
+  <!-- Hero Section -->
+  <section class="contacto-hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Contáctanos</h1>
+        <p>Estamos aquí para ayudarte con todas tus necesidades de riego inteligente</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Content -->
+  <section class="contacto-content">
+    <div class="container">
+      <div class="content-layout">
+        <!-- Contact Information -->
+        <div class="contact-info-section">
+          <h2>Información de Contacto</h2>
+          <p>Nuestro equipo de expertos está listo para ayudarte a encontrar la solución perfecta para tu proyecto.</p>
+
+          <div class="contact-cards">
+            @for (info of contactInfo; track info.title) {
+              <div class="contact-card">
+                <div class="card-icon">{{ info.icon }}</div>
+                <div class="card-content">
+                  <h3>{{ info.title }}</h3>
+                  @if (info.link) {
+                    <a [href]="info.link" class="contact-link">{{ info.content }}</a>
+                  } @else {
+                    <p>{{ info.content }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <h3>Mensajes Rápidos</h3>
+            <div class="quick-buttons">
+              <button 
+                (click)="fillQuickMessage('cotizacion')" 
+                class="quick-btn">
+                <span class="btn-icon">💰</span>
+                Solicitar Cotización
+              </button>
+              <button 
+                (click)="fillQuickMessage('soporte')" 
+                class="quick-btn">
+                <span class="btn-icon">🔧</span>
+                Soporte Técnico
+              </button>
+              <button 
+                (click)="fillQuickMessage('demo')" 
+                class="quick-btn">
+                <span class="btn-icon">👁️</span>
+                Ver Demostración
+              </button>
+            </div>
+          </div>
+
+          <!-- Business Hours -->
+          <div class="business-hours">
+            <h3>Horarios de Atención</h3>
+            <div class="hours-list">
+              <div class="hours-item">
+                <span class="day">Lunes - Viernes</span>
+                <span class="time">9:00 AM - 6:00 PM</span>
+              </div>
+              <div class="hours-item">
+                <span class="day">Sábados</span>
+                <span class="time">9:00 AM - 2:00 PM</span>
+              </div>
+              <div class="hours-item">
+                <span class="day">Domingos</span>
+                <span class="time">Cerrado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="contact-form-section">
+          @if (success()) {
+            <div class="success-message">
+              <div class="success-icon">✅</div>
+              <h2>¡Mensaje Enviado!</h2>
+              <p>
+                Gracias por contactarnos. Hemos recibido tu mensaje y nuestro equipo 
+                se pondrá en contacto contigo en las próximas 24 horas.
+              </p>
+              <button (click)="resetForm()" class="btn btn-outline">
+                Enviar Otro Mensaje
+              </button>
+            </div>
+          } @else {
+            <div class="form-container">
+              <div class="form-header">
+                <h2>Envíanos un Mensaje</h2>
+                <p>Completa el formulario y nos pondremos en contacto contigo pronto</p>
+              </div>
+
+              <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+                @if (error()) {
+                  <div class="alert alert-error">
+                    <span class="alert-icon">⚠️</span>
+                    {{ error() }}
+                  </div>
+                }
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="nombre" class="form-label">Nombre Completo *</label>
+                    <input
+                      type="text"
+                      id="nombre"
+                      formControlName="nombre"
+                      class="form-input"
+                      [class.error]="isFieldInvalid('nombre')"
+                      placeholder="Tu nombre completo">
+                    @if (getFieldError('nombre')) {
+                      <span class="field-error">{{ getFieldError('nombre') }}</span>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email" class="form-label">Email *</label>
+                    <input
+                      type="email"
+                      id="email"
+                      formControlName="email"
+                      class="form-input"
+                      [class.error]="isFieldInvalid('email')"
+                      placeholder="tu@email.com">
+                    @if (getFieldError('email')) {
+                      <span class="field-error">{{ getFieldError('email') }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="empresa" class="form-label">Empresa</label>
+                    <input
+                      type="text"
+                      id="empresa"
+                      formControlName="empresa"
+                      class="form-input"
+                      placeholder="Nombre de tu empresa">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input
+                      type="tel"
+                      id="telefono"
+                      formControlName="telefono"
+                      class="form-input"
+                      [class.error]="isFieldInvalid('telefono')"
+                      placeholder="1234567890">
+                    @if (getFieldError('telefono')) {
+                      <span class="field-error">{{ getFieldError('telefono') }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="asunto" class="form-label">Asunto *</label>
+                  <input
+                    type="text"
+                    id="asunto"
+                    formControlName="asunto"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('asunto')"
+                    placeholder="¿En qué podemos ayudarte?">
+                  @if (getFieldError('asunto')) {
+                    <span class="field-error">{{ getFieldError('asunto') }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="mensaje" class="form-label">Mensaje *</label>
+                  <textarea
+                    id="mensaje"
+                    formControlName="mensaje"
+                    class="form-textarea"
+                    [class.error]="isFieldInvalid('mensaje')"
+                    placeholder="Describe tu consulta, proyecto o requerimientos específicos..."
+                    rows="5"></textarea>
+                  @if (getFieldError('mensaje')) {
+                    <span class="field-error">{{ getFieldError('mensaje') }}</span>
+                  }
+                </div>
+
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-full"
+                  [disabled]="loading()">
+                  @if (loading()) {
+                    <span class="btn-spinner"></span>
+                    Enviando...
+                  } @else {
+                    Enviar Mensaje
+                  }
+                </button>
+              </form>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="faq-header">
+        <h2>Preguntas Frecuentes</h2>
+        <p>Respuestas rápidas a las consultas más comunes</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3>¿Cuánto tiempo toma la instalación?</h3>
+          <p>La instalación típica toma de 1 a 3 días dependiendo del tamaño del área y la complejidad del sistema.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>¿Ofrecen garantía?</h3>
+          <p>Sí, ofrecemos 2 años de garantía en equipos y 1 año en mano de obra, además de soporte técnico continuo.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>¿El sistema funciona sin internet?</h3>
+          <p>El sistema puede operar de forma autónoma, pero requiere conexión para monitoreo remoto y actualizaciones.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>¿Hacen mantenimiento?</h3>
+          <p>Ofrecemos planes de mantenimiento preventivo y correctivo para asegurar el óptimo funcionamiento del sistema.</p>
+        </div>
+      </div>
+
+      <div class="faq-footer">
+        <p>¿No encontraste tu respuesta?</p>
+        <button (click)="fillQuickMessage('soporte')" class="btn btn-outline">
+          Contactar Soporte
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

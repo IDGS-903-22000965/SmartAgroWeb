@@ -1,1 +1,177 @@
-<p>home works!</p>
+<!-- src/app/components/home/home.html -->
+<div class="home">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-background">
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Revoluciona tu <span class="highlight">Agricultura</span> 
+          con Tecnología IoT
+        </h1>
+        <p class="hero-subtitle">
+          Sistemas inteligentes de riego automatizado que optimizan el uso del agua, 
+          mejoran la salud de tus cultivos y aumentan tu productividad.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/cotizacion" class="btn btn-primary">
+            Solicitar Cotización
+          </a>
+          <button (click)="scrollToSection('productos')" class="btn btn-outline">
+            Ver Productos
+          </button>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="demo-card">
+          <div class="card-header">
+            <span class="status-indicator online"></span>
+            <span>Sistema Activo</span>
+          </div>
+          <div class="metrics">
+            <div class="metric">
+              <span class="metric-label">Humedad</span>
+              <span class="metric-value">78%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Temperatura</span>
+              <span class="metric-value">24°C</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">pH Suelo</span>
+              <span class="metric-value">6.8</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>¿Por qué elegir SmartAgro?</h2>
+        <p>Tecnología de vanguardia para la agricultura del futuro</p>
+      </div>
+      <div class="features-grid">
+        @for (feature of features; track feature.title) {
+          <div class="feature-card">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="benefits">
+    <div class="container">
+      <div class="benefits-content">
+        <div class="benefits-text">
+          <h2>Resultados que Transforman tu Negocio</h2>
+          <p>
+            Nuestros sistemas de riego inteligente han demostrado resultados 
+            excepcionales en miles de implementaciones alrededor del mundo.
+          </p>
+          <div class="benefits-stats">
+            @for (benefit of benefits; track benefit.stat) {
+              <div class="stat-item">
+                <div class="stat-number">{{ benefit.stat }}</div>
+                <div class="stat-content">
+                  <h4>{{ benefit.label }}</h4>
+                  <p>{{ benefit.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="benefits-image">
+          <div class="image-placeholder">
+            <span class="placeholder-icon">🌱</span>
+            <p>Cultivos más saludables y productivos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Preview Section -->
+  <section class="products-preview" id="productos">
+    <div class="container">
+      <div class="section-header">
+        <h2>Nuestros Productos</h2>
+        <p>Soluciones completas para cada necesidad</p>
+      </div>
+      
+      @if (loading()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Cargando productos...</p>
+        </div>
+      } @else if (error()) {
+        <div class="error">
+          <p>{{ error() }}</p>
+          <button (click)="loadProductos()" class="btn btn-primary">Reintentar</button>
+        </div>
+      } @else {
+        <div class="products-grid">
+          @for (producto of productos(); track producto.id) {
+            <div class="product-card">
+              <div class="product-image">
+                @if (producto.imagenPrincipal) {
+                  <img [src]="producto.imagenPrincipal" [alt]="producto.nombre">
+                } @else {
+                  <div class="image-placeholder">
+                    <span>🌿</span>
+                  </div>
+                }
+              </div>
+              <div class="product-content">
+                <h3>{{ producto.nombre }}</h3>
+                <p>{{ producto.descripcion }}</p>
+                <div class="product-price">
+                  ${{ producto.precioVenta | number:'1.2-2' }}
+                </div>
+                <a [routerLink]="['/producto', producto.id]" class="btn btn-outline">
+                  Ver Detalles
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+        
+        <div class="products-footer">
+          <a routerLink="/productos" class="btn btn-primary">
+            Ver Todos los Productos
+          </a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-content">
+        <h2>¿Listo para Modernizar tu Agricultura?</h2>
+        <p>
+          Únete a miles de agricultores que ya transformaron sus cultivos 
+          con nuestros sistemas inteligentes.
+        </p>
+        <div class="cta-actions">
+          <a routerLink="/cotizacion" class="btn btn-primary">
+            Solicitar Cotización Gratuita
+          </a>
+          <a routerLink="/contacto" class="btn btn-outline">
+            Hablar con un Experto
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
