@@ -1,1 +1,155 @@
-<p>productos works!</p>
+<!-- src/app/components/productos/productos.html -->
+<div class="productos-page">
+  <!-- Hero Section -->
+  <section class="productos-hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Nuestros Productos</h1>
+        <p>Sistemas de riego inteligente diseñados para revolucionar tu agricultura</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters Section -->
+  <section class="filters-section">
+    <div class="container">
+      <div class="filters-bar">
+        <div class="search-filter">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($event.target.value)"
+              class="search-input">
+          </div>
+        </div>
+
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label class="filter-label">Precio:</label>
+            <select 
+              [value]="selectedPriceRange()"
+              (change)="onPriceRangeChange($event.target.value)"
+              class="filter-select">
+              @for (range of priceRanges; track range.value) {
+                <option [value]="range.value">{{ range.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Ordenar:</label>
+            <select 
+              [value]="sortBy()"
+              (change)="onSortChange($event.target.value)"
+              class="filter-select">
+              @for (option of sortOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <button (click)="clearFilters()" class="clear-filters-btn">
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section class="products-section">
+    <div class="container">
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando productos...</p>
+        </div>
+      } @else if (error()) {
+        <div class="error-state">
+          <div class="error-icon">⚠️</div>
+          <h3>Error al cargar productos</h3>
+          <p>{{ error() }}</p>
+          <button (click)="retry()" class="retry-btn">Reintentar</button>
+        </div>
+      } @else if (filteredProducts().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No se encontraron productos</h3>
+          <p>Intenta ajustar los filtros de búsqueda</p>
+          <button (click)="clearFilters()" class="clear-filters-btn">Limpiar Filtros</button>
+        </div>
+      } @else {
+        <div class="results-info">
+          <p>Mostrando {{ filteredProducts().length }} producto(s)</p>
+        </div>
+
+        <div class="products-grid">
+          @for (producto of filteredProducts(); track producto.id) {
+            <div class="product-card">
+              <div class="product-image">
+                @if (producto.imagenPrincipal) {
+                  <img [src]="producto.imagenPrincipal" [alt]="producto.nombre">
+                } @else {
+                  <div class="image-placeholder">
+                    <span class="placeholder-icon">🌿</span>
+                  </div>
+                }
+                <div class="product-overlay">
+                  <a [routerLink]="['/producto', producto.id]" class="view-details-btn">
+                    Ver Detalles
+                  </a>
+                </div>
+              </div>
+
+              <div class="product-content">
+                <div class="product-header">
+                  <h3 class="product-title">{{ producto.nombre }}</h3>
+                  @if (getProductRating(producto) > 0) {
+                    <div class="product-rating">
+                      <div class="stars">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <span class="star" [class.filled]="star <= getProductRating(producto)">⭐</span>
+                        }
+                      </div>
+                      <span class="rating-value">({{ getProductRating(producto) }})</span>
+                    </div>
+                  }
+                </div>
+
+                <p class="product-description">{{ producto.descripcion }}</p>
+
+                @if (getProductFeatures(producto).length > 0) {
+                  <div class="product-features">
+                    <h4>Características principales:</h4>
+                    <ul class="features-list">
+                      @for (feature of getProductFeatures(producto).slice(0, 3); track feature) {
+                        <li>{{ feature }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                <div class="product-footer">
+                  <div class="product-price">
+                    ${{ producto.precioVenta | number:'1.2-2' }}
+                  </div>
+                  <div class="product-actions">
+                    <a [routerLink]="['/producto', producto.id]" class="btn btn-outline">
+                      Ver Más
+                    </a>
+                    <a routerLink="/cotizacion" class="btn btn-primary">
+                      Cotizar
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>

@@ -1,1 +1,382 @@
-<p>producto-detalle works!</p>
+<!-- src/app/components/producto-detalle/producto-detalle.html -->
+<div class="producto-detalle-page">
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando producto...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h2>Error al cargar el producto</h2>
+      <p>{{ error() }}</p>
+      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
+      <a routerLink="/productos" class="btn btn-outline">Volver a Productos</a>
+    </div>
+  } @else if (producto()) {
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <div class="container">
+        <nav class="breadcrumb-nav">
+          <a routerLink="/">Inicio</a>
+          <span class="separator">›</span>
+          <a routerLink="/productos">Productos</a>
+          <span class="separator">›</span>
+          <span class="current">{{ producto()!.nombre }}</span>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Product Main Section -->
+    <section class="product-main">
+      <div class="container">
+        <div class="product-layout">
+          <!-- Product Images -->
+          <div class="product-images">
+            <div class="main-image">
+              @if (getProductImages().length > 0) {
+                <img [src]="getProductImages()[selectedImage()]" [alt]="producto()!.nombre">
+              } @else {
+                <div class="image-placeholder">
+                  <span class="placeholder-icon">🌿</span>
+                </div>
+              }
+            </div>
+            
+            @if (getProductImages().length > 1) {
+              <div class="thumbnail-images">
+                @for (image of getProductImages(); track $index) {
+                  <div 
+                    class="thumbnail"
+                    [class.active]="selectedImage() === $index"
+                    (click)="selectImage($index)">
+                    <img [src]="image" [alt]="producto()!.nombre">
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Product Info -->
+          <div class="product-info">
+            <div class="product-header">
+              <h1 class="product-title">{{ producto()!.nombre }}</h1>
+              
+              @if (producto()!.promedioCalificacion > 0) {
+                <div class="product-rating">
+                  <div class="stars">
+                    @for (filled of getStarsArray(Math.round(producto()!.promedioCalificacion)); track $index) {
+                      <span class="star" [class.filled]="filled">⭐</span>
+                    }
+                  </div>
+                  <span class="rating-text">
+                    {{ producto()!.promedioCalificacion | number:'1.1-1' }} 
+                    ({{ producto()!.totalComentarios }} reseñas)
+                  </span>
+                </div>
+              }
+            </div>
+
+            <div class="product-price">
+              <span class="price-value">${{ producto()!.precioVenta | number:'1.2-2' }}</span>
+              <span class="price-note">IVA incluido</span>
+            </div>
+
+            <div class="product-description">
+              <p>{{ producto()!.descripcion }}</p>
+            </div>
+
+            @if (getCaracteristicas().length > 0) {
+              <div class="key-features">
+                <h3>Características Principales</h3>
+                <ul class="features-list">
+                  @for (caracteristica of getCaracteristicas().slice(0, 4); track caracteristica) {
+                    <li>{{ caracteristica }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <div class="product-actions">
+              <button (click)="goToCotizacion()" class="btn btn-primary btn-large">
+                Solicitar Cotización
+              </button>
+              <a routerLink="/contacto" class="btn btn-outline btn-large">
+                Consultar Experto
+              </a>
+            </div>
+
+            <!-- Video Demo -->
+            @if (producto()!.videoDemo) {
+              <div class="video-demo">
+                <h3>Video Demostración</h3>
+                <div class="video-container">
+                  <iframe 
+                    [src]="producto()!.videoDemo" 
+                    title="Video demostración"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Details Tabs -->
+    <section class="product-details">
+      <div class="container">
+        <div class="tabs-container">
+          <div class="tabs-nav">
+            <button 
+              class="tab-button"
+              [class.active]="activeTab() === 'descripcion'"
+              (click)="setActiveTab('descripcion')">
+              Descripción
+            </button>
+            <button 
+              class="tab-button"
+              [class.active]="activeTab() === 'caracteristicas'"
+              (click)="setActiveTab('caracteristicas')">
+              Características
+            </button>
+            <button 
+              class="tab-button"
+              [class.active]="activeTab() === 'beneficios'"
+              (click)="setActiveTab('beneficios')">
+              Beneficios
+            </button>
+            @if (producto()!.materiasPrimas.length > 0) {
+              <button 
+                class="tab-button"
+                [class.active]="activeTab() === 'componentes'"
+                (click)="setActiveTab('componentes')">
+                Componentes
+              </button>
+            }
+            <button 
+              class="tab-button"
+              [class.active]="activeTab() === 'comentarios'"
+              (click)="setActiveTab('comentarios')">
+              Reseñas ({{ producto()!.totalComentarios }})
+            </button>
+          </div>
+
+          <div class="tabs-content">
+            <!-- Descripción Tab -->
+            @if (activeTab() === 'descripcion') {
+              <div class="tab-content">
+                <h3>Descripción Detallada</h3>
+                <div class="description-content">
+                  <p>{{ producto()!.descripcionDetallada || producto()!.descripcion }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Características Tab -->
+            @if (activeTab() === 'caracteristicas') {
+              <div class="tab-content">
+                <h3>Características Técnicas</h3>
+                @if (getCaracteristicas().length > 0) {
+                  <div class="characteristics-grid">
+                    @for (caracteristica of getCaracteristicas(); track caracteristica) {
+                      <div class="characteristic-item">
+                        <span class="check-icon">✓</span>
+                        <span>{{ caracteristica }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p>No hay características específicas disponibles.</p>
+                }
+              </div>
+            }
+
+            <!-- Beneficios Tab -->
+            @if (activeTab() === 'beneficios') {
+              <div class="tab-content">
+                <h3>Beneficios del Sistema</h3>
+                @if (getBeneficios().length > 0) {
+                  <div class="benefits-list">
+                    @for (beneficio of getBeneficios(); track beneficio) {
+                      <div class="benefit-item">
+                        <span class="benefit-icon">🌟</span>
+                        <div class="benefit-text">
+                          <h4>{{ beneficio.split(':')[0] }}</h4>
+                          @if (beneficio.includes(':')) {
+                            <p>{{ beneficio.split(':')[1] }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p>No hay beneficios específicos listados.</p>
+                }
+              </div>
+            }
+
+            <!-- Componentes Tab -->
+            @if (activeTab() === 'componentes' && producto()!.materiasPrimas.length > 0) {
+              <div class="tab-content">
+                <h3>Componentes del Sistema</h3>
+                <div class="components-table">
+                  <div class="table-header">
+                    <div class="col">Componente</div>
+                    <div class="col">Cantidad</div>
+                    <div class="col">Unidad</div>
+                    <div class="col">Notas</div>
+                  </div>
+                  @for (material of producto()!.materiasPrimas; track material.id) {
+                    <div class="table-row">
+                      <div class="col component-name">{{ material.nombreMateriaPrima }}</div>
+                      <div class="col">{{ material.cantidadRequerida }}</div>
+                      <div class="col">{{ material.unidadMedida }}</div>
+                      <div class="col">{{ material.notas || '-' }}</div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Comentarios Tab -->
+            @if (activeTab() === 'comentarios') {
+              <div class="tab-content">
+                <div class="comments-header">
+                  <h3>Reseñas de Clientes</h3>
+                  @if (isAuthenticated()) {
+                    <button 
+                      (click)="toggleCommentForm()" 
+                      class="btn btn-primary">
+                      {{ showCommentForm() ? 'Cancelar' : 'Escribir Reseña' }}
+                    </button>
+                  } @else {
+                    <a routerLink="/login" class="btn btn-outline">
+                      Iniciar Sesión para Reseñar
+                    </a>
+                  }
+                </div>
+
+                <!-- Comment Form -->
+                @if (showCommentForm()) {
+                  <div class="comment-form-container">
+                    <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="comment-form">
+                      <div class="form-group">
+                        <label class="form-label">Calificación *</label>
+                        <div class="rating-input">
+                          @for (star of [1,2,3,4,5]; track star) {
+                            <span 
+                              class="rating-star"
+                              [class.filled]="star <= commentForm.get('calificacion')?.value"
+                              (click)="commentForm.patchValue({calificacion: star})">
+                              ⭐
+                            </span>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="contenido" class="form-label">Tu reseña *</label>
+                        <textarea
+                          id="contenido"
+                          formControlName="contenido"
+                          class="form-textarea"
+                          placeholder="Comparte tu experiencia con este producto..."
+                          rows="4"></textarea>
+                      </div>
+
+                      <div class="form-actions">
+                        <button 
+                          type="submit" 
+                          class="btn btn-primary"
+                          [disabled]="!commentForm.valid || commentLoading()">
+                          @if (commentLoading()) {
+                            <span class="btn-spinner"></span>
+                            Enviando...
+                          } @else {
+                            Publicar Reseña
+                          }
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                }
+
+                <!-- Comments List -->
+                <div class="comments-list">
+                  @if (producto()!.comentarios && producto()!.comentarios.length > 0) {
+                    @for (comentario of producto()!.comentarios; track comentario.id) {
+                      <div class="comment-item">
+                        <div class="comment-header">
+                          <div class="comment-author">
+                            <div class="author-avatar">
+                              {{ comentario.nombreUsuario.split(' ').map(n => n[0]).join('').toUpperCase() }}
+                            </div>
+                            <div class="author-info">
+                              <h4>{{ comentario.nombreUsuario }}</h4>
+                              <div class="comment-rating">
+                                @for (filled of getStarsArray(comentario.calificacion); track $index) {
+                                  <span class="star" [class.filled]="filled">⭐</span>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                          <div class="comment-date">
+                            {{ formatDate(comentario.fechaComentario) }}
+                          </div>
+                        </div>
+                        
+                        <div class="comment-content">
+                          <p>{{ comentario.contenido }}</p>
+                        </div>
+
+                        @if (comentario.respuestaAdmin) {
+                          <div class="admin-response">
+                            <div class="response-header">
+                              <span class="admin-badge">Respuesta del Equipo</span>
+                              @if (comentario.fechaRespuesta) {
+                                <span class="response-date">
+                                  {{ formatDate(comentario.fechaRespuesta) }}
+                                </span>
+                              }
+                            </div>
+                            <p>{{ comentario.respuestaAdmin }}</p>
+                          </div>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <div class="no-comments">
+                      <div class="no-comments-icon">💬</div>
+                      <h4>Aún no hay reseñas</h4>
+                      <p>Sé el primero en compartir tu experiencia con este producto.</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Related Products or CTA -->
+    <section class="related-section">
+      <div class="container">
+        <div class="cta-container">
+          <h2>¿Interesado en este producto?</h2>
+          <p>Nuestro equipo de expertos está listo para ayudarte a encontrar la solución perfecta.</p>
+          <div class="cta-actions">
+            <button (click)="goToCotizacion()" class="btn btn-primary btn-large">
+              Solicitar Cotización Gratuita
+            </button>
+            <a routerLink="/contacto" class="btn btn-outline btn-large">
+              Hablar con un Experto
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+</div>
