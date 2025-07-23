@@ -1,1 +1,95 @@
-<p>faq works!</p>
+<!-- src/app/components/faq/faq.html -->
+<div class="faq-page">
+  <!-- Hero Section -->
+  <section class="faq-hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Preguntas Frecuentes</h1>
+        <p>Encuentra respuestas rápidas a las consultas más comunes sobre nuestros sistemas de riego inteligente</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="container">
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar en preguntas frecuentes..."
+            [value]="searchTerm()"
+            (input)="onSearchChange($event)"
+            class="search-input">
+          @if (searchTerm()) {
+            <button (click)="clearSearch()" class="clear-search">✕</button>
+          }
+        </div>
+      </div>
+      
+      <!-- Category Filters -->
+      <div class="category-filters">
+        <button (click)="filteredFaqs.set(faqs)" class="category-btn active">
+          Todas
+        </button>
+        @for (categoria of getUniqueCategories(); track categoria) {
+          <button (click)="filterByCategory(categoria)" class="category-btn">
+            {{ categoria }}
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Content -->
+  <section class="faq-content">
+    <div class="container">
+      @if (filteredFaqs().length === 0) {
+        <div class="no-results">
+          <div class="no-results-icon">🔍</div>
+          <h3>No se encontraron resultados</h3>
+          <p>Intenta con otros términos de búsqueda o explora todas las categorías</p>
+          <button (click)="clearSearch()" class="btn btn-primary">Ver todas las preguntas</button>
+        </div>
+      } @else {
+        <div class="faq-grid">
+          @for (faq of filteredFaqs(); track faq.id) {
+            <div class="faq-card">
+              <div class="faq-header">
+                <span class="faq-category">{{ faq.categoria }}</span>
+                <h3 class="faq-question">{{ faq.pregunta }}</h3>
+              </div>
+              <div class="faq-answer">
+                <p>{{ faq.respuesta }}</p>
+              </div>
+              <div class="faq-tags">
+                @for (tag of faq.tags; track tag) {
+                  <span class="faq-tag">{{ tag }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Contact CTA -->
+  <section class="faq-cta">
+    <div class="container">
+      <div class="cta-content">
+        <h2>¿No encontraste lo que buscabas?</h2>
+        <p>Nuestro equipo de expertos está listo para responder todas tus preguntas específicas</p>
+        <div class="cta-actions">
+          <a routerLink="/contacto" class="btn btn-primary">
+            Contactar Soporte
+          </a>
+          <a routerLink="/cotizacion" class="btn btn-outline">
+            Solicitar Cotización
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

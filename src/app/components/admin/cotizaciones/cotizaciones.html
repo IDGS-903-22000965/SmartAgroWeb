@@ -1,1 +1,322 @@
-<p>cotizaciones works!</p>
+<!-- src/app/components/admin/cotizaciones/cotizaciones.html -->
+<div class="cotizaciones-admin">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Gestión de Cotizaciones</h1>
+      <p>Administrar y dar seguimiento a todas las cotizaciones</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="exportToCSV()" class="btn btn-outline">
+        📊 Exportar CSV
+      </button>
+      <a routerLink="/cotizacion" class="btn btn-primary">
+        ➕ Nueva Cotización
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <h3>Pendientes</h3>
+        <div class="stat-value">{{ cotizaciones().filter(c => c.estado === 'Pendiente').length }}</div>
+      </div>
+    </div>
+    <div class="stat-card approved">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <h3>Aprobadas</h3>
+        <div class="stat-value">{{ cotizaciones().filter(c => c.estado === 'Aprobada').length }}</div>
+      </div>
+    </div>
+    <div class="stat-card expired">
+      <div class="stat-icon">⏰</div>
+      <div class="stat-content">
+        <h3>Expiradas</h3>
+        <div class="stat-value">{{ cotizaciones().filter(c => isExpired(c)).length }}</div>
+      </div>
+    </div>
+    <div class="stat-card total">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <h3>Total</h3>
+        <div class="stat-value">{{ cotizaciones().length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Buscar por número, cliente, email o cultivo..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          class="search-input">
+      </div>
+      
+      <div class="filter-selects">
+        <select 
+          [value]="selectedEstado()"
+          (change)="onEstadoChange($event.target.value)"
+          class="filter-select">
+          @for (option of estadoOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        
+        <select 
+          [value]="selectedDateRange()"
+          (change)="onDateRangeChange($event.target.value)"
+          class="filter-select">
+          @for (option of dateRangeOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando cotizaciones...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h3>Error al cargar cotizaciones</h3>
+      <p>{{ error() }}</p>
+      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
+    </div>
+  } @else if (filteredCotizaciones().length === 0) {
+    <div class="empty-container">
+      <div class="empty-icon">📋</div>
+      <h3>No hay cotizaciones</h3>
+      <p>No se encontraron cotizaciones que coincidan con los filtros aplicados</p>
+    </div>
+  } @else {
+    <div class="cotizaciones-table">
+      <div class="table-header">
+        <div class="col">Número</div>
+        <div class="col">Cliente</div>
+        <div class="col">Cultivo</div>
+        <div class="col">Área</div>
+        <div class="col">Total</div>
+        <div class="col">Estado</div>
+        <div class="col">Fecha</div>
+        <div class="col">Acciones</div>
+      </div>
+      
+      @for (cotizacion of filteredCotizaciones(); track cotizacion.id) {
+        <div class="table-row" [class.expired]="isExpired(cotizacion)">
+          <div class="col numero">
+            <span class="numero-badge">{{ cotizacion.numeroCotizacion }}</span>
+          </div>
+          
+          <div class="col cliente">
+            <div class="cliente-info">
+              <strong>{{ cotizacion.nombreCliente }}</strong>
+              <span class="email">{{ cotizacion.emailCliente }}</span>
+            </div>
+          </div>
+          
+          <div class="col cultivo">
+            <span class="cultivo-badge">{{ cotizacion.tipoCultivo }}</span>
+          </div>
+          
+          <div class="col area">
+            {{ cotizacion.areaCultivo }}m²
+          </div>
+          
+          <div class="col total">
+            <span class="price">{{ formatCurrency(cotizacion.total) }}</span>
+          </div>
+          
+          <div class="col estado">
+            <span class="status-badge" [class]="getEstadoColor(cotizacion.estado)">
+              {{ cotizacion.estado }}
+            </span>
+            @if (cotizacion.estado === 'Pendiente' && !isExpired(cotizacion)) {
+              <small class="expiry-info">
+                Vence en {{ getDaysUntilExpiration(cotizacion) }} días
+              </small>
+            }
+          </div>
+          
+          <div class="col fecha">
+            {{ formatDate(cotizacion.fechaCotizacion) }}
+          </div>
+          
+          <div class="col acciones">
+            <button 
+              (click)="openDetailsModal(cotizacion)"
+              class="btn btn-sm btn-outline"
+              title="Ver detalles">
+              👁️
+            </button>
+            
+            @if (cotizacion.estado === 'Pendiente') {
+              <button 
+                (click)="updateEstado(cotizacion, 'Aprobada')"
+                class="btn btn-sm btn-success"
+                title="Aprobar"
+                [disabled]="updatingStatus()">
+                ✅
+              </button>
+              <button 
+                (click)="updateEstado(cotizacion, 'Rechazada')"
+                class="btn btn-sm btn-danger"
+                title="Rechazar"
+                [disabled]="updatingStatus()">
+                ❌
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Details Modal -->
+  @if (showDetailsModal() && selectedCotizacion()) {
+    <div class="modal-overlay" (click)="closeDetailsModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Detalles de Cotización</h2>
+          <button (click)="closeDetailsModal()" class="close-btn">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="cotizacion-details">
+            <!-- Información básica -->
+            <div class="details-section">
+              <h3>Información General</h3>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Número de Cotización:</label>
+                  <span>{{ selectedCotizacion()!.numeroCotizacion }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Estado:</label>
+                  <span class="status-badge" [class]="getEstadoColor(selectedCotizacion()!.estado)">
+                    {{ selectedCotizacion()!.estado }}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <label>Fecha de Cotización:</label>
+                  <span>{{ formatDate(selectedCotizacion()!.fechaCotizacion) }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Fecha de Vencimiento:</label>
+                  <span>{{ formatDate(selectedCotizacion()!.fechaVencimiento) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del cliente -->
+            <div class="details-section">
+              <h3>Cliente</h3>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Nombre:</label>
+                  <span>{{ selectedCotizacion()!.nombreCliente }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Email:</label>
+                  <span>{{ selectedCotizacion()!.emailCliente }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Teléfono:</label>
+                  <span>{{ selectedCotizacion()!.telefonoCliente || 'No proporcionado' }}</span>
+                </div>
+                <div class="detail-item full-width">
+                  <label>Dirección de Instalación:</label>
+                  <span>{{ selectedCotizacion()!.direccionInstalacion }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del proyecto -->
+            <div class="details-section">
+              <h3>Proyecto</h3>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Tipo de Cultivo:</label>
+                  <span>{{ selectedCotizacion()!.tipoCultivo }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Área de Cultivo:</label>
+                  <span>{{ selectedCotizacion()!.areaCultivo }}m²</span>
+                </div>
+                <div class="detail-item">
+                  <label>Tipo de Suelo:</label>
+                  <span>{{ selectedCotizacion()!.tipoSuelo }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Fuente de Agua:</label>
+                  <span>{{ selectedCotizacion()!.fuenteAguaDisponible ? 'Disponible' : 'No disponible' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Energía Eléctrica:</label>
+                  <span>{{ selectedCotizacion()!.energiaElectricaDisponible ? 'Disponible' : 'No disponible' }}</span>
+                </div>
+                @if (selectedCotizacion()!.requierimientosEspeciales) {
+                  <div class="detail-item full-width">
+                    <label>Requerimientos Especiales:</label>
+                    <span>{{ selectedCotizacion()!.requierimientosEspeciales }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Información financiera -->
+            <div class="details-section">
+              <h3>Resumen Financiero</h3>
+              <div class="financial-summary">
+                <div class="financial-item">
+                  <label>Subtotal:</label>
+                  <span>{{ formatCurrency(selectedCotizacion()!.subtotal) }}</span>
+                </div>
+                <div class="financial-item">
+                  <label>Impuestos ({{ selectedCotizacion()!.porcentajeImpuesto }}%):</label>
+                  <span>{{ formatCurrency(selectedCotizacion()!.impuestos) }}</span>
+                </div>
+                <div class="financial-item total">
+                  <label>Total:</label>
+                  <span>{{ formatCurrency(selectedCotizacion()!.total) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          @if (selectedCotizacion()!.estado === 'Pendiente') {
+            <button 
+              (click)="updateEstado(selectedCotizacion()!, 'Aprobada')"
+              class="btn btn-success"
+              [disabled]="updatingStatus()">
+              ✅ Aprobar Cotización
+            </button>
+            <button 
+              (click)="updateEstado(selectedCotizacion()!, 'Rechazada')"
+              class="btn btn-danger"
+              [disabled]="updatingStatus()">
+              ❌ Rechazar Cotización
+            </button>
+          }
+          <button (click)="closeDetailsModal()" class="btn btn-outline">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
