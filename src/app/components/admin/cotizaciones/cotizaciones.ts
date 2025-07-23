@@ -70,21 +70,29 @@ export class Cotizaciones implements OnInit {
     });
   }
 
-  protected onEstadoChange(estado: string): void {
-    this.selectedEstado.set(estado);
-    this.applyFilters();
-  }
+ protected onEstadoChange(event: Event): void {
+  const target = event.target as HTMLSelectElement;
+  const estado = target.value;
+  this.selectedEstado.set(estado);
+  this.applyFilters();
+}
 
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm.set(target.value);
     this.applyFilters();
   }
+protected trackByValue(index: number, item: { value: string; label: string }): string {
+  return item.value;
+}
 
-  protected onDateRangeChange(range: string): void {
-    this.selectedDateRange.set(range);
-    this.applyFilters();
-  }
+  protected onDateRangeChange(event: Event): void {
+  const target = event.target as HTMLSelectElement;
+  const rango = target.value;
+  this.selectedDateRange.set(rango);
+  this.applyFilters();
+}
+
 
   private applyFilters(): void {
     let filtered = this.cotizaciones();
@@ -190,6 +198,18 @@ export class Cotizaciones implements OnInit {
       default: return 'info';
     }
   }
+  protected contarPendientes(): number {
+  return this.cotizaciones().filter(c => c.estado === 'Pendiente').length;
+}
+
+protected contarAprobadas(): number {
+  return this.cotizaciones().filter(c => c.estado === 'Aprobada').length;
+}
+
+protected contarExpiradas(): number {
+  return this.cotizaciones().filter(c => this.isExpired(c)).length;
+}
+
 
   protected isExpired(cotizacion: Cotizacion): boolean {
     return new Date() > new Date(cotizacion.fechaVencimiento);

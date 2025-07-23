@@ -1,14 +1,14 @@
+// src/app/services/dashboard.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { DashboardMetricas, VentasPorMes, CotizacionesPorEstado, ActividadReciente, ApiResponse } from '../models/models';
-import { environment } from '../../environments/environment';
+import { ApiResponse, DashboardMetricas, VentasPorMes, CotizacionesPorEstado, ActividadReciente } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = `${environment.apiUrl}/dashboard`;
+  private readonly API_URL = 'https://localhost:7001/api/dashboard';
 
   constructor(private http: HttpClient) {}
 
@@ -21,10 +21,10 @@ export class DashboardService {
       metricas: DashboardMetricas;
       ventasPorMes: VentasPorMes[];
       cotizacionesPorEstado: CotizacionesPorEstado[];
-    }>>(`${this.apiUrl}/metricas`);
+    }>>(`${this.API_URL}/metricas`);
   }
 
   obtenerActividadReciente(): Observable<ApiResponse<ActividadReciente[]>> {
-    return this.http.get<ApiResponse<ActividadReciente[]>>(`${this.apiUrl}/actividad-reciente`);
+    return this.http.get<ApiResponse<ActividadReciente[]>>(`${this.API_URL}/actividad-reciente`);
   }
 }

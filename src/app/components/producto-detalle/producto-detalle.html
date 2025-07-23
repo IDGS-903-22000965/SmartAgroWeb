@@ -147,7 +147,7 @@
               (click)="setActiveTab('beneficios')">
               Beneficios
             </button>
-            @if (producto()!.materiasPrimas.length > 0) {
+            @if (producto()!.materiasPrimas && producto()!.materiasPrimas.length > 0) {
               <button 
                 class="tab-button"
                 [class.active]="activeTab() === 'componentes'"
@@ -159,7 +159,7 @@
               class="tab-button"
               [class.active]="activeTab() === 'comentarios'"
               (click)="setActiveTab('comentarios')">
-              Reseñas ({{ producto()!.totalComentarios }})
+              Reseñas ({{ producto()!.totalComentarios || 0 }})
             </button>
           </div>
 
@@ -218,7 +218,7 @@
             }
 
             <!-- Componentes Tab -->
-            @if (activeTab() === 'componentes' && producto()!.materiasPrimas.length > 0) {
+            @if (activeTab() === 'componentes' && producto()!.materiasPrimas && producto()!.materiasPrimas.length > 0) {
               <div class="tab-content">
                 <h3>Componentes del Sistema</h3>
                 <div class="components-table">

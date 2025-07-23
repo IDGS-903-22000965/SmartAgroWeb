@@ -1,26 +1,44 @@
+// src/app/services/producto.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Producto, ProductoDetalle, ApiResponse } from '../models/models';
-import { environment } from '../../environments/environment';
+import { ApiResponse, Producto, ProductoDetalle, ComentarioCreateDto } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private apiUrl = `${environment.apiUrl}/producto`;
+  private readonly API_URL = 'https://localhost:7001/api/producto';
 
   constructor(private http: HttpClient) {}
 
   obtenerProductos(): Observable<ApiResponse<Producto[]>> {
-    return this.http.get<ApiResponse<Producto[]>>(this.apiUrl);
+    return this.http.get<ApiResponse<Producto[]>>(this.API_URL);
   }
 
   obtenerProductoPorId(id: number): Observable<ApiResponse<ProductoDetalle>> {
-    return this.http.get<ApiResponse<ProductoDetalle>>(`${this.apiUrl}/${id}`);
+    return this.http.get<ApiResponse<ProductoDetalle>>(`${this.API_URL}/${id}`);
   }
 
-  agregarComentario(productoId: number, comentario: { calificacion: number; contenido: string }): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${productoId}/comentarios`, comentario);
+  buscarProductos(termino: string): Observable<ApiResponse<Producto[]>> {
+    const params = new HttpParams().set('termino', termino);
+    return this.http.get<ApiResponse<Producto[]>>(`${this.API_URL}/buscar`, { params });
+  }
+
+  agregarComentario(productoId: number, comentario: ComentarioCreateDto): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.API_URL}/${productoId}/comentarios`, comentario);
+  }
+
+  // Métodos para admin
+  crearProducto(producto: any): Observable<ApiResponse<Producto>> {
+    return this.http.post<ApiResponse<Producto>>(this.API_URL, producto);
+  }
+
+  actualizarProducto(id: number, producto: any): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.API_URL}/${id}`, producto);
+  }
+
+  eliminarProducto(id: number): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>(`${this.API_URL}/${id}`);
   }
 }

@@ -1,3 +1,4 @@
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -30,19 +31,24 @@ export interface User {
   telefono?: string;
   direccion?: string;
   roles: string[];
+  activo: boolean;
+  fechaRegistro: Date;
 }
+
 
 export interface Producto {
   id: number;
   nombre: string;
   descripcion?: string;
   descripcionDetallada?: string;
+  precioBase: number;
+  porcentajeGanancia: number;
   precioVenta: number;
   imagenPrincipal?: string;
-  imagenesSecundarias?: string[];
+  imagenesSecundarias?: string[]; 
   videoDemo?: string;
-  caracteristicas?: string[];
-  beneficios?: string[];
+  caracteristicas?: string[]; 
+  beneficios?: string[]; 
   activo: boolean;
   fechaCreacion: Date;
   comentarios?: Comentario[];
@@ -64,6 +70,24 @@ export interface ProductoMateriaPrima {
   notas?: string;
 }
 
+export interface ProductoCreateDto {
+  nombre: string;
+  descripcion?: string;
+  descripcionDetallada?: string;
+  precioBase: number;
+  porcentajeGanancia: number;
+  imagenPrincipal?: string;
+  imagenesSecundarias?: string[];
+  videoDemo?: string;
+  caracteristicas?: string[];
+  beneficios?: string[];
+}
+
+export interface ProductoUpdateDto extends ProductoCreateDto {
+  activo: boolean;
+}
+
+
 export interface Comentario {
   id: number;
   nombreUsuario: string;
@@ -72,7 +96,19 @@ export interface Comentario {
   fechaComentario: Date;
   respuestaAdmin?: string;
   fechaRespuesta?: Date;
+  aprobado: boolean;
+  activo: boolean;
 }
+
+export interface ComentarioCreateDto {
+  calificacion: number;
+  contenido: string;
+}
+
+export interface ComentarioRespuestaDto {
+  respuesta: string;
+}
+
 
 export interface CotizacionRequest {
   nombreCliente: string;
@@ -84,22 +120,23 @@ export interface CotizacionRequest {
   tipoSuelo: string;
   fuenteAguaDisponible: boolean;
   energiaElectricaDisponible: boolean;
-  requerimientosEspeciales?: string;
+  requierimientosEspeciales?: string;
 }
 
 export interface Cotizacion {
   id: number;
   numeroCotizacion: string;
+  usuarioId?: string;
   nombreCliente: string;
   emailCliente: string;
   telefonoCliente?: string;
-  direccionInstalacion: string;
+  direccionInstalacion?: string;
   areaCultivo: number;
   tipoCultivo: string;
   tipoSuelo: string;
   fuenteAguaDisponible: boolean;
   energiaElectricaDisponible: boolean;
-  requerimientosEspeciales?: string;
+  requierimientosEspeciales?: string;
   subtotal: number;
   porcentajeImpuesto: number;
   impuestos: number;
@@ -108,7 +145,20 @@ export interface Cotizacion {
   fechaVencimiento: Date;
   estado: string;
   observaciones?: string;
+  detalles?: DetalleCotizacion[];
 }
+
+export interface DetalleCotizacion {
+  id: number;
+  cotizacionId: number;
+  productoId: number;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  descripcion?: string;
+  producto?: Producto;
+}
+
 
 export interface ContactoRequest {
   nombre: string;
@@ -118,6 +168,85 @@ export interface ContactoRequest {
   asunto: string;
   mensaje: string;
 }
+
+export interface Venta {
+  id: number;
+  numeroVenta: string;
+  usuarioId: string;
+  cotizacionId?: number;
+  subtotal: number;
+  impuestos: number;
+  total: number;
+  fechaVenta: Date;
+  estadoVenta: string;
+  metodoPago: string;
+  observaciones?: string;
+  detalles?: DetalleVenta[];
+  usuario?: User;
+  cotizacion?: Cotizacion;
+}
+
+export interface DetalleVenta {
+  id: number;
+  ventaId: number;
+  productoId: number;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  producto?: Producto;
+}
+
+
+export interface MateriaPrima {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  unidadMedida: string;
+  costoUnitario: number;
+  stock: number;
+  stockMinimo: number;
+  activo: boolean;
+  proveedorId: number;
+  proveedor?: Proveedor;
+}
+
+
+export interface Proveedor {
+  id: number;
+  nombre: string;
+  razonSocial: string;
+  rfc?: string;
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+  contactoPrincipal?: string;
+  activo: boolean;
+  fechaRegistro: Date;
+}
+
+
+export interface CompraProveedor {
+  id: number;
+  numeroCompra: string;
+  proveedorId: number;
+  total: number;
+  fechaCompra: Date;
+  estado: string;
+  observaciones?: string;
+  proveedor?: Proveedor;
+  detalles?: DetalleCompraProveedor[];
+}
+
+export interface DetalleCompraProveedor {
+  id: number;
+  compraProveedorId: number;
+  materiaPrimaId: number;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  materiaPrima?: MateriaPrima;
+}
+
 
 export interface DashboardMetricas {
   totalCotizaciones: number;
@@ -132,13 +261,6 @@ export interface DashboardMetricas {
   promedioCalificacion: number;
   totalComentarios: number;
   comentariosPendientes: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
 }
 
 export interface VentasPorMes {
@@ -158,3 +280,52 @@ export interface ActividadReciente {
   fecha: Date;
   estado: string;
 }
+
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  errors?: string[];
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data?: T[];
+  totalRecords?: number;
+  currentPage?: number;
+  totalPages?: number;
+  message?: string;
+  errors?: string[];
+}
+
+export const ESTADOS_COTIZACION = {
+  PENDIENTE: 'Pendiente',
+  APROBADA: 'Aprobada',
+  RECHAZADA: 'Rechazada',
+  EXPIRADA: 'Expirada'
+} as const;
+
+export const ESTADOS_VENTA = {
+  PENDIENTE: 'Pendiente',
+  PROCESANDO: 'Procesando',
+  ENVIADO: 'Enviado',
+  ENTREGADO: 'Entregado',
+  CANCELADO: 'Cancelado'
+} as const;
+
+export const ESTADOS_COMPRA = {
+  PENDIENTE: 'Pendiente',
+  RECIBIDO: 'Recibido',
+  CANCELADO: 'Cancelado'
+} as const;
+
+export const ROLES = {
+  ADMIN: 'Admin',
+  CLIENTE: 'Cliente'
+} as const;
+
+export type EstadoCotizacion = typeof ESTADOS_COTIZACION[keyof typeof ESTADOS_COTIZACION];
+export type EstadoVenta = typeof ESTADOS_VENTA[keyof typeof ESTADOS_VENTA];
+export type EstadoCompra = typeof ESTADOS_COMPRA[keyof typeof ESTADOS_COMPRA];
+export type Rol = typeof ROLES[keyof typeof ROLES];

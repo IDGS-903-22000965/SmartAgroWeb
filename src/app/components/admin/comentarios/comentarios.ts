@@ -205,6 +205,13 @@ export class Comentarios implements OnInit {
       minute: '2-digit'
     });
   }
+  protected contarPendientes(): number {
+  return this.comentarios().filter(c => !c.aprobado && c.activo).length;
+}
+
+protected contarAprobados(): number {
+  return this.comentarios().filter(c => c.aprobado).length;
+}
 
   protected getStatusColor(comentario: Comentario): string {
     if (!comentario.activo) return 'danger';
@@ -212,6 +219,15 @@ export class Comentarios implements OnInit {
     if (comentario.respuestaAdmin) return 'success';
     return 'info';
   }
+  protected getIniciales(nombre: string): string {
+  if (!nombre) return '';
+  return nombre
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+}
+
 
   protected getStatusLabel(comentario: Comentario): string {
     if (!comentario.activo) return 'Rechazado';

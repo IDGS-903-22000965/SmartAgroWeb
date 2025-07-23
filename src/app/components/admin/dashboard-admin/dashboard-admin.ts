@@ -109,6 +109,13 @@ export class DashboardAdmin implements OnInit {
       minute: '2-digit'
     });
   }
+protected getAlturaBarra(ventaTotal: number): number {
+  const ventas = this.ventasPorMes();
+  if (!ventas || ventas.length === 0) return 0;
+
+  const max = ventas.reduce((max, v) => Math.max(max, v.total), 0);
+  return max > 0 ? (ventaTotal / max) * 100 : 0;
+}
 
   protected getEstadoColor(estado: string): string {
     switch (estado.toLowerCase()) {

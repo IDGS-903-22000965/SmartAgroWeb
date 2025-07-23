@@ -80,7 +80,7 @@ export class Home implements OnInit {
     this.loadProductos();
   }
 
-  private loadProductos(): void {
+  protected loadProductos(): void {
     this.loading.set(true);
     this.productoService.obtenerProductos().subscribe({
       next: (response) => {
