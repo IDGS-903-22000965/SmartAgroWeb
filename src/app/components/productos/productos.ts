@@ -1,4 +1,3 @@
-// src/app/components/productos/productos.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -12,7 +11,7 @@ import { Producto } from '../../models/models';
   templateUrl: './productos.html',
   styleUrl: './productos.scss'
 })
-export class ProductosComponent implements OnInit { // Cambio: Renombrar por consistencia
+export class ProductosComponent implements OnInit {
   protected productos = signal<Producto[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
@@ -120,16 +119,26 @@ export class ProductosComponent implements OnInit { // Cambio: Renombrar por con
     }
   }
 
-  protected onSearchChange(value: string): void {
-    this.searchTerm.set(value);
+  // Cambios aquí: recibir Event y hacer cast para acceder a value de forma segura
+  protected onSearchChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (input) {
+      this.searchTerm.set(input.value);
+    }
   }
 
-  protected onPriceRangeChange(value: string): void {
-    this.selectedPriceRange.set(value);
+  protected onPriceRangeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement | null;
+    if (select) {
+      this.selectedPriceRange.set(select.value);
+    }
   }
 
-  protected onSortChange(value: string): void {
-    this.sortBy.set(value);
+  protected onSortChange(event: Event): void {
+    const select = event.target as HTMLSelectElement | null;
+    if (select) {
+      this.sortBy.set(select.value);
+    }
   }
 
   protected clearFilters(): void {

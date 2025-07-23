@@ -305,13 +305,13 @@
 
                 <!-- Comments List -->
                 <div class="comments-list">
-                  @if (producto()!.comentarios && producto()!.comentarios.length > 0) {
+@if (hasComentarios()) {
                     @for (comentario of producto()!.comentarios; track comentario.id) {
                       <div class="comment-item">
                         <div class="comment-header">
                           <div class="comment-author">
                             <div class="author-avatar">
-                              {{ comentario.nombreUsuario.split(' ').map(n => n[0]).join('').toUpperCase() }}
+{{ getInitials(comentario.nombreUsuario) }}
                             </div>
                             <div class="author-info">
                               <h4>{{ comentario.nombreUsuario }}</h4>

@@ -123,6 +123,16 @@ export class Testimonios {
   protected getStarsArray(rating: number): boolean[] {
     return Array(5).fill(false).map((_, index) => index < rating);
   }
+  protected getInitials(nombre?: string): string {
+  if (!nombre) return '';
+  return nombre
+    .split(' ')
+    .filter(n => n.length > 0)
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+}
+
 
   protected formatDate(dateString: string): string {
     const date = new Date(dateString);

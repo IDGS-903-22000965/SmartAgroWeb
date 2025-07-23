@@ -56,7 +56,7 @@
                     <img [src]="testimonio.imagen" [alt]="testimonio.nombre">
                   } @else {
                     <div class="avatar-placeholder">
-                      {{ testimonio.nombre.split(' ').map(n => n[0]).join('').toUpperCase() }}
+{{ getInitials(testimonio.nombre) }}
                     </div>
                   }
                 </div>

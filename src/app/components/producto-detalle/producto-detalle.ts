@@ -178,6 +178,17 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
       }
     });
   }
+protected getInitials(nombreUsuario: string | undefined): string {
+  if (!nombreUsuario) return '';
+  return nombreUsuario
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+}
+protected hasComentarios(): boolean {
+  return (this.producto()?.comentarios?.length ?? 0) > 0;
+}
 
   protected getStarsArray(rating: number): boolean[] {
     return Array(5).fill(false).map((_, index) => index < rating);

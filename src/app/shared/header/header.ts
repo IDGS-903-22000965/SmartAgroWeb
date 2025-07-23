@@ -2,8 +2,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { Auth } from '../../../services/auth';
-
+import { Auth } from '../../services/auth';
 @Component({
   selector: 'app-header',
   imports: [CommonModule, RouterLink, RouterLinkActive],
@@ -456,16 +455,27 @@ import { Auth } from '../../../services/auth';
 export class Header {
   protected showMobileMenu = signal(false);
   protected showUserMenu = signal(false);
-  
-  protected currentUser = this.authService.currentUser;
-  protected isAuthenticated = this.authService.isAuthenticated;
-  protected isAdmin = this.authService.isAdmin;
-  protected isCliente = this.authService.isCliente;
 
   constructor(
     private authService: Auth,
     private router: Router
   ) {}
+
+  get currentUser() {
+    return this.authService.currentUser;
+  }
+
+  get isAuthenticated() {
+    return this.authService.isAuthenticatedSignal;
+  }
+
+  get isAdmin() {
+    return this.authService.isAdminSignal;
+  }
+
+  get isCliente() {
+    return this.authService.isClienteSignal;
+  }
 
   protected toggleMobileMenu(): void {
     this.showMobileMenu.update(value => !value);
@@ -497,3 +507,4 @@ export class Header {
     this.showMobileMenu.set(false);
   }
 }
+

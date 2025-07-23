@@ -11,44 +11,44 @@
   </section>
 
   <!-- Filters Section -->
-  <section class="filters-section">
-    <div class="container">
-      <div class="filters-bar">
-        <div class="search-filter">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              [value]="searchTerm()"
-              (input)="onSearchChange($event.target.value)"
-              class="search-input">
-          </div>
+<section class="filters-section">
+  <div class="container">
+    <div class="filters-bar">
+      <div class="search-filter">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            [value]="searchTerm()"
+            (input)="onSearchChange($event)"
+            class="search-input">
+        </div>
+      </div>
+
+      <div class="filter-controls">
+        <div class="filter-group">
+          <label class="filter-label">Precio:</label>
+          <select 
+            [value]="selectedPriceRange()"
+            (change)="onPriceRangeChange($event)"
+            class="filter-select">
+            @for (range of priceRanges; track range.value) {
+              <option [value]="range.value">{{ range.label }}</option>
+            }
+          </select>
         </div>
 
-        <div class="filter-controls">
-          <div class="filter-group">
-            <label class="filter-label">Precio:</label>
-            <select 
-              [value]="selectedPriceRange()"
-              (change)="onPriceRangeChange($event.target.value)"
-              class="filter-select">
-              @for (range of priceRanges; track range.value) {
-                <option [value]="range.value">{{ range.label }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label class="filter-label">Ordenar:</label>
-            <select 
-              [value]="sortBy()"
-              (change)="onSortChange($event.target.value)"
-              class="filter-select">
-              @for (option of sortOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
+        <div class="filter-group">
+          <label class="filter-label">Ordenar:</label>
+          <select 
+            [value]="sortBy()"
+            (change)="onSortChange($event)"
+            class="filter-select">
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
           </div>
 
           <button (click)="clearFilters()" class="clear-filters-btn">
