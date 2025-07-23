@@ -1,1 +1,193 @@
-<p>dashboard-admin works!</p>
+<!-- src/app/components/admin/dashboard-admin/dashboard-admin.html -->
+<div class="dashboard-admin">
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando dashboard...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h2>Error al cargar el dashboard</h2>
+      <p>{{ error() }}</p>
+      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
+    </div>
+  } @else {
+    <div class="dashboard-container">
+      <!-- Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <h1>Panel de Administración</h1>
+          <p>Bienvenido al centro de control de SmartAgro</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline">📊 Exportar Datos</button>
+          <button class="btn btn-primary">➕ Acción Rápida</button>
+        </div>
+      </div>
+
+      <!-- Métricas Principales -->
+      @if (metricas()) {
+        <div class="metrics-grid">
+          <div class="metric-card revenue">
+            <div class="metric-icon">💰</div>
+            <div class="metric-content">
+              <h3>Ingresos del Mes</h3>
+              <div class="metric-value">{{ formatCurrency(metricas()!.ingresosDelMes) }}</div>
+              <div class="metric-change positive">
+                +{{ ((metricas()!.ingresosDelMes / metricas()!.ingresosTotales) * 100).toFixed(1) }}% del total
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card sales">
+            <div class="metric-icon">🛒</div>
+            <div class="metric-content">
+              <h3>Ventas del Mes</h3>
+              <div class="metric-value">{{ metricas()!.ventasDelMes }}</div>
+              <div class="metric-subtitle">de {{ metricas()!.totalVentas }} totales</div>
+            </div>
+          </div>
+
+          <div class="metric-card quotes">
+            <div class="metric-icon">📋</div>
+            <div class="metric-content">
+              <h3>Cotizaciones Pendientes</h3>
+              <div class="metric-value">{{ metricas()!.cotizacionesPendientes }}</div>
+              <div class="metric-subtitle">de {{ metricas()!.totalCotizaciones }} totales</div>
+            </div>
+          </div>
+
+          <div class="metric-card clients">
+            <div class="metric-icon">👥</div>
+            <div class="metric-content">
+              <h3>Clientes Nuevos</h3>
+              <div class="metric-value">{{ metricas()!.clientesNuevosDelMes }}</div>
+              <div class="metric-subtitle">este mes</div>
+            </div>
+          </div>
+
+          <div class="metric-card rating">
+            <div class="metric-icon">⭐</div>
+            <div class="metric-content">
+              <h3>Calificación Promedio</h3>
+              <div class="metric-value">{{ metricas()!.promedioCalificacion.toFixed(1) }}/5</div>
+              <div class="metric-subtitle">{{ metricas()!.totalComentarios }} reseñas</div>
+            </div>
+          </div>
+
+          <div class="metric-card comments">
+            <div class="metric-icon">💬</div>
+            <div class="metric-content">
+              <h3>Comentarios Pendientes</h3>
+              <div class="metric-value">{{ metricas()!.comentariosPendientes }}</div>
+              <div class="metric-subtitle">requieren moderación</div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Quick Actions -->
+      <div class="quick-actions-section">
+        <h2>Acciones Rápidas</h2>
+        <div class="quick-actions-grid">
+          @for (action of quickActions; track action.title) {
+            <a [routerLink]="action.route" class="quick-action-card" [class]="action.color">
+              <div class="action-icon">{{ action.icon }}</div>
+              <div class="action-content">
+                <h3>{{ action.title }}</h3>
+                <p>{{ action.description }}</p>
+              </div>
+            </a>
+          }
+        </div>
+      </div>
+
+      <!-- Charts and Analytics -->
+      <div class="analytics-section">
+        <div class="analytics-grid">
+          <!-- Ventas por Mes Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Ventas por Mes</h3>
+              <span class="chart-period">Últimos 12 meses</span>
+            </div>
+            <div class="chart-content">
+              @if (ventasPorMes().length > 0) {
+                <div class="simple-chart">
+                  @for (venta of ventasPorMes(); track venta.mes) {
+                    <div class="chart-bar">
+                      <div class="bar" 
+                           [style.height.%]="(venta.total / ventasPorMes().reduce((max, v) => Math.max(max, v.total), 0)) * 100">
+                      </div>
+                      <span class="bar-label">{{ venta.mes.split('-')[1] }}</span>
+                      <span class="bar-value">{{ formatCurrency(venta.total) }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="no-data">Sin datos de ventas</div>
+              }
+            </div>
+          </div>
+
+          <!-- Cotizaciones por Estado -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Estado de Cotizaciones</h3>
+              <span class="chart-period">Resumen actual</span>
+            </div>
+            <div class="chart-content">
+              @if (cotizacionesPorEstado().length > 0) {
+                <div class="donut-chart">
+                  @for (estado of cotizacionesPorEstado(); track estado.estado) {
+                    <div class="donut-item">
+                      <div class="donut-color" [class]="getEstadoColor(estado.estado)"></div>
+                      <span class="donut-label">{{ estado.estado }}</span>
+                      <span class="donut-value">{{ estado.cantidad }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="no-data">Sin datos de cotizaciones</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad Reciente -->
+      <div class="activity-section">
+        <div class="activity-header">
+          <h2>Actividad Reciente</h2>
+          <span class="activity-period">Últimos 7 días</span>
+        </div>
+        
+        @if (actividadReciente().length > 0) {
+          <div class="activity-list">
+            @for (actividad of actividadReciente(); track $index) {
+              <div class="activity-item">
+                <div class="activity-icon">{{ getTipoIcon(actividad.tipo) }}</div>
+                <div class="activity-content">
+                  <div class="activity-description">{{ actividad.descripcion }}</div>
+                  <div class="activity-meta">
+                    <span class="activity-type">{{ actividad.tipo }}</span>
+                    <span class="activity-date">{{ formatDate(actividad.fecha) }}</span>
+                  </div>
+                </div>
+                <div class="activity-status" [class]="getEstadoColor(actividad.estado)">
+                  {{ actividad.estado }}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-activity">
+            <div class="no-activity-icon">📭</div>
+            <p>No hay actividad reciente</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

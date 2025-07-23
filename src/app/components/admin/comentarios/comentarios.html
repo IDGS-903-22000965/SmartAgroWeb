@@ -1,1 +1,205 @@
-<p>comentarios works!</p>
+<!-- src/app/components/admin/comentarios/comentarios.html -->
+<div class="comentarios-admin">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Gestión de Comentarios</h1>
+      <p>Moderar y responder reseñas de clientes</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-number">{{ comentarios().filter(c => !c.aprobado && c.activo).length }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ comentarios().filter(c => c.aprobado).length }}</span>
+        <span class="stat-label">Aprobados</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Buscar por usuario, producto o contenido..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          class="search-input">
+      </div>
+      
+      <div class="filter-tabs">
+        @for (option of filterOptions; track option.value) {
+          <button
+            (click)="onFilterChange(option.value)"
+            class="filter-tab"
+            [class.active]="selectedFilter() === option.value">
+            {{ option.label }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando comentarios...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h3>Error al cargar comentarios</h3>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (filteredComentarios().length === 0) {
+    <div class="empty-container">
+      <div class="empty-icon">💬</div>
+      <h3>No hay comentarios</h3>
+      <p>No se encontraron comentarios que coincidan con los filtros aplicados</p>
+    </div>
+  } @else {
+    <div class="comentarios-list">
+      @for (comentario of filteredComentarios(); track comentario.id) {
+        <div class="comentario-card">
+          <div class="card-header">
+            <div class="user-info">
+              <div class="user-avatar">
+                {{ comentario.nombreUsuario.split(' ').map(n => n[0]).join('').toUpperCase() }}
+              </div>
+              <div class="user-details">
+                <h3>{{ comentario.nombreUsuario }}</h3>
+                <p class="product-name">{{ comentario.producto }}</p>
+                <span class="comment-date">{{ formatDate(comentario.fechaComentario) }}</span>
+              </div>
+            </div>
+            
+            <div class="comment-meta">
+              <div class="rating">
+                @for (filled of getStarsArray(comentario.calificacion); track $index) {
+                  <span class="star" [class.filled]="filled">⭐</span>
+                }
+              </div>
+              <div class="status-badge" [class]="getStatusColor(comentario)">
+                {{ getStatusLabel(comentario) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="card-content">
+            <div class="comment-text">
+              <p>{{ comentario.contenido }}</p>
+            </div>
+
+            @if (comentario.respuestaAdmin) {
+              <div class="admin-response">
+                <div class="response-header">
+                  <span class="admin-badge">Respuesta del Administrador</span>
+                  @if (comentario.fechaRespuesta) {
+                    <span class="response-date">{{ formatDate(comentario.fechaRespuesta) }}</span>
+                  }
+                </div>
+                <p class="response-text">{{ comentario.respuestaAdmin }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="card-actions">
+            @if (!comentario.aprobado && comentario.activo) {
+              <button 
+                (click)="aprobarComentario(comentario)"
+                class="btn btn-success">
+                ✅ Aprobar
+              </button>
+              <button 
+                (click)="rechazarComentario(comentario)"
+                class="btn btn-danger">
+                ❌ Rechazar
+              </button>
+            }
+            
+            @if (comentario.aprobado) {
+              <button 
+                (click)="openResponseModal(comentario)"
+                class="btn btn-primary">
+                💬 {{ comentario.respuestaAdmin ? 'Editar Respuesta' : 'Responder' }}
+              </button>
+            }
+            
+            @if (!comentario.activo) {
+              <span class="rejected-label">Comentario rechazado</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Response Modal -->
+  @if (showResponseModal()) {
+    <div class="modal-overlay" (click)="closeResponseModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Responder Comentario</h2>
+          <button (click)="closeResponseModal()" class="close-btn">✕</button>
+        </div>
+        
+        @if (selectedComentario()) {
+          <div class="modal-body">
+            <div class="original-comment">
+              <div class="comment-info">
+                <strong>{{ selectedComentario()!.nombreUsuario }}</strong>
+                <span class="rating">
+                  @for (filled of getStarsArray(selectedComentario()!.calificacion); track $index) {
+                    <span class="star" [class.filled]="filled">⭐</span>
+                  }
+                </span>
+              </div>
+              <p class="comment-content">{{ selectedComentario()!.contenido }}</p>
+            </div>
+            
+            <div class="response-form">
+              <label for="responseText" class="form-label">Tu respuesta:</label>
+              <textarea
+                id="responseText"
+                [(ngModel)]="responseText"
+                class="form-textarea"
+                placeholder="Escribe una respuesta profesional y útil..."
+                rows="4"></textarea>
+              
+              <div class="response-tips">
+                <h4>💡 Consejos para una buena respuesta:</h4>
+                <ul>
+                  <li>Agradece al cliente por su comentario</li>
+                  <li>Aborda específicamente sus puntos</li>
+                  <li>Ofrece soluciones si hay problemas</li>
+                  <li>Mantén un tono profesional y amigable</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button (click)="closeResponseModal()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              (click)="submitResponse()"
+              class="btn btn-primary"
+              [disabled]="!responseText().trim() || submittingResponse()">
+              @if (submittingResponse()) {
+                <span class="btn-spinner"></span>
+                Enviando...
+              } @else {
+                Enviar Respuesta
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

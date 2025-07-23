@@ -1,1 +1,143 @@
-<p>testimonios works!</p>
+<!-- src/app/components/testimonios/testimonios.html -->
+<div class="testimonios-page">
+  <!-- Hero Section -->
+  <section class="testimonios-hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Testimonios de Nuestros Clientes</h1>
+        <p>Descubre cómo SmartAgro ha transformado la agricultura de cientos de productores en todo México</p>
+        
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">{{ testimonios.length }}+</span>
+            <span class="stat-label">Clientes Satisfechos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ getPromedioCalificacion() }}</span>
+            <span class="stat-label">Calificación Promedio</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">40%</span>
+            <span class="stat-label">Ahorro Promedio de Agua</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Section -->
+  <section class="filter-section">
+    <div class="container">
+      <h2>Testimonios por Tipo de Cultivo</h2>
+      <div class="category-filters">
+        @for (categoria of categorias; track categoria.value) {
+          <button 
+            (click)="setCategory(categoria.value)"
+            class="category-btn"
+            [class.active]="selectedCategory() === categoria.value">
+            <span class="category-icon">{{ categoria.icon }}</span>
+            <span class="category-label">{{ categoria.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonios Grid -->
+  <section class="testimonios-content">
+    <div class="container">
+      <div class="testimonios-grid">
+        @for (testimonio of getFilteredTestimonios(); track testimonio.id) {
+          <div class="testimonio-card">
+            <div class="card-header">
+              <div class="client-info">
+                <div class="client-avatar">
+                  @if (testimonio.imagen) {
+                    <img [src]="testimonio.imagen" [alt]="testimonio.nombre">
+                  } @else {
+                    <div class="avatar-placeholder">
+                      {{ testimonio.nombre.split(' ').map(n => n[0]).join('').toUpperCase() }}
+                    </div>
+                  }
+                </div>
+                <div class="client-details">
+                  <h3 class="client-name">{{ testimonio.nombre }}</h3>
+                  <p class="client-company">{{ testimonio.empresa }}</p>
+                  <p class="client-location">📍 {{ testimonio.ubicacion }}</p>
+                </div>
+              </div>
+              
+              <div class="rating">
+                <div class="stars">
+                  @for (filled of getStarsArray(testimonio.calificacion); track $index) {
+                    <span class="star" [class.filled]="filled">⭐</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="card-content">
+              <div class="cultivo-info">
+                <div class="cultivo-tag">{{ testimonio.cultivo }}</div>
+                <div class="area-tag">{{ testimonio.area }}</div>
+              </div>
+              
+              <blockquote class="testimonio-text">
+                "{{ testimonio.testimonio }}"
+              </blockquote>
+              
+              <div class="beneficios">
+                <h4>Beneficios Principales:</h4>
+                <ul class="beneficios-list">
+                  @for (beneficio of testimonio.beneficios; track beneficio) {
+                    <li>{{ beneficio }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span class="instalacion-date">
+                Cliente desde {{ formatDate(testimonio.fechaInstalacion) }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="testimonios-cta">
+    <div class="container">
+      <div class="cta-content">
+        <h2>¿Listo para Unirte a Nuestros Clientes Exitosos?</h2>
+        <p>Miles de agricultores ya han transformado sus cultivos con SmartAgro. Tú puedes ser el siguiente.</p>
+        
+        <div class="cta-actions">
+          <a routerLink="/cotizacion" class="btn btn-primary">
+            Solicitar Cotización Gratuita
+          </a>
+          <a routerLink="/contacto" class="btn btn-outline">
+            Hablar con un Cliente
+          </a>
+        </div>
+        
+        <div class="trust-indicators">
+          <div class="trust-item">
+            <span class="trust-icon">✅</span>
+            <span>Garantía de 2 años</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🏆</span>
+            <span>98% satisfacción del cliente</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🔧</span>
+            <span>Soporte técnico incluido</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
