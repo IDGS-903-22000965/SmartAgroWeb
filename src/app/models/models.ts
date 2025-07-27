@@ -1,4 +1,4 @@
-
+// src/app/models/models.ts
 export interface LoginRequest {
   email: string;
   password: string;
@@ -34,7 +34,6 @@ export interface User {
   activo: boolean;
   fechaRegistro: Date;
 }
-
 
 export interface Producto {
   id: number;
@@ -87,7 +86,6 @@ export interface ProductoUpdateDto extends ProductoCreateDto {
   activo: boolean;
 }
 
-
 export interface Comentario {
   id: number;
   nombreUsuario: string;
@@ -109,7 +107,7 @@ export interface ComentarioRespuestaDto {
   respuesta: string;
 }
 
-
+// Interfaces para cotización
 export interface CotizacionRequest {
   nombreCliente: string;
   emailCliente: string;
@@ -122,6 +120,9 @@ export interface CotizacionRequest {
   energiaElectricaDisponible: boolean;
   requierimientosEspeciales?: string;
 }
+
+// Alias para compatibilidad
+export interface CotizacionRequestDto extends CotizacionRequest {}
 
 export interface Cotizacion {
   id: number;
@@ -159,7 +160,7 @@ export interface DetalleCotizacion {
   producto?: Producto;
 }
 
-
+// Interface para contacto
 export interface ContactoRequest {
   nombre: string;
   email: string;
@@ -196,7 +197,6 @@ export interface DetalleVenta {
   producto?: Producto;
 }
 
-
 export interface MateriaPrima {
   id: number;
   nombre: string;
@@ -210,7 +210,6 @@ export interface MateriaPrima {
   proveedor?: Proveedor;
 }
 
-
 export interface Proveedor {
   id: number;
   nombre: string;
@@ -223,7 +222,6 @@ export interface Proveedor {
   activo: boolean;
   fechaRegistro: Date;
 }
-
 
 export interface CompraProveedor {
   id: number;
@@ -246,7 +244,6 @@ export interface DetalleCompraProveedor {
   subtotal: number;
   materiaPrima?: MateriaPrima;
 }
-
 
 export interface DashboardMetricas {
   totalCotizaciones: number;
@@ -280,7 +277,6 @@ export interface ActividadReciente {
   fecha: Date;
   estado: string;
 }
-
 
 export interface ApiResponse<T = any> {
   success: boolean;

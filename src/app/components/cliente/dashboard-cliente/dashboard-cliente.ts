@@ -1,7 +1,8 @@
 // src/app/components/cliente/dashboard-cliente/dashboard-cliente.ts
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Auth } from '../../../services/auth'; // ← Importar AuthService
 
 interface Cotizacion {
   id: number;
@@ -43,7 +44,9 @@ interface Estadisticas {
   styleUrl: './dashboard-cliente.scss'
 })
 export class DashboardCliente implements OnInit {
-  protected nombreUsuario = 'Juan Pérez'; // Se obtendría del servicio de auth
+  // ✅ CAMBIO: Solo declarar las variables, inicializar en ngOnInit
+  protected currentUser: any = null;
+  protected nombreUsuario = '';
   
   protected loadingCotizaciones = signal(false);
   protected loadingCompras = signal(false);
@@ -60,9 +63,26 @@ export class DashboardCliente implements OnInit {
   protected comprasRecientes: Compra[] = [];
   protected productosRecomendados: Producto[] = [];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: Auth // ← Inyectar AuthService
+  ) {}
 
   ngOnInit(): void {
+    // ✅ CAMBIO: Verificar que el usuario esté autenticado
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    // ✅ CAMBIO: Obtener y establecer el usuario actual
+    this.currentUser = this.authService.getCurrentUser();
+    this.nombreUsuario = this.currentUser ? `${this.currentUser.nombre} ${this.currentUser.apellidos}` : 'Usuario';
+
+    // ✅ DEBUG: Log para verificar el usuario
+    console.log('👤 Usuario en dashboard:', this.currentUser);
+    console.log('📛 Nombre completo:', this.nombreUsuario);
+
     this.cargarDatos();
   }
 

@@ -1,22 +1,21 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { Auth } from '../services/auth';  
+// src/app/guards/admin-guard.ts
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { Auth } from '../services/auth';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AdminGuard implements CanActivate {
-  constructor(
-    private auth: Auth,  
-    private router: Router
-  ) {}
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(Auth);
+  const router = inject(Router);
 
-  canActivate(): boolean {
-    if (this.auth.isAdmin()) {
-      return true;
-    }
-
-    this.router.navigate(['/cliente/dashboard']);
-    return false;
+  // Opción 1: Usar signal
+  if (auth.isAdminSignal()) {
+    return true;
   }
-}
+
+  // if (auth.isAdminLegacy()) {
+  //   return true;
+  // }
+
+  router.navigate(['/cliente/dashboard']);
+  return false;
+};

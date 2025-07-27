@@ -2,21 +2,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { ApiResponse, DashboardMetricas, VentasPorMes, CotizacionesPorEstado, ActividadReciente } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
-  private readonly API_URL = 'https://localhost:7001/api/dashboard';
+  private readonly API_URL = `${environment.apiUrl}/dashboard`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('DashboardService initialized with URL:', this.API_URL);
+  }
 
   obtenerMetricas(): Observable<ApiResponse<{
     metricas: DashboardMetricas;
     ventasPorMes: VentasPorMes[];
     cotizacionesPorEstado: CotizacionesPorEstado[];
   }>> {
+    console.log('Fetching metrics from:', `${this.API_URL}/metricas`);
     return this.http.get<ApiResponse<{
       metricas: DashboardMetricas;
       ventasPorMes: VentasPorMes[];

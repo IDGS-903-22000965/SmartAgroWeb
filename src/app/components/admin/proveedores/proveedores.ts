@@ -1,7 +1,6 @@
 // src/app/components/admin/proveedores/proveedores.ts
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 interface Proveedor {
@@ -28,7 +27,7 @@ interface ApiResponse<T> {
 
 @Component({
   selector: 'app-proveedores',
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule], 
   templateUrl: './proveedores.html',
   styleUrl: './proveedores.scss'
 })

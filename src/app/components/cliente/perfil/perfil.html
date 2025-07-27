@@ -1,1 +1,205 @@
-<p>perfil works!</p>
+<!-- src/app/components/perfil/perfil.html -->
+<div class="perfil-page">
+  <div class="container">
+    <div class="perfil-header">
+      <h1>Mi Perfil</h1>
+      <p>Administra tu información personal y configuración de cuenta</p>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert-error">
+        <span class="alert-icon">⚠️</span>
+        {{ error() }}
+      </div>
+    }
+
+    @if (success()) {
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        Perfil actualizado exitosamente
+      </div>
+    }
+
+    @if (currentUser()) {
+      <div class="perfil-content">
+        <!-- Información del Usuario -->
+        <div class="user-info-card">
+          <div class="user-avatar">
+            <div class="avatar-circle">
+              {{ currentUser()?.nombre?.charAt(0)?.toUpperCase() }}{{ currentUser()?.apellidos?.charAt(0)?.toUpperCase() }}
+            </div>
+          </div>
+          
+          <div class="user-details">
+            <h2>{{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}</h2>
+            <p class="user-email">{{ currentUser()?.email }}</p>
+            <div class="user-badges">
+              @for (role of currentUser()?.roles; track role) {
+                <span class="badge" [class.admin]="role === 'Admin'" [class.cliente]="role === 'Cliente'">
+                  {{ role }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="user-actions">
+            @if (!editMode()) {
+              <button (click)="toggleEditMode()" class="btn btn-outline">
+                ✏️ Editar Perfil
+              </button>
+            }
+            <button (click)="logout()" class="btn btn-secondary">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario de Edición -->
+        @if (editMode()) {
+          <div class="edit-form-card">
+            <h3>Editar Información Personal</h3>
+            
+            <form [formGroup]="profileForm" class="profile-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="nombre" class="form-label">Nombre *</label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    formControlName="nombre"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('nombre')"
+                    placeholder="Tu nombre">
+                  @if (getFieldError('nombre')) {
+                    <span class="field-error">{{ getFieldError('nombre') }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="apellidos" class="form-label">Apellidos *</label>
+                  <input
+                    type="text"
+                    id="apellidos"
+                    formControlName="apellidos"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('apellidos')"
+                    placeholder="Tus apellidos">
+                  @if (getFieldError('apellidos')) {
+                    <span class="field-error">{{ getFieldError('apellidos') }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="email" class="form-label">Email *</label>
+                  <input
+                    type="email"
+                    id="email"
+                    formControlName="email"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('email')"
+                    placeholder="tu@email.com"
+                    readonly>
+                  <small class="form-help">El email no se puede modificar</small>
+                  @if (getFieldError('email')) {
+                    <span class="field-error">{{ getFieldError('email') }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="telefono" class="form-label">Teléfono</label>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    formControlName="telefono"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('telefono')"
+                    placeholder="1234567890">
+                  @if (getFieldError('telefono')) {
+                    <span class="field-error">{{ getFieldError('telefono') }}</span>
+                  }
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="direccion" class="form-label">Dirección</label>
+                  <input
+                    type="text"
+                    id="direccion"
+                    formControlName="direccion"
+                    class="form-input"
+                    placeholder="Tu dirección completa">
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  type="button" 
+                  (click)="toggleEditMode()" 
+                  class="btn btn-outline">
+                  Cancelar
+                </button>
+                <button 
+                  type="button" 
+                  (click)="saveProfile()" 
+                  class="btn btn-primary"
+                  [disabled]="loading()">
+                  @if (loading()) {
+                    <span class="btn-spinner"></span>
+                    Guardando...
+                  } @else {
+                    💾 Guardar Cambios
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- Información Adicional -->
+        @if (!editMode()) {
+          <div class="additional-info">
+            <div class="info-section">
+              <h3>Información de Contacto</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">📧 Email:</span>
+                  <span class="info-value">{{ currentUser()?.email || 'No especificado' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">📱 Teléfono:</span>
+                  <span class="info-value">{{ currentUser()?.telefono || 'No especificado' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">📍 Dirección:</span>
+                  <span class="info-value">{{ currentUser()?.direccion || 'No especificada' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h3>Información de Cuenta</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">🆔 ID de Usuario:</span>
+                  <span class="info-value">{{ currentUser()?.id }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">👑 Roles:</span>
+                  <span class="info-value">{{ currentUser()?.roles?.join(', ') || 'Sin roles' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="no-user">
+        <div class="no-user-icon">👤</div>
+        <h2>No se pudo cargar la información del usuario</h2>
+        <p>Por favor, inicia sesión nuevamente</p>
+        <button (click)="logout()" class="btn btn-primary">
+          Ir a Iniciar Sesión
+        </button>
+      </div>
+    }
+  </div>
+</div>

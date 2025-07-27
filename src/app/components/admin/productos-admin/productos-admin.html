@@ -1,4 +1,4 @@
-<!-- src/app/components/admin/productos-admin/productos-admin.html -->
+<!-- src/app/components/admin/productos-admin/productos-admin.html - CON MODAL DE DETALLES -->
 <div class="productos-admin-page">
   <div class="page-header">
     <h1>Gestión de Productos</h1>
@@ -158,10 +158,10 @@
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicion ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
-        <button (click)="cerrarModal()" class="btn-close">✕</button>
+        <button type="button" (click)="cerrarModal()" class="btn-close">✕</button>
       </div>
       
-      <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()" class="modal-body">
+      <div class="modal-body">
         @if (error()) {
           <div class="alert alert-error">
             <span class="alert-icon">⚠️</span>
@@ -169,108 +169,214 @@
           </div>
         }
 
-        <div class="form-grid">
+        <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nombre" class="form-label">Nombre *</label>
+              <input
+                type="text"
+                id="nombre"
+                formControlName="nombre"
+                class="form-input"
+                [class.error]="isFieldInvalid('nombre')"
+                placeholder="Nombre del producto">
+              @if (getFieldError('nombre')) {
+                <span class="field-error">{{ getFieldError('nombre') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="precioBase" class="form-label">Precio Base *</label>
+              <input
+                type="number"
+                id="precioBase"
+                formControlName="precioBase"
+                class="form-input"
+                [class.error]="isFieldInvalid('precioBase')"
+                placeholder="0.00"
+                min="0"
+                step="0.01">
+              @if (getFieldError('precioBase')) {
+                <span class="field-error">{{ getFieldError('precioBase') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="porcentajeGanancia" class="form-label">% Ganancia *</label>
+              <input
+                type="number"
+                id="porcentajeGanancia"
+                formControlName="porcentajeGanancia"
+                class="form-input"
+                [class.error]="isFieldInvalid('porcentajeGanancia')"
+                placeholder="30"
+                min="0"
+                max="100">
+              @if (getFieldError('porcentajeGanancia')) {
+                <span class="field-error">{{ getFieldError('porcentajeGanancia') }}</span>
+              }
+            </div>
+
+            <div class="form-group calculated-price">
+              <label class="form-label">Precio de Venta</label>
+              <div class="price-display">
+                ${{ calcularPrecioVenta() | number:'1.2-2' }}
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="nombre" class="form-label">Nombre *</label>
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea
+              id="descripcion"
+              formControlName="descripcion"
+              class="form-textarea"
+              placeholder="Descripción breve del producto"
+              rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcionDetallada" class="form-label">Descripción Detallada</label>
+            <textarea
+              id="descripcionDetallada"
+              formControlName="descripcionDetallada"
+              class="form-textarea"
+              placeholder="Descripción completa del producto"
+              rows="5"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="imagenPrincipal" class="form-label">URL Imagen Principal</label>
             <input
-              type="text"
-              id="nombre"
-              formControlName="nombre"
+              type="url"
+              id="imagenPrincipal"
+              formControlName="imagenPrincipal"
               class="form-input"
-              [class.error]="isFieldInvalid('nombre')"
-              placeholder="Nombre del producto">
-            @if (getFieldError('nombre')) {
-              <span class="field-error">{{ getFieldError('nombre') }}</span>
+              [class.error]="isFieldInvalid('imagenPrincipal')"
+              placeholder="https://ejemplo.com/imagen.jpg">
+            @if (getFieldError('imagenPrincipal')) {
+              <span class="field-error">{{ getFieldError('imagenPrincipal') }}</span>
             }
           </div>
 
           <div class="form-group">
-            <label for="precioBase" class="form-label">Precio Base *</label>
-            <input
-              type="number"
-              id="precioBase"
-              formControlName="precioBase"
-              class="form-input"
-              [class.error]="isFieldInvalid('precioBase')"
-              placeholder="0.00"
-              min="0"
-              step="0.01">
-            @if (getFieldError('precioBase')) {
-              <span class="field-error">{{ getFieldError('precioBase') }}</span>
-            }
+            <label class="form-label">
+              <input
+                type="checkbox"
+                formControlName="activo"
+                style="margin-right: 0.5rem;">
+              Producto Activo
+            </label>
           </div>
 
-          <div class="form-group">
-            <label for="porcentajeGanancia" class="form-label">% Ganancia *</label>
-            <input
-              type="number"
-              id="porcentajeGanancia"
-              formControlName="porcentajeGanancia"
-              class="form-input"
-              [class.error]="isFieldInvalid('porcentajeGanancia')"
-              placeholder="30"
-              min="0"
-              max="100">
-            @if (getFieldError('porcentajeGanancia')) {
-              <span class="field-error">{{ getFieldError('porcentajeGanancia') }}</span>
+          <div class="modal-footer">
+            <button type="button" (click)="cerrarModal()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="loadingModal() || !productoForm.valid">
+              @if (loadingModal()) {
+                <span class="btn-spinner"></span>
+                Guardando...
+              } @else {
+                {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE DETALLES DEL PRODUCTO - NUEVO -->
+@if (showDetailsModal() && productoDetalles) {
+  <div class="modal-overlay" (click)="cerrarModalDetalles()">
+    <div class="modal-container details-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Detalles del Producto</h2>
+        <button type="button" (click)="cerrarModalDetalles()" class="btn-close">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="product-details">
+          <div class="product-image-large">
+            @if (productoDetalles.imagenPrincipal) {
+              <img [src]="productoDetalles.imagenPrincipal" [alt]="productoDetalles.nombre">
+            } @else {
+              <span class="image-placeholder">📦</span>
             }
           </div>
-
-          <div class="form-group calculated-price">
-            <label class="form-label">Precio de Venta</label>
-            <div class="price-display">
-              ${{ calcularPrecioVenta() | number:'1.2-2' }}
+          
+          <div class="product-info">
+            <h3>{{ productoDetalles.nombre }}</h3>
+            
+            <div class="product-meta">
+              <div class="meta-item">
+                <div class="meta-label">ID</div>
+                <div class="meta-value">#{{ productoDetalles.id }}</div>
+              </div>
+              
+              <div class="meta-item">
+                <div class="meta-label">Precio Base</div>
+                <div class="meta-value price">${{ productoDetalles.precioBase | number:'1.2-2' }}</div>
+              </div>
+              
+              <div class="meta-item">
+                <div class="meta-label">% Ganancia</div>
+                <div class="meta-value percentage">{{ productoDetalles.porcentajeGanancia }}%</div>
+              </div>
+              
+              <div class="meta-item">
+                <div class="meta-label">Precio Venta</div>
+                <div class="meta-value price">${{ productoDetalles.precioVenta | number:'1.2-2' }}</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="descripcion" class="form-label">Descripción</label>
-          <textarea
-            id="descripcion"
-            formControlName="descripcion"
-            class="form-textarea"
-            placeholder="Descripción breve del producto"
-            rows="3"></textarea>
+        <div class="product-descriptions">
+          @if (productoDetalles.descripcion) {
+            <div class="description-section">
+              <h4>📝 Descripción Breve</h4>
+              <div class="description-content">
+                {{ productoDetalles.descripcion }}
+              </div>
+            </div>
+          }
+          
+          @if (productoDetalles.descripcionDetallada) {
+            <div class="description-section">
+              <h4>📋 Descripción Detallada</h4>
+              <div class="description-content">
+                {{ productoDetalles.descripcionDetallada }}
+              </div>
+            </div>
+          }
         </div>
 
-        <div class="form-group">
-          <label for="descripcionDetallada" class="form-label">Descripción Detallada</label>
-          <textarea
-            id="descripcionDetallada"
-            formControlName="descripcionDetallada"
-            class="form-textarea"
-            placeholder="Descripción completa del producto"
-            rows="5"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="imagenPrincipal" class="form-label">URL Imagen Principal</label>
-          <input
-            type="url"
-            id="imagenPrincipal"
-            formControlName="imagenPrincipal"
-            class="form-input"
-            placeholder="https://ejemplo.com/imagen.jpg">
+        <div class="status-section">
+          <div class="status-info">
+            <span class="status-large" [class.active]="productoDetalles.activo" [class.inactive]="!productoDetalles.activo">
+              {{ productoDetalles.activo ? '✅ Activo' : '🚫 Inactivo' }}
+            </span>
+          </div>
+          <div class="creation-date">
+            <strong>Creado:</strong> {{ productoDetalles.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+          </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" (click)="cerrarModal()" class="btn btn-outline">
-            Cancelar
+          <button type="button" (click)="cerrarModalDetalles()" class="btn btn-outline">
+            Cerrar
           </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            [disabled]="loadingModal() || !productoForm.valid">
-            @if (loadingModal()) {
-              <span class="btn-spinner"></span>
-              Guardando...
-            } @else {
-              {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
-            }
+          <button type="button" (click)="editarProducto(productoDetalles); cerrarModalDetalles()" class="btn btn-primary">
+            ✏️ Editar Producto
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 }

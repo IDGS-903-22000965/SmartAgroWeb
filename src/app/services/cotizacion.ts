@@ -2,18 +2,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiResponse, Cotizacion, CotizacionRequest } from '../models/models';
+import { ApiResponse, CotizacionRequest, Cotizacion } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CotizacionService {
-  private readonly API_URL = 'https://localhost:7001/api/cotizacion';
+  private readonly API_URL = `${environment.apiUrl}/cotizacion`;
 
   constructor(private http: HttpClient) {}
 
   crearCotizacion(request: CotizacionRequest): Observable<ApiResponse<Cotizacion>> {
     return this.http.post<ApiResponse<Cotizacion>>(this.API_URL, request);
+  }
+
+  calcularCosto(request: CotizacionRequest): Observable<ApiResponse<{costo: number, costoConIva: number}>> {
+    return this.http.post<ApiResponse<{costo: number, costoConIva: number}>>(`${this.API_URL}/calcular-costo`, request);
   }
 
   obtenerCotizaciones(): Observable<ApiResponse<Cotizacion[]>> {
@@ -29,10 +34,6 @@ export class CotizacionService {
   }
 
   actualizarEstado(id: number, estado: string): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.API_URL}/${id}/estado`, { estado });
+    return this.http.put<ApiResponse>(`${this.API_URL}/${id}/estado`, estado);
   }
-
-  calcularCosto(request: CotizacionRequest): Observable<ApiResponse<{ costo: number; costoConIva: number }>> {
-    return this.http.post<ApiResponse<{ costo: number; costoConIva: number }>>(`${this.API_URL}/calcular-costo`, request);
-  }
-}
+} 

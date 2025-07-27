@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CotizacionService } from '../../services/cotizacion';
-import { CotizacionRequestDto } from '../../models/models';
+import { CotizacionRequest } from '../../models/models';
 
 @Component({
   selector: 'app-cotizacion',
@@ -104,28 +104,28 @@ export class Cotizacion implements OnInit {
     }
   }
 
-  protected isCurrentStepValid(): boolean {
-    const step = this.currentStep();
-    const form = this.cotizacionForm;
-    
-    switch (step) {
-      case 1:
-        return form.get('nombreCliente')?.valid && 
-               form.get('emailCliente')?.valid && 
-               form.get('telefonoCliente')?.valid;
-      case 2:
-        return form.get('direccionInstalacion')?.valid &&
-               form.get('areaCultivo')?.valid &&
-               form.get('tipoCultivo')?.valid &&
-               form.get('tipoSuelo')?.valid;
-      case 3:
-        return true; // Los campos de recursos son opcionales
-      case 4:
-        return true; // Los requerimientos especiales son opcionales
-      default:
-        return false;
-    }
+ protected isCurrentStepValid(): boolean {
+  const step = this.currentStep();
+  const form = this.cotizacionForm;
+  
+  switch (step) {
+    case 1:
+      return (form.get('nombreCliente')?.valid ?? false) && 
+             (form.get('emailCliente')?.valid ?? false) && 
+             (form.get('telefonoCliente')?.valid ?? false);
+    case 2:
+      return (form.get('direccionInstalacion')?.valid ?? false) &&
+             (form.get('areaCultivo')?.valid ?? false) &&
+             (form.get('tipoCultivo')?.valid ?? false) &&
+             (form.get('tipoSuelo')?.valid ?? false);
+    case 3:
+      return true;
+    case 4:
+      return true;
+    default:
+      return false;
   }
+}
 
   protected markCurrentStepAsTouched(): void {
     const step = this.currentStep();
@@ -155,7 +155,7 @@ export class Cotizacion implements OnInit {
     this.calculating.set(true);
     this.error.set(null);
 
-    const formData = this.cotizacionForm.value as CotizacionRequestDto;
+const formData = this.cotizacionForm.value as CotizacionRequest;
 
     this.cotizacionService.calcularCosto(formData).subscribe({
       next: (response) => {
@@ -181,7 +181,7 @@ export class Cotizacion implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const formData = this.cotizacionForm.value as CotizacionRequestDto;
+const formData = this.cotizacionForm.value as CotizacionRequest;
 
     this.cotizacionService.crearCotizacion(formData).subscribe({
       next: (response) => {
