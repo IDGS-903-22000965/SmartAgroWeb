@@ -2,17 +2,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { ApiResponse, Producto, ProductoDetalle, ComentarioCreateDto } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private readonly API_URL = 'https://localhost:7001/api/producto';
+  private readonly API_URL = `${environment.apiUrl}/producto`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('ProductoService initialized with URL:', this.API_URL);
+  }
 
   obtenerProductos(): Observable<ApiResponse<Producto[]>> {
+    console.log('Fetching products from:', this.API_URL);
     return this.http.get<ApiResponse<Producto[]>>(this.API_URL);
   }
 

@@ -1,121 +1,173 @@
-// src/app/services/auth.ts
+// src/app/services/auth.ts - SOLUCIÓN DEFINITIVA
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
-import { User, AuthResponse, LoginRequest, RegisterRequest } from '../models/models';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { LoginRequest, RegisterRequest, AuthResponse, User } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Auth {
-  private readonly API_URL = 'https://localhost:7001/api';
-  private readonly TOKEN_KEY = 'smartagro_token';
-  private readonly USER_KEY = 'smartagro_user';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
+  
+  // Signal principal
+  private currentUserSignal = signal<User | null>(null);
+  
+  // Computed signals públicos
+  public currentUser = computed(() => this.currentUserSignal());
+  public isAuthenticatedSignal = computed(() => !!this.currentUserSignal());
+  public isAdminSignal = computed(() => this.currentUserSignal()?.roles?.includes('Admin') ?? false);
+  public isClienteSignal = computed(() => this.currentUserSignal()?.roles?.includes('Cliente') ?? false);
 
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
-
-  // Signals para componentes
-  public currentUser = signal<User | null>(null);
-  public isAuthenticatedSignal = computed(() => !!this.currentUser());
-  public isAdminSignal = computed(() => this.currentUser()?.roles?.includes('Admin') ?? false);
-  public isClienteSignal = computed(() => this.currentUser()?.roles?.includes('Cliente') ?? false);
-
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {
-    this.loadUserFromStorage();
+  constructor(private http: HttpClient) {
+    this.checkCurrentUser();
   }
 
-  private loadUserFromStorage(): void {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const userJson = localStorage.getItem(this.USER_KEY);
+  login(loginData: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginData)
+      .pipe(
+        tap(response => {
+          if (response.isSuccess && response.token && response.user) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            this.currentUserSignal.set(response.user);
+          }
+        })
+      );
+  }
 
-    if (token && userJson) {
-      try {
-        const user = JSON.parse(userJson);
-        this.setCurrentUser(user);
-      } catch {
-        this.clearStorage();
+  register(registerData: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/register`, registerData)
+      .pipe(
+        tap(response => {
+          if (response.isSuccess && response.token && response.user) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            this.currentUserSignal.set(response.user);
+          }
+        })
+      );
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.currentUserSignal.set(null);
+  }
+
+  // MÉTODOS PRINCIPALES - USAR SOLO LOCALSTORAGE
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000;
+      const isValid = Date.now() < exp;
+      
+      if (!isValid) {
+        this.logout();
+        return false;
       }
+      
+      return true;
+    } catch {
+      this.logout();
+      return false;
     }
   }
 
-  private setCurrentUser(user: User | null): void {
-    this.currentUser.set(user);
-    this.currentUserSubject.next(user);
-  }
-
-  private clearStorage(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-  }
-
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-  return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials)
-    .pipe(
-      tap(response => {
-        if (response.isSuccess && response.token && response.user) {
-          localStorage.setItem(this.TOKEN_KEY, response.token);
-          localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-          this.setCurrentUser(response.user);
-        }
-      })
-    );
-}
-
-register(userData: RegisterRequest): Observable<AuthResponse> {
-  return this.http.post<AuthResponse>(`${this.API_URL}/auth/register`, userData)
-    .pipe(
-      tap(response => {
-        if (response.isSuccess && response.token && response.user) {
-          localStorage.setItem(this.TOKEN_KEY, response.token);
-          localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-          this.setCurrentUser(response.user);
-        }
-      })
-    );
-}
-
-logout(): void {
-  this.clearStorage();
-  this.setCurrentUser(null);
-  this.router.navigate(['/']);
-}
-
-getToken(): string | null {
-  return localStorage.getItem(this.TOKEN_KEY);
-}
-
-refreshToken(): Observable<AuthResponse> {
-  const token = this.getToken();
-  return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh-token`, { token })
-    .pipe(
-      tap(response => {
-        if (response.isSuccess && response.token) {
-          localStorage.setItem(this.TOKEN_KEY, response.token);
-        }
-      })
-    );
-}
-
-
-  // Métodos para guards y lógica clásica
-  isAuthenticated(): boolean {
-    return !!this.getToken() && !!this.currentUser();
-  }
-
   isAdmin(): boolean {
-    return this.currentUser()?.roles?.includes('Admin') ?? false;
+    if (!this.isAuthenticated()) return false;
+    
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    
+    try {
+      const user = JSON.parse(userStr);
+      return user?.roles?.includes('Admin') || false;
+    } catch {
+      return false;
+    }
   }
 
   isCliente(): boolean {
-    return this.currentUser()?.roles?.includes('Cliente') ?? false;
+    if (!this.isAuthenticated()) return false;
+    
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    
+    try {
+      const user = JSON.parse(userStr);
+      return user?.roles?.includes('Cliente') || false;
+    } catch {
+      return false;
+    }
+  }
+
+  getToken(): string | null {
+    const token = localStorage.getItem('token');
+    
+    if (!token) return null;
+    
+    // Verificar que el token no esté expirado
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000;
+      
+      if (Date.now() >= exp) {
+        this.logout();
+        return null;
+      }
+      
+      return token;
+    } catch {
+      this.logout();
+      return null;
+    }
   }
 
   getCurrentUser(): User | null {
-    return this.currentUser();
+    if (!this.isAuthenticated()) return null;
+    
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  }
+
+  // Métodos legacy para compatibilidad
+  isAuthenticatedLegacy(): boolean {
+    return this.isAuthenticated();
+  }
+
+  isAdminLegacy(): boolean {
+    return this.isAdmin();
+  }
+
+  isClienteLegacy(): boolean {
+    return this.isCliente();
+  }
+
+  private checkCurrentUser(): void {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr && this.isAuthenticated()) {
+      try {
+        const user = JSON.parse(userStr);
+        this.currentUserSignal.set(user);
+      } catch {
+        this.logout();
+      }
+    } else {
+      this.logout();
+    }
   }
 }

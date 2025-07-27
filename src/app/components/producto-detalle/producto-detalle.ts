@@ -213,3 +213,4 @@ protected hasComentarios(): boolean {
     this.loadProducto(id);
   }
 }
+export { ProductoDetalleComponent as ProductoDetalle };

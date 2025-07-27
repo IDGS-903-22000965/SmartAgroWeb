@@ -174,3 +174,4 @@ export class ProductosComponent implements OnInit {
     this.loadProductos();
   }
 }
+export { ProductosComponent as Productos };

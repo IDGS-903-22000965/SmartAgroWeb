@@ -65,9 +65,9 @@
   [value]="selectedEstado()" 
   (change)="onEstadoChange($event)" 
   class="filter-select">
-  <option *ngFor="let option of estadoOptions; trackBy: trackByValue" [value]="option.value">
-    {{ option.label }}
-  </option>
+  @for (option of estadoOptions; track option.value) {
+  <option [value]="option.value">{{ option.label }}</option>
+}
 </select>
 
       </div>

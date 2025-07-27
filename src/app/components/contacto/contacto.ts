@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContactoService } from '../../services/contacto';
+import { ApiResponse, ContactoRequest } from '../../models/models';
 
 @Component({
   selector: 'app-contacto',
@@ -72,19 +73,19 @@ export class Contacto {
       this.loading.set(true);
       this.error.set(null);
 
-      const formData = this.contactForm.value;
+      const formData: ContactoRequest = this.contactForm.value;
 
       this.contactoService.enviarMensaje(formData).subscribe({
-        next: (response) => {
+        next: (response: ApiResponse) => {
           this.loading.set(false);
           if (response.success) {
             this.success.set(true);
             this.contactForm.reset();
           } else {
-            this.error.set('Error al enviar el mensaje. Intente nuevamente.');
+            this.error.set(response.message || 'Error al enviar el mensaje. Intente nuevamente.');
           }
         },
-        error: () => {
+        error: (error) => {
           this.loading.set(false);
           this.error.set('Error de conexión. Intente nuevamente.');
         }
@@ -168,3 +169,5 @@ export class Contacto {
     this.contactForm.patchValue({ asunto, mensaje });
   }
 }
+
+export { Contacto as default };
