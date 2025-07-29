@@ -71,8 +71,16 @@ export const routes: Routes = [
         loadComponent: () => import('./components/admin/proveedores/proveedores').then(m => m.Proveedores)
       },
       {
+        path: 'compras-proveedores',
+        loadComponent: () => import('./components/admin/compras-proveedores/compras-proveedores').then(m => m.ComprasProveedores)
+      },
+      {
         path: 'productos',
         loadComponent: () => import('./components/admin/productos-admin/productos-admin').then(m => m.ProductosAdmin)
+      },
+      {
+        path: 'materias-primas',
+        loadComponent: () => import('./components/admin/materias-primas/materias-primas').then(m => m.MateriasPrimas)
       },
       {
         path: 'comentarios',

@@ -1,1 +1,556 @@
-<p>usuarios works!</p>
+<!-- src/app/components/admin/usuarios/usuarios.html -->
+<div class="usuarios-admin-page">
+  <div class="page-header">
+    <h1>Gestión de Usuarios</h1>
+    <button (click)="abrirModalCrear()" class="btn btn-primary">
+      <span>➕</span>
+      Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Estadísticas -->
+  @if (stats()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ stats()!.totalUsuarios }}</div>
+        <div class="stat-label">Total Usuarios</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">{{ stats()!.usuariosActivos }}</div>
+        <div class="stat-label">Usuarios Activos</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">👨‍💼</div>
+        <div class="stat-value">{{ stats()!.administradores }}</div>
+        <div class="stat-label">Administradores</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-value">{{ stats()!.clientes }}</div>
+        <div class="stat-label">Clientes</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-value">{{ stats()!.registrosEsteMes }}</div>
+        <div class="stat-label">Registros Este Mes</div>
+      </div>
+    </div>
+  }
+
+  <!-- Filtros -->
+  <div class="filtros-section">
+    <div class="filtros-container">
+      <input 
+        type="text" 
+        placeholder="Buscar usuarios..." 
+        [(ngModel)]="filtros.busqueda"
+        (input)="aplicarFiltros()"
+        class="form-input">
+      
+      <select [(ngModel)]="filtros.rol" (change)="aplicarFiltros()" class="form-select">
+        <option value="">Todos los roles</option>
+        @for (rol of rolesDisponibles; track rol) {
+          <option [value]="rol">{{ rol }}</option>
+        }
+      </select>
+      
+      <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()" class="form-select">
+        <option value="">Todos los estados</option>
+        <option value="true">Activos</option>
+        <option value="false">Inactivos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="table-container">
+    @if (loading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando usuarios...</p>
+      </div>
+    } @else if (usuarios.length === 0) {
+      <div class="loading-container">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+        <h3>No hay usuarios</h3>
+        <p>No se encontraron usuarios que coincidan con los filtros aplicados.</p>
+        <button (click)="limpiarFiltros()" class="btn btn-outline" style="margin-top: 1rem;">
+          Limpiar Filtros
+        </button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Fecha Registro</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of usuarios; track usuario.id) {
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div class="user-avatar">{{ getInitials(usuario) }}</div>
+                  <div class="user-info">
+                    <strong>{{ usuario.nombre }} {{ usuario.apellidos }}</strong>
+                    @if (usuario.telefono) {
+                      <div class="user-email">📱 {{ usuario.telefono }}</div>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="user-email">{{ usuario.email }}</div>
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  @for (role of usuario.roles; track role) {
+                    <span class="role-badge" [class]="getRoleBadgeClass(role)">
+                      {{ role }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="usuario.activo" [class.inactive]="!usuario.activo">
+                  {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <span style="color: #64748b; font-size: 0.875rem;">
+                  {{ formatDate(usuario.fechaRegistro) }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button (click)="editarUsuario(usuario)" class="btn-action btn-edit" title="Editar">
+                    ✏️
+                  </button>
+                  <button (click)="abrirResetPassword(usuario)" class="btn-action btn-reset" title="Restablecer Contraseña">
+                    🔑
+                  </button>
+                  <button (click)="toggleEstadoUsuario(usuario)" class="btn-action btn-toggle" 
+                          [title]="usuario.activo ? 'Desactivar' : 'Activar'">
+                    {{ usuario.activo ? '🚫' : '✅' }}
+                  </button>
+                  <button (click)="eliminarUsuario(usuario)" class="btn-action btn-delete" title="Eliminar">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Paginación -->
+  @if (totalUsuarios > pageSize) {
+    <div class="pagination-container">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalUsuarios) }} de {{ totalUsuarios }} usuarios
+      </div>
+      <div class="pagination-controls">
+        <button 
+          (click)="cambiarPagina(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="btn">
+          ← Anterior
+        </button>
+        
+        @for (page of getPaginas(); track page) {
+          <button 
+            (click)="cambiarPagina(page)"
+            [class.active]="page === currentPage"
+            class="btn">
+            {{ page }}
+          </button>
+        }
+        
+        <button 
+          (click)="cambiarPagina(currentPage + 1)" 
+          [disabled]="currentPage === totalPaginas"
+          class="btn">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal Crear Usuario -->
+@if (showCreateModal()) {
+  <div class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Crear Nuevo Usuario</h2>
+        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        @if (error()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
+            ⚠️ {{ error() }}
+          </div>
+        }
+
+        @if (success()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
+            ✅ {{ success() }}
+          </div>
+        }
+
+        <form [formGroup]="createUserForm" (ngSubmit)="crearUsuario()">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label for="nombre" class="form-label">Nombre *</label>
+              <input
+                type="text"
+                id="nombre"
+                formControlName="nombre"
+                class="form-input"
+                [class.error]="isFieldInvalid(createUserForm, 'nombre')"
+                placeholder="Nombre del usuario">
+              @if (getFieldError(createUserForm, 'nombre')) {
+                <span class="field-error">{{ getFieldError(createUserForm, 'nombre') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="apellidos" class="form-label">Apellidos *</label>
+              <input
+                type="text"
+                id="apellidos"
+                formControlName="apellidos"
+                class="form-input"
+                [class.error]="isFieldInvalid(createUserForm, 'apellidos')"
+                placeholder="Apellidos del usuario">
+              @if (getFieldError(createUserForm, 'apellidos')) {
+                <span class="field-error">{{ getFieldError(createUserForm, 'apellidos') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email *</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-input"
+              [class.error]="isFieldInvalid(createUserForm, 'email')"
+              placeholder="email@ejemplo.com">
+            @if (getFieldError(createUserForm, 'email')) {
+              <span class="field-error">{{ getFieldError(createUserForm, 'email') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Contraseña *</label>
+            <input
+              type="password"
+              id="password"
+              formControlName="password"
+              class="form-input"
+              [class.error]="isFieldInvalid(createUserForm, 'password')"
+              placeholder="Mínimo 6 caracteres">
+            @if (getFieldError(createUserForm, 'password')) {
+              <span class="field-error">{{ getFieldError(createUserForm, 'password') }}</span>
+            }
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label for="telefono" class="form-label">Teléfono</label>
+              <input
+                type="tel"
+                id="telefono"
+                formControlName="telefono"
+                class="form-input"
+                placeholder="1234567890">
+            </div>
+
+            <div class="form-group">
+              <label for="rol" class="form-label">Rol *</label>
+              <select
+                id="rol"
+                formControlName="rol"
+                class="form-select"
+                [class.error]="isFieldInvalid(createUserForm, 'rol')">
+                @for (rol of rolesDisponibles; track rol) {
+                  <option [value]="rol">{{ rol }}</option>
+                }
+              </select>
+              @if (getFieldError(createUserForm, 'rol')) {
+                <span class="field-error">{{ getFieldError(createUserForm, 'rol') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input
+              type="text"
+              id="direccion"
+              formControlName="direccion"
+              class="form-input"
+              placeholder="Dirección completa">
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input
+                type="checkbox"
+                formControlName="activo"
+                style="width: auto;">
+              Usuario Activo
+            </label>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="loadingModal() || !createUserForm.valid">
+              @if (loadingModal()) {
+                <span class="btn-spinner"></span>
+                Creando...
+              } @else {
+                Crear Usuario
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Editar Usuario -->
+@if (showEditModal() && usuarioEditando) {
+  <div class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar Usuario</h2>
+        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        @if (error()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
+            ⚠️ {{ error() }}
+          </div>
+        }
+
+        @if (success()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
+            ✅ {{ success() }}
+          </div>
+        }
+
+        <form [formGroup]="editUserForm" (ngSubmit)="actualizarUsuario()">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label for="editNombre" class="form-label">Nombre *</label>
+              <input
+                type="text"
+                id="editNombre"
+                formControlName="nombre"
+                class="form-input"
+                [class.error]="isFieldInvalid(editUserForm, 'nombre')"
+                placeholder="Nombre del usuario">
+              @if (getFieldError(editUserForm, 'nombre')) {
+                <span class="field-error">{{ getFieldError(editUserForm, 'nombre') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="editApellidos" class="form-label">Apellidos *</label>
+              <input
+                type="text"
+                id="editApellidos"
+                formControlName="apellidos"
+                class="form-input"
+                [class.error]="isFieldInvalid(editUserForm, 'apellidos')"
+                placeholder="Apellidos del usuario">
+              @if (getFieldError(editUserForm, 'apellidos')) {
+                <span class="field-error">{{ getFieldError(editUserForm, 'apellidos') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editEmail" class="form-label">Email *</label>
+            <input
+              type="email"
+              id="editEmail"
+              formControlName="email"
+              class="form-input"
+              [class.error]="isFieldInvalid(editUserForm, 'email')"
+              placeholder="email@ejemplo.com">
+            @if (getFieldError(editUserForm, 'email')) {
+              <span class="field-error">{{ getFieldError(editUserForm, 'email') }}</span>
+            }
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label for="editTelefono" class="form-label">Teléfono</label>
+              <input
+                type="tel"
+                id="editTelefono"
+                formControlName="telefono"
+                class="form-input"
+                placeholder="1234567890">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Roles</label>
+              <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                @for (rol of rolesDisponibles; track rol) {
+                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input
+                      type="checkbox"
+                      [checked]="editUserForm.get('roles')?.value?.includes(rol)"
+                      (change)="onRoleChange(rol, $event)"
+                      style="width: auto;">
+                    {{ rol }}
+                  </label>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editDireccion" class="form-label">Dirección</label>
+            <input
+              type="text"
+              id="editDireccion"
+              formControlName="direccion"
+              class="form-input"
+              placeholder="Dirección completa">
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input
+                type="checkbox"
+                formControlName="activo"
+                style="width: auto;">
+              Usuario Activo
+            </label>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="loadingModal() || !editUserForm.valid">
+              @if (loadingModal()) {
+                <span class="btn-spinner"></span>
+                Actualizando...
+              } @else {
+                Actualizar Usuario
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Restablecer Contraseña -->
+@if (showResetPasswordModal() && usuarioResetPassword) {
+  <div class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Restablecer Contraseña</h2>
+        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <p style="margin-bottom: 1.5rem; color: #64748b;">
+          Restableciendo contraseña para: <strong>{{ usuarioResetPassword.nombre }} {{ usuarioResetPassword.apellidos }}</strong>
+        </p>
+
+        @if (error()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
+            ⚠️ {{ error() }}
+          </div>
+        }
+
+        @if (success()) {
+          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
+            ✅ {{ success() }}
+          </div>
+        }
+
+        <form [formGroup]="resetPasswordForm" (ngSubmit)="restablecerPassword()">
+          <div class="form-group">
+            <label for="newPassword" class="form-label">Nueva Contraseña *</label>
+            <input
+              type="password"
+              id="newPassword"
+              formControlName="newPassword"
+              class="form-input"
+              [class.error]="isFieldInvalid(resetPasswordForm, 'newPassword')"
+              placeholder="Mínimo 6 caracteres">
+            @if (getFieldError(resetPasswordForm, 'newPassword')) {
+              <span class="field-error">{{ getFieldError(resetPasswordForm, 'newPassword') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              class="form-input"
+              [class.error]="isFieldInvalid(resetPasswordForm, 'confirmPassword')"
+              placeholder="Repite la nueva contraseña">
+            @if (getFieldError(resetPasswordForm, 'confirmPassword')) {
+              <span class="field-error">{{ getFieldError(resetPasswordForm, 'confirmPassword') }}</span>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="loadingModal() || !resetPasswordForm.valid">
+              @if (loadingModal()) {
+                <span class="btn-spinner"></span>
+                Restableciendo...
+              } @else {
+                Restablecer Contraseña
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

@@ -320,6 +320,71 @@ export const ROLES = {
   ADMIN: 'Admin',
   CLIENTE: 'Cliente'
 } as const;
+export interface UserListDto {
+  id: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  direccion?: string;
+  fechaRegistro: Date;
+  activo: boolean;
+  roles: string[];
+  nombreCompleto?: string;
+}
+
+export interface CreateUserDto {
+  nombre: string;
+  apellidos: string;
+  email: string;
+  password: string;
+  telefono?: string;
+  direccion?: string;
+  rol: string;
+  activo: boolean;
+}
+
+export interface UpdateUserDto {
+  nombre: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  direccion?: string;
+  activo: boolean;
+  roles: string[];
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ResetPasswordDto {
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface UserStatsDto {
+  totalUsuarios: number;
+  usuariosActivos: number;
+  usuariosInactivos: number;
+  administradores: number;
+  clientes: number;
+  registrosEsteMes: number;
+  registrosHoy: number;
+  porcentajeActivos: number;
+}
+
+export interface PaginatedUsersDto {
+  users: UserListDto[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
 
 export type EstadoCotizacion = typeof ESTADOS_COTIZACION[keyof typeof ESTADOS_COTIZACION];
 export type EstadoVenta = typeof ESTADOS_VENTA[keyof typeof ESTADOS_VENTA];

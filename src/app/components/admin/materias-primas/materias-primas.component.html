@@ -1,0 +1,839 @@
+<!-- src/app/components/admin/materias-primas/materias-primas.component.html -->
+<div class="materias-primas-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1><i class="fas fa-boxes"></i> Administración de Materias Primas</h1>
+      <p class="subtitle">Gestión completa de inventario con método de costeo</p>
+    </div>
+    <button 
+      class="btn btn-primary" 
+      (click)="openCreateModal()"
+      [disabled]="loading()">
+      <i class="fas fa-plus"></i>
+      Nueva Materia Prima
+    </button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <div class="stat-icon">
+        <i class="fas fa-cube"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ estadisticas().total }}</h3>
+        <p>Total Materias Primas</p>
+      </div>
+    </div>
+    
+    <div class="stat-card activas">
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ estadisticas().activas }}</h3>
+        <p>Activas</p>
+      </div>
+    </div>
+    
+    <div class="stat-card bajo-stock">
+      <div class="stat-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ estadisticas().bajoStock }}</h3>
+        <p>Bajo Stock</p>
+      </div>
+    </div>
+    
+    <div class="stat-card valor">
+      <div class="stat-icon">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ formatCurrency(estadisticas().valorTotal) }}</h3>
+        <p>Valor Total Inventario</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-section">
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>Buscar</label>
+        <input 
+          type="text" 
+          class="form-input"
+          placeholder="Buscar por nombre, descripción..."
+          [(ngModel)]="filtros.busqueda"
+          (input)="aplicarFiltros()">
+      </div>
+      
+      <div class="filtro-item">
+        <label>Proveedor</label>
+        <select 
+          class="form-select"
+          [(ngModel)]="filtros.proveedor"
+          (change)="aplicarFiltros()">
+          <option value="">Todos los proveedores</option>
+          @for (proveedor of proveedores(); track proveedor.id) {
+            <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+          }
+        </select>
+      </div>
+      
+      <div class="filtro-item">
+        <label>Estado</label>
+        <select 
+          class="form-select"
+          [(ngModel)]="filtros.estado"
+          (change)="aplicarFiltros()">
+          <option value="">Todos</option>
+          <option value="true">Activas</option>
+          <option value="false">Inactivas</option>
+        </select>
+      </div>
+      
+      <div class="filtro-item">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox"
+            [(ngModel)]="filtros.bajoStock"
+            (change)="aplicarFiltros()">
+          <span class="checkmark"></span>
+          Solo bajo stock
+        </label>
+      </div>
+      
+      <div class="filtro-actions">
+        <button class="btn btn-outline" (click)="limpiarFiltros()">
+          <i class="fas fa-times"></i>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando materias primas...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i>
+      <div>
+        <h4>Error al cargar datos</h4>
+        <p>{{ error() }}</p>
+      </div>
+      <button class="btn btn-outline" (click)="retry()">
+        <i class="fas fa-redo"></i>
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Tabla -->
+  @if (!loading() && !error()) {
+    <div class="table-container">
+      <div class="table-header">
+        <h3>
+          <i class="fas fa-list"></i>
+          Materias Primas
+          <span class="count">({{ materiasPrimasFiltradas().length }})</span>
+        </h3>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Materia Prima</th>
+              <th>Proveedor</th>
+              <th>Unidad</th>
+              <th>Costo Unitario</th>
+              <th>Stock</th>
+              <th>Valor Inventario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (materiaPrima of materiasPrimasPaginadas(); track materiaPrima.id) {
+              <tr [class.bajo-stock]="materiaPrima.stock <= materiaPrima.stockMinimo">
+                <td>
+                  <div class="materia-info">
+                    <strong>{{ materiaPrima.nombre }}</strong>
+                    @if (materiaPrima.descripcion) {
+                      <small>{{ materiaPrima.descripcion }}</small>
+                    }
+                  </div>
+                </td>
+                <td>{{ materiaPrima.proveedorNombre || 'Sin proveedor' }}</td>
+                <td>{{ materiaPrima.unidadMedida }}</td>
+                <td>{{ formatCurrency(materiaPrima.costoUnitario) }}</td>
+                <td>
+                  <div class="stock-info">
+                    <span [class]="getStockStatusClass(materiaPrima)">
+                      {{ materiaPrima.stock }}
+                    </span>
+                    <small>Min: {{ materiaPrima.stockMinimo }}</small>
+                  </div>
+                </td>
+                <td>{{ formatCurrency(materiaPrima.valorInventario || 0) }}</td>
+                <td>
+                  <span 
+                    class="status-badge"
+                    [class.active]="materiaPrima.activo"
+                    [class.inactive]="!materiaPrima.activo">
+                    {{ materiaPrima.activo ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button 
+                      class="btn-action btn-view"
+                      (click)="openDetailsModal(materiaPrima)"
+                      title="Ver detalles">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button 
+                      class="btn-action btn-stock"
+                      (click)="openStockModal(materiaPrima)"
+                      title="Ajustar stock">
+                      <i class="fas fa-boxes"></i>
+                    </button>
+                    <button 
+                      class="btn-action btn-costeo"
+                      (click)="openCosteoModal(materiaPrima)"
+                      title="Ver costeo">
+                      <i class="fas fa-calculator"></i>
+                    </button>
+                    <button 
+                      class="btn-action btn-edit"
+                      (click)="openEditModal(materiaPrima)"
+                      title="Editar">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button 
+                      class="btn-action btn-toggle"
+                      (click)="toggleEstado(materiaPrima)"
+                      [title]="materiaPrima.activo ? 'Desactivar' : 'Activar'">
+                      <i class="fas" [class.fa-toggle-on]="materiaPrima.activo" [class.fa-toggle-off]="!materiaPrima.activo"></i>
+                    </button>
+                    <button 
+                      class="btn-action btn-delete"
+                      (click)="eliminarMateriaPrima(materiaPrima)"
+                      title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="empty-state">
+                  <div class="empty-content">
+                    <i class="fas fa-cube"></i>
+                    <h3>No hay materias primas</h3>
+                    <p>No se encontraron materias primas con los filtros seleccionados.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button 
+            class="btn-page"
+            [disabled]="currentPage === 1"
+            (click)="cambiarPagina(currentPage - 1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          @for (page of getPaginas(); track page) {
+            <button 
+              class="btn-page"
+              [class.active]="page === currentPage"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+          }
+          
+          <button 
+            class="btn-page"
+            [disabled]="currentPage === totalPages()"
+            (click)="cambiarPagina(currentPage + 1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal Crear -->
+@if (showCreateModal()) {
+  <div class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-plus"></i> Nueva Materia Prima</h2>
+        <button class="btn-close" (click)="closeCreateModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        @if (error()) {
+          <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error() }}
+          </div>
+        }
+        
+        <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input 
+                type="text"
+                class="form-input"
+                [class.error]="isFieldInvalid('nombre', createForm)"
+                formControlName="nombre"
+                placeholder="Nombre de la materia prima">
+              @if (getFieldError('nombre', createForm)) {
+                <span class="field-error">{{ getFieldError('nombre', createForm) }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Proveedor *</label>
+              <select 
+                class="form-select"
+                [class.error]="isFieldInvalid('proveedorId', createForm)"
+                formControlName="proveedorId">
+                <option value="">Seleccionar proveedor</option>
+                @for (proveedor of proveedores(); track proveedor.id) {
+                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+                }
+              </select>
+              @if (getFieldError('proveedorId', createForm)) {
+                <span class="field-error">{{ getFieldError('proveedorId', createForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea 
+              class="form-textarea"
+              formControlName="descripcion"
+              placeholder="Descripción opcional de la materia prima"
+              rows="3"></textarea>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Unidad de Medida *</label>
+              <input 
+                type="text"
+                class="form-input"
+                [class.error]="isFieldInvalid('unidadMedida', createForm)"
+                formControlName="unidadMedida"
+                placeholder="ej: Kg, Lt, Pza">
+              @if (getFieldError('unidadMedida', createForm)) {
+                <span class="field-error">{{ getFieldError('unidadMedida', createForm) }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Costo Unitario *</label>
+              <input 
+                type="number"
+                class="form-input"
+                [class.error]="isFieldInvalid('costoUnitario', createForm)"
+                formControlName="costoUnitario"
+                placeholder="0.00"
+                step="0.01"
+                min="0">
+              @if (getFieldError('costoUnitario', createForm)) {
+                <span class="field-error">{{ getFieldError('costoUnitario', createForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Stock Inicial</label>
+              <input 
+                type="number"
+                class="form-input"
+                formControlName="stock"
+                placeholder="0"
+                min="0">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Stock Mínimo *</label>
+              <input 
+                type="number"
+                class="form-input"
+                [class.error]="isFieldInvalid('stockMinimo', createForm)"
+                formControlName="stockMinimo"
+                placeholder="0"
+                min="0">
+              @if (getFieldError('stockMinimo', createForm)) {
+                <span class="field-error">{{ getFieldError('stockMinimo', createForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeCreateModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="createForm.invalid || submitting()">
+              @if (submitting()) {
+                <div class="btn-spinner"></div>
+                Guardando...
+              } @else {
+                <i class="fas fa-save"></i>
+                Guardar
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Editar -->
+@if (showEditModal()) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Editar Materia Prima</h2>
+        <button class="btn-close" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        @if (error()) {
+          <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error() }}
+          </div>
+        }
+        
+        <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input 
+                type="text"
+                class="form-input"
+                [class.error]="isFieldInvalid('nombre', editForm)"
+                formControlName="nombre">
+              @if (getFieldError('nombre', editForm)) {
+                <span class="field-error">{{ getFieldError('nombre', editForm) }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Proveedor *</label>
+              <select 
+                class="form-select"
+                [class.error]="isFieldInvalid('proveedorId', editForm)"
+                formControlName="proveedorId">
+                <option value="">Seleccionar proveedor</option>
+                @for (proveedor of proveedores(); track proveedor.id) {
+                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+                }
+              </select>
+              @if (getFieldError('proveedorId', editForm)) {
+                <span class="field-error">{{ getFieldError('proveedorId', editForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea 
+              class="form-textarea"
+              formControlName="descripcion"
+              rows="3"></textarea>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Unidad de Medida *</label>
+              <input 
+                type="text"
+                class="form-input"
+                [class.error]="isFieldInvalid('unidadMedida', editForm)"
+                formControlName="unidadMedida">
+              @if (getFieldError('unidadMedida', editForm)) {
+                <span class="field-error">{{ getFieldError('unidadMedida', editForm) }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Costo Unitario *</label>
+              <input 
+                type="number"
+                class="form-input"
+                [class.error]="isFieldInvalid('costoUnitario', editForm)"
+                formControlName="costoUnitario"
+                step="0.01"
+                min="0">
+              @if (getFieldError('costoUnitario', editForm)) {
+                <span class="field-error">{{ getFieldError('costoUnitario', editForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Stock Actual</label>
+              <input 
+                type="number"
+                class="form-input"
+                formControlName="stock"
+                min="0">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Stock Mínimo *</label>
+              <input 
+                type="number"
+                class="form-input"
+                [class.error]="isFieldInvalid('stockMinimo', editForm)"
+                formControlName="stockMinimo"
+                min="0">
+              @if (getFieldError('stockMinimo', editForm)) {
+                <span class="field-error">{{ getFieldError('stockMinimo', editForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="activo">
+              <span class="checkmark"></span>
+              Materia prima activa
+            </label>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeEditModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="editForm.invalid || submitting()">
+              @if (submitting()) {
+                <div class="btn-spinner"></div>
+                Actualizando...
+              } @else {
+                <i class="fas fa-save"></i>
+                Actualizar
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Ajustar Stock -->
+@if (showStockModal()) {
+  <div class="modal-overlay" (click)="closeStockModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-boxes"></i> Ajustar Stock</h2>
+        <button class="btn-close" (click)="closeStockModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        @if (selectedMateriaPrima()) {
+          <div class="selected-item-info">
+            <h4>{{ selectedMateriaPrima()!.nombre }}</h4>
+            <p>Stock actual: <strong>{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</strong></p>
+          </div>
+        }
+        
+        <form [formGroup]="stockForm" (ngSubmit)="submitStock()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Tipo de Movimiento *</label>
+              <select 
+                class="form-select"
+                formControlName="tipo">
+                <option value="Entrada">Entrada (Incrementar)</option>
+                <option value="Salida">Salida (Decrementar)</option>
+                <option value="Ajuste">Ajuste de Inventario</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Cantidad *</label>
+              <input 
+                type="number"
+                class="form-input"
+                [class.error]="isFieldInvalid('cantidad', stockForm)"
+                formControlName="cantidad"
+                step="0.01"
+                min="0.01">
+              @if (getFieldError('cantidad', stockForm)) {
+                <span class="field-error">{{ getFieldError('cantidad', stockForm) }}</span>
+              }
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Costo Unitario *</label>
+            <input 
+              type="number"
+              class="form-input"
+              [class.error]="isFieldInvalid('costoUnitario', stockForm)"
+              formControlName="costoUnitario"
+              step="0.01"
+              min="0.01">
+            @if (getFieldError('costoUnitario', stockForm)) {
+              <span class="field-error">{{ getFieldError('costoUnitario', stockForm) }}</span>
+            }
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Referencia</label>
+            <input 
+              type="text"
+              class="form-input"
+              formControlName="referencia"
+              placeholder="Número de compra, orden, etc.">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Observaciones</label>
+            <textarea 
+              class="form-textarea"
+              formControlName="observaciones"
+              placeholder="Motivo del ajuste de stock"
+              rows="3"></textarea>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeStockModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="stockForm.invalid || submitting()">
+              @if (submitting()) {
+                <div class="btn-spinner"></div>
+                Procesando...
+              } @else {
+                <i class="fas fa-check"></i>
+                Aplicar Cambio
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Costeo -->
+@if (showCosteoModal()) {
+  <div class="modal-overlay" (click)="closeCosteoModal()">
+    <div class="modal-container modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-calculator"></i> Análisis de Costeo</h2>
+        <button class="btn-close" (click)="closeCosteoModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        @if (selectedMateriaPrima()) {
+          <div class="costeo-header">
+            <h3>{{ selectedMateriaPrima()!.nombre }}</h3>
+            <p>{{ selectedMateriaPrima()!.descripcion }}</p>
+          </div>
+          
+          <div class="costeo-grid">
+            <div class="costeo-card">
+              <h4><i class="fas fa-tag"></i> Costo Actual</h4>
+              <div class="costeo-value">{{ formatCurrency(selectedMateriaPrima()!.costoUnitario) }}</div>
+              <small>Por {{ selectedMateriaPrima()!.unidadMedida }}</small>
+            </div>
+            
+            <div class="costeo-card">
+              <h4><i class="fas fa-chart-line"></i> Costo Promedio</h4>
+              <div class="costeo-value">{{ formatCurrency(calcularCostoPromedio(selectedMateriaPrima()!)) }}</div>
+              <small>Promedio ponderado</small>
+            </div>
+            
+            <div class="costeo-card">
+              <h4><i class="fas fa-clock"></i> Último Costo</h4>
+              <div class="costeo-value">{{ formatCurrency(calcularCostoUltimo(selectedMateriaPrima()!)) }}</div>
+              <small>Última entrada</small>
+            </div>
+            
+            <div class="costeo-card">
+              <h4><i class="fas fa-cubes"></i> Valor Inventario</h4>
+              <div class="costeo-value">{{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</div>
+              <small>{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</small>
+            </div>
+          </div>
+          
+          <div class="movimientos-section">
+            <h4><i class="fas fa-history"></i> Historial de Movimientos</h4>
+            
+            @if (movimientosStock().length > 0) {
+              <div class="movimientos-table">
+                <table class="table-simple">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Cantidad</th>
+                      <th>Costo Unit.</th>
+                      <th>Total</th>
+                      <th>Referencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (movimiento of movimientosStock(); track movimiento.id) {
+                      <tr>
+                        <td>{{ formatDate(movimiento.fecha) }}</td>
+                        <td>
+                          <span 
+                            class="movement-badge"
+                            [class.entrada]="movimiento.tipo === 'Entrada'"
+                            [class.salida]="movimiento.tipo === 'Salida'"
+                            [class.ajuste]="movimiento.tipo === 'Ajuste'">
+                            {{ movimiento.tipo }}
+                          </span>
+                        </td>
+                        <td>{{ movimiento.cantidad }}</td>
+                        <td>{{ formatCurrency(movimiento.costoUnitario) }}</td>
+                        <td>{{ formatCurrency(movimiento.cantidad * movimiento.costoUnitario) }}</td>
+                        <td>{{ movimiento.referencia || '-' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-movements">
+                <i class="fas fa-history"></i>
+                <p>No hay movimientos registrados</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Detalles -->
+@if (showDetailsModal()) {
+  <div class="modal-overlay" (click)="closeDetailsModal()">
+    <div class="modal-container modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-eye"></i> Detalles de Materia Prima</h2>
+        <button class="btn-close" (click)="closeDetailsModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        @if (selectedMateriaPrima()) {
+          <div class="details-grid">
+            <div class="details-section">
+              <h4>Información General</h4>
+              <div class="details-item">
+                <label>Nombre:</label>
+                <span>{{ selectedMateriaPrima()!.nombre }}</span>
+              </div>
+              <div class="details-item">
+                <label>Descripción:</label>
+                <span>{{ selectedMateriaPrima()!.descripcion || 'Sin descripción' }}</span>
+              </div>
+              <div class="details-item">
+                <label>Proveedor:</label>
+                <span>{{ selectedMateriaPrima()!.proveedorNombre || 'Sin proveedor' }}</span>
+              </div>
+              <div class="details-item">
+                <label>Estado:</label>
+                <span 
+                  class="status-badge"
+                  [class.active]="selectedMateriaPrima()!.activo"
+                  [class.inactive]="!selectedMateriaPrima()!.activo">
+                  {{ selectedMateriaPrima()!.activo ? 'Activa' : 'Inactiva' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="details-section">
+              <h4>Información de Inventario</h4>
+              <div class="details-item">
+                <label>Unidad de Medida:</label>
+                <span>{{ selectedMateriaPrima()!.unidadMedida }}</span>
+              </div>
+              <div class="details-item">
+                <label>Stock Actual:</label>
+                <span [class]="getStockStatusClass(selectedMateriaPrima()!)">
+                  {{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}
+                </span>
+              </div>
+              <div class="details-item">
+                <label>Stock Mínimo:</label>
+                <span>{{ selectedMateriaPrima()!.stockMinimo }} {{ selectedMateriaPrima()!.unidadMedida }}</span>
+              </div>
+            </div>
+            
+            <div class="details-section">
+              <h4>Información de Costos</h4>
+              <div class="details-item">
+                <label>Costo Unitario Actual:</label>
+                <span>{{ formatCurrency(selectedMateriaPrima()!.costoUnitario) }}</span>
+              </div>
+              <div class="details-item">
+                <label>Valor Total Inventario:</label>
+                <span>{{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</span>
+              </div>
+              <div class="details-item">
+                <label>Costo Promedio:</label>
+                <span>{{ formatCurrency(calcularCostoPromedio(selectedMateriaPrima()!)) }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
