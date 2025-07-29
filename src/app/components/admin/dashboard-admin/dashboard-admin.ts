@@ -7,6 +7,7 @@ import { DashboardMetricas, VentasPorMes, CotizacionesPorEstado, ActividadRecien
 
 @Component({
   selector: 'app-dashboard-admin',
+  standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './dashboard-admin.html',
   styleUrl: './dashboard-admin.scss'
@@ -19,7 +20,6 @@ export class DashboardAdmin implements OnInit {
   protected loading = signal(true);
   protected error = signal<string | null>(null);
 
-  // Quick actions
   protected quickActions = [
     {
       title: 'Nueva Cotización',
@@ -34,6 +34,27 @@ export class DashboardAdmin implements OnInit {
       icon: '📦',
       route: '/admin/productos',
       color: 'green'
+    },
+    {
+      title: 'Materias Primas',
+      description: 'Administrar inventario y costeo',
+      icon: '🧪',
+      route: '/admin/materias-primas',
+      color: 'indigo'
+    },
+    {
+      title: 'Gestionar Proveedores', 
+      description: 'Administrar proveedurías',
+      icon: '🏢',
+      route: '/admin/proveedores',
+      color: 'coral'
+    },
+    {
+      title: 'Compras a Proveedores',
+      description: 'Gestionar órdenes de compra',
+      icon: '🛒',
+      route: '/admin/compras-proveedores',
+      color: 'teal'
     },
     {
       title: 'Ver Usuarios',
@@ -109,13 +130,14 @@ export class DashboardAdmin implements OnInit {
       minute: '2-digit'
     });
   }
-protected getAlturaBarra(ventaTotal: number): number {
-  const ventas = this.ventasPorMes();
-  if (!ventas || ventas.length === 0) return 0;
 
-  const max = ventas.reduce((max, v) => Math.max(max, v.total), 0);
-  return max > 0 ? (ventaTotal / max) * 100 : 0;
-}
+  protected getAlturaBarra(ventaTotal: number): number {
+    const ventas = this.ventasPorMes();
+    if (!ventas || ventas.length === 0) return 0;
+
+    const max = ventas.reduce((max, v) => Math.max(max, v.total), 0);
+    return max > 0 ? (ventaTotal / max) * 100 : 0;
+  }
 
   protected getEstadoColor(estado: string): string {
     switch (estado.toLowerCase()) {

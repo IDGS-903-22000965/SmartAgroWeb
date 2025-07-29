@@ -1,945 +1,587 @@
-// src/app/components/admin/productos-admin/productos-admin.ts - CON MODAL DE DETALLES
+// src/app/components/admin/productos-admin/productos-admin.component.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { 
+  ProductosAdminService, 
+  ProductoAdmin, 
+  ProductoDetalle, 
+  ProductoCreateUpdate,
+  ProductoMateriaPrimaDetalle,
+  ProductoMateriaPrimaCreate,
+  AnalisisCostos
+} from '../../../services/productos-admin';
+import { MateriasPrimasService } from '../../../services/materias-primas';
 
-interface Producto {
+interface MateriaPrima {
   id: number;
   nombre: string;
   descripcion?: string;
-  descripcionDetallada?: string;
-  precioBase: number;
-  porcentajeGanancia: number;
-  precioVenta: number;
-  imagenPrincipal?: string;
+  unidadMedida: string;
+  costoUnitario: number;
+  stock: number;
   activo: boolean;
-  fechaCreacion: Date;
 }
 
 @Component({
   selector: 'app-productos-admin',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './productos-admin.html',
-  styles: [`
-    .productos-admin-page {
-      padding: 2rem;
-      max-width: 1400px;
-      margin: 0 auto;
-      background: linear-gradient(135deg, #f8fafb 0%, #f1f5f9 100%);
-      min-height: 100vh;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding: 1.5rem 0;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .page-header h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-      background: linear-gradient(135deg, #059669, #10b981);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .btn {
-      padding: 0.875rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
-    }
-
-    .btn-icon {
-      font-size: 1.1rem;
-    }
-
-    .filtros-section {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-    }
-
-    .filtros-container {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .form-input, .form-select {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      background: #f8fafc;
-    }
-
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: #059669;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-    }
-
-    .table-container {
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-    }
-
-    .table-responsive {
-      overflow-x: auto;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .data-table thead {
-      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    }
-
-    .data-table th {
-      padding: 1.25rem 1rem;
-      text-align: left;
-      font-weight: 700;
-      font-size: 0.875rem;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .data-table tbody tr {
-      transition: all 0.2s ease;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .data-table tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .data-table td {
-      padding: 1rem;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .product-image {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .product-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .product-name strong {
-      font-weight: 600;
-      color: #1e293b;
-      font-size: 0.95rem;
-    }
-
-    .product-description {
-      color: #64748b;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      max-width: 300px;
-    }
-
-    .price {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #475569;
-    }
-
-    .price-sale {
-      color: #059669 !important;
-      background: rgba(5, 150, 105, 0.1);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.875rem;
-    }
-
-    .status-badge {
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-    }
-
-    .status-badge.active {
-      background: rgba(34, 197, 94, 0.1);
-      color: #16a34a;
-    }
-
-    .status-badge.inactive {
-      background: rgba(239, 68, 68, 0.1);
-      color: #dc2626;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-
-    .btn-action {
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-view {
-      background: rgba(59, 130, 246, 0.1);
-      color: #3b82f6;
-    }
-
-    .btn-view:hover {
-      background: #3b82f6;
-      color: white;
-      transform: scale(1.1);
-    }
-
-    .btn-edit {
-      background: rgba(245, 158, 11, 0.1);
-      color: #f59e0b;
-    }
-
-    .btn-edit:hover {
-      background: #f59e0b;
-      color: white;
-      transform: scale(1.1);
-    }
-
-    .btn-toggle {
-      background: rgba(156, 163, 175, 0.1);
-      color: #6b7280;
-    }
-
-    .btn-toggle:hover {
-      background: #6b7280;
-      color: white;
-      transform: scale(1.1);
-    }
-
-    .btn-delete {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-    }
-
-    .btn-delete:hover {
-      background: #ef4444;
-      color: white;
-      transform: scale(1.1);
-    }
-
-    /* MODAL STYLES */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 1rem;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-container {
-      background: white;
-      border-radius: 20px;
-      max-width: 800px;
-      width: 100%;
-      max-height: 90vh;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: modalEnter 0.3s ease-out;
-    }
-
-    .modal-container.details-modal {
-      max-width: 900px;
-    }
-
-    @keyframes modalEnter {
-      from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2rem 2rem 1rem;
-      border-bottom: 1px solid #e2e8f0;
-      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    }
-
-    .modal-header h2 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-    }
-
-    .btn-close {
-      width: 40px;
-      height: 40px;
-      border: none;
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.25rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-close:hover {
-      background: #ef4444;
-      color: white;
-      transform: scale(1.1);
-    }
-
-    .modal-body {
-      padding: 2rem;
-      max-height: calc(90vh - 200px);
-      overflow-y: auto;
-    }
-
-    /* ESTILOS PARA MODAL DE DETALLES */
-    .product-details {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .product-image-large {
-      aspect-ratio: 1;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-      background: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .product-image-large img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .image-placeholder {
-      color: #94a3b8;
-      font-size: 3rem;
-    }
-
-    .product-info h3 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0 0 1rem 0;
-      line-height: 1.2;
-    }
-
-    .product-meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .meta-item {
-      background: #f8fafc;
-      padding: 1rem;
-      border-radius: 12px;
-      text-align: center;
-      border: 1px solid #e2e8f0;
-    }
-
-    .meta-label {
-      font-size: 0.875rem;
-      color: #64748b;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-    }
-
-    .meta-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .meta-value.price {
-      color: #059669;
-    }
-
-    .meta-value.percentage {
-      color: #3b82f6;
-    }
-
-    .product-descriptions {
-      margin-top: 2rem;
-    }
-
-    .description-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .description-section h4 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .description-content {
-      background: #f8fafc;
-      padding: 1.25rem;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      color: #4b5563;
-      line-height: 1.6;
-    }
-
-    .status-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      margin-top: 1.5rem;
-    }
-
-    .status-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .status-large {
-      padding: 0.75rem 1.5rem;
-      border-radius: 25px;
-      font-size: 1rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .creation-date {
-      color: #64748b;
-      font-size: 0.95rem;
-    }
-
-    .creation-date strong {
-      color: #374151;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 0.5rem;
-      font-size: 0.95rem;
-    }
-
-    .form-textarea {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      background: #f8fafc;
-      box-sizing: border-box;
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .form-textarea:focus {
-      outline: none;
-      border-color: #059669;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-    }
-
-    .calculated-price {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .price-display {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #059669;
-      background: rgba(5, 150, 105, 0.1);
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .modal-footer {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      padding-top: 2rem;
-      border-top: 1px solid #e2e8f0;
-      margin-top: 2rem;
-    }
-
-    .btn-outline {
-      border: 2px solid #e2e8f0;
-      background: white;
-      color: #475569;
-    }
-
-    .btn-outline:hover {
-      border-color: #94a3b8;
-      background: #f8fafc;
-    }
-
-    .field-error {
-      display: block;
-      color: #ef4444;
-      font-size: 0.875rem;
-      margin-top: 0.5rem;
-      font-weight: 500;
-    }
-
-    .form-input.error, .form-textarea.error {
-      border-color: #ef4444;
-      background: rgba(239, 68, 68, 0.05);
-    }
-
-    .alert {
-      padding: 1rem 1.25rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      color: #dc2626;
-      border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .btn-spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid transparent;
-      border-top: 2px solid currentColor;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .filtros-container {
-        grid-template-columns: 1fr;
-      }
-
-      .product-details {
-        grid-template-columns: 1fr;
-      }
-
-      .product-meta {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  `]
+  styleUrls: ['./productos-admin.scss']
 })
 export class ProductosAdmin implements OnInit {
-  // Signals para estado del componente
-  protected loading = signal(false);
-  protected loadingModal = signal(false);
-  protected error = signal<string | null>(null);
-  protected showModal = signal(false);
-  protected showDetailsModal = signal(false); // NUEVO SIGNAL PARA MODAL DE DETALLES
-  
-  // Propiedades para edición y detalles
-  protected modoEdicion = false;
-  protected productoEditando: Producto | null = null;
-  protected productoDetalles: Producto | null = null; // NUEVO PARA DETALLES
+  // Signals
+  productos = signal<ProductoAdmin[]>([]);
+  materiasPrimasDisponibles = signal<MateriaPrima[]>([]);
+  loading = signal(false);
+  submitting = signal(false);
+  error = signal<string | null>(null);
 
-  // Datos
-  protected productos: Producto[] = [];
-  protected productosFiltrados: Producto[] = [];
-  
-  protected filtros = {
+  // Modal signals
+  showCreateModal = signal(false);
+  showEditModal = signal(false);
+  showRecetaModal = signal(false);
+  showAnalisisModal = signal(false);
+  selectedProducto = signal<ProductoDetalle | null>(null);
+  materiasPrimasProducto = signal<ProductoMateriaPrimaDetalle[]>([]);
+  analisisCostos = signal<AnalisisCostos | null>(null);
+
+  // Filtros
+  filtros = {
     busqueda: '',
-    estado: ''
+    activo: '',
+    precioMinimo: null as number | null,
+    precioMaximo: null as number | null
   };
 
   // Paginación
-  protected currentPage = 1;
-  protected pageSize = 10;
-  protected totalProductos = 0;
-  protected totalPaginas = 0;
+  currentPage = 1;
+  itemsPerPage = 10;
 
-  protected productoForm: FormGroup;
+  // Formularios
+  createForm: FormGroup;
+  editForm: FormGroup;
+  materiaPrimaForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {
-    this.productoForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      descripcion: [''],
-      descripcionDetallada: [''],
-      precioBase: ['', [Validators.required, Validators.min(0.01)]],
-      porcentajeGanancia: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      imagenPrincipal: ['', [Validators.pattern(/^https?:\/\/.+/)]],
-      activo: [true]
-    });
-  }
+  // Computed properties
+  productosFiltrados = computed(() => {
+    let resultado = this.productos();
 
-  ngOnInit(): void {
-    this.cargarProductos();
-  }
-
-  protected cargarProductos(): void {
-    this.loading.set(true);
-    
-    setTimeout(() => {
-      this.productos = [
-        {
-          id: 1,
-          nombre: 'Sistema de Riego Automático Smart-100',
-          descripcion: 'Sistema completo de riego automático con sensores IoT para cultivos hasta 100m²',
-          descripcionDetallada: 'Sistema integral que incluye controlador central, sensores de humedad, válvulas automáticas y aplicación móvil para monitoreo remoto. Perfecto para agricultores modernos que buscan optimizar el uso del agua y maximizar la producción.',
-          precioBase: 15000,
-          porcentajeGanancia: 35,
-          precioVenta: 20250,
-          imagenPrincipal: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=400&fit=crop',
-          activo: true,
-          fechaCreacion: new Date('2024-01-15')
-        },
-        {
-          id: 2,
-          nombre: 'Sensor de Humedad Inalámbrico SH-200',
-          descripcion: 'Sensor de humedad del suelo con conectividad LoRa y batería de larga duración',
-          descripcionDetallada: 'Sensor resistente al agua con precisión ±2% y autonomía de hasta 2 años con batería incluida. Diseñado para condiciones extremas del campo con certificación IP67.',
-          precioBase: 800,
-          porcentajeGanancia: 40,
-          precioVenta: 1120,
-          imagenPrincipal: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-          activo: true,
-          fechaCreacion: new Date('2024-02-01')
-        },
-        {
-          id: 3,
-          nombre: 'Controlador Maestro CM-500',
-          descripcion: 'Unidad central de control para sistemas de riego de gran escala',
-          descripcionDetallada: 'Controlador robusto con conectividad 4G/WiFi, capacidad para 16 zonas de riego y panel solar opcional. Incluye interfaz web y aplicación móvil para gestión remota completa.',
-          precioBase: 8500,
-          porcentajeGanancia: 30,
-          precioVenta: 11050,
-          imagenPrincipal: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=400&fit=crop',
-          activo: false,
-          fechaCreacion: new Date('2024-01-10')
-        }
-      ];
-      
-      this.aplicarFiltros();
-      this.loading.set(false);
-    }, 1000);
-  }
-
-  protected aplicarFiltros(): void {
-    let filtrados = [...this.productos];
-
-    if (this.filtros.busqueda.trim()) {
+    if (this.filtros.busqueda) {
       const termino = this.filtros.busqueda.toLowerCase();
-      filtrados = filtrados.filter(p => 
+      resultado = resultado.filter(p => 
         p.nombre.toLowerCase().includes(termino) ||
-        p.descripcion?.toLowerCase().includes(termino)
+        (p.descripcion && p.descripcion.toLowerCase().includes(termino))
       );
     }
 
-    if (this.filtros.estado) {
-      const estado = this.filtros.estado === 'true';
-      filtrados = filtrados.filter(p => p.activo === estado);
+    if (this.filtros.activo !== '') {
+      const activo = this.filtros.activo === 'true';
+      resultado = resultado.filter(p => p.activo === activo);
     }
 
-    this.productosFiltrados = filtrados;
-    this.totalProductos = filtrados.length;
-    this.totalPaginas = Math.ceil(this.totalProductos / this.pageSize);
+    if (this.filtros.precioMinimo !== null) {
+      resultado = resultado.filter(p => p.precioVenta >= this.filtros.precioMinimo!);
+    }
+
+    if (this.filtros.precioMaximo !== null) {
+      resultado = resultado.filter(p => p.precioVenta <= this.filtros.precioMaximo!);
+    }
+
+    return resultado;
+  });
+
+  productosPaginados = computed(() => {
+    const inicio = (this.currentPage - 1) * this.itemsPerPage;
+    const fin = inicio + this.itemsPerPage;
+    return this.productosFiltrados().slice(inicio, fin);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.productosFiltrados().length / this.itemsPerPage);
+  });
+
+  estadisticas = computed(() => {
+    const productos = this.productos();
+    return {
+      total: productos.length,
+      activos: productos.filter(p => p.activo).length,
+      sinReceta: productos.filter(p => p.cantidadMateriasPrimas === 0).length,
+      inventarioInsuficiente: productos.filter(p => p.estadoInventario === 'Insuficiente').length,
+      valorTotal: productos.filter(p => p.activo).reduce((total, p) => total + p.precioVenta, 0)
+    };
+  });
+
+  constructor(
+    private productosAdminService: ProductosAdminService,
+    private materiasPrimasService: MateriasPrimasService,
+    private fb: FormBuilder
+  ) {
+    this.createForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      descripcion: [''],
+      descripcionDetallada: [''],
+      precioBase: [0, [Validators.required, Validators.min(0.01)]],
+      porcentajeGanancia: [30, [Validators.required, Validators.min(0)]],
+      imagenPrincipal: [''],
+      videoDemo: [''],
+      caracteristicas: this.fb.array([]),
+      beneficios: this.fb.array([])
+    });
+
+    this.editForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      descripcion: [''],
+      descripcionDetallada: [''],
+      precioBase: [0, [Validators.required, Validators.min(0.01)]],
+      porcentajeGanancia: [30, [Validators.required, Validators.min(0)]],
+      imagenPrincipal: [''],
+      videoDemo: [''],
+      activo: [true],
+      caracteristicas: this.fb.array([]),
+      beneficios: this.fb.array([])
+    });
+
+    this.materiaPrimaForm = this.fb.group({
+      materiaPrimaId: ['', [Validators.required]],
+      cantidadRequerida: [1, [Validators.required, Validators.min(0.01)]],
+      notas: ['']
+    });
+  }
+
+  ngOnInit() {
+    this.cargarDatos();
+  }
+
+  async cargarDatos() {
+    this.loading.set(true);
+    this.error.set(null);
+
+    try {
+      const [productosResponse, materiasResponse] = await Promise.all([
+        this.productosAdminService.obtenerProductosAdmin().toPromise(),
+        this.materiasPrimasService.obtenerMateriasPrimas().toPromise()
+      ]);
+
+      if (productosResponse?.success) {
+        this.productos.set(productosResponse.data || []);
+      }
+
+      if (materiasResponse?.success) {
+        this.materiasPrimasDisponibles.set(materiasResponse.data || []);
+      }
+    } catch (error: any) {
+      this.error.set(error.message || 'Error al cargar los datos');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  // Gestión de FormArrays
+  get createCaracteristicas(): FormArray {
+    return this.createForm.get('caracteristicas') as FormArray;
+  }
+
+  get createBeneficios(): FormArray {
+    return this.createForm.get('beneficios') as FormArray;
+  }
+
+  get editCaracteristicas(): FormArray {
+    return this.editForm.get('caracteristicas') as FormArray;
+  }
+
+  get editBeneficios(): FormArray {
+    return this.editForm.get('beneficios') as FormArray;
+  }
+
+  agregarCaracteristica(formType: 'create' | 'edit') {
+    const array = formType === 'create' ? this.createCaracteristicas : this.editCaracteristicas;
+    array.push(this.fb.control('', [Validators.required]));
+  }
+
+  eliminarCaracteristica(index: number, formType: 'create' | 'edit') {
+    const array = formType === 'create' ? this.createCaracteristicas : this.editCaracteristicas;
+    array.removeAt(index);
+  }
+
+  agregarBeneficio(formType: 'create' | 'edit') {
+    const array = formType === 'create' ? this.createBeneficios : this.editBeneficios;
+    array.push(this.fb.control('', [Validators.required]));
+  }
+
+  eliminarBeneficio(index: number, formType: 'create' | 'edit') {
+    const array = formType === 'create' ? this.createBeneficios : this.editBeneficios;
+    array.removeAt(index);
+  }
+
+  // Modales
+  openCreateModal() {
+    this.createForm.reset();
+    this.createCaracteristicas.clear();
+    this.createBeneficios.clear();
+    this.agregarCaracteristica('create');
+    this.agregarBeneficio('create');
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal.set(false);
+    this.error.set(null);
+  }
+
+  async openEditModal(producto: ProductoAdmin) {
+    try {
+      const response = await this.productosAdminService.obtenerProductoAdminPorId(producto.id).toPromise();
+      if (response?.success) {
+        const productoDetalle: ProductoDetalle = response.data;
+        this.selectedProducto.set(productoDetalle);
+
+        // Limpiar arrays
+        this.editCaracteristicas.clear();
+        this.editBeneficios.clear();
+
+        // Llenar formulario
+        this.editForm.patchValue({
+          nombre: productoDetalle.nombre,
+          descripcion: productoDetalle.descripcion,
+          descripcionDetallada: productoDetalle.descripcionDetallada,
+          precioBase: productoDetalle.precioBase,
+          porcentajeGanancia: productoDetalle.porcentajeGanancia,
+          imagenPrincipal: productoDetalle.imagenPrincipal,
+          videoDemo: productoDetalle.videoDemo,
+          activo: productoDetalle.activo
+        });
+
+        // Agregar características
+        if (productoDetalle.caracteristicas) {
+          productoDetalle.caracteristicas.forEach(caracteristica => {
+            this.editCaracteristicas.push(this.fb.control(caracteristica, [Validators.required]));
+          });
+        }
+
+        // Agregar beneficios
+        if (productoDetalle.beneficios) {
+          productoDetalle.beneficios.forEach(beneficio => {
+            this.editBeneficios.push(this.fb.control(beneficio, [Validators.required]));
+          });
+        }
+
+        this.showEditModal.set(true);
+      }
+    } catch (error: any) {
+      this.error.set(error.message || 'Error al cargar el producto');
+    }
+  }
+
+  closeEditModal() {
+    this.showEditModal.set(false);
+    this.selectedProducto.set(null);
+    this.error.set(null);
+  }
+
+  async openRecetaModal(producto: ProductoAdmin) {
+    try {
+      const [productoResponse, recetaResponse] = await Promise.all([
+        this.productosAdminService.obtenerProductoAdminPorId(producto.id).toPromise(),
+        this.productosAdminService.obtenerMateriasPrimasProducto(producto.id).toPromise()
+      ]);
+
+      if (productoResponse?.success && recetaResponse?.success) {
+        this.selectedProducto.set(productoResponse.data);
+        this.materiasPrimasProducto.set(recetaResponse.data.materiasPrimas || []);
+        this.materiaPrimaForm.reset();
+        this.showRecetaModal.set(true);
+      }
+    } catch (error: any) {
+      this.error.set(error.message || 'Error al cargar la receta del producto');
+    }
+  }
+
+  closeRecetaModal() {
+    this.showRecetaModal.set(false);
+    this.selectedProducto.set(null);
+    this.materiasPrimasProducto.set([]);
+    this.error.set(null);
+  }
+
+  async openAnalisisModal(producto: ProductoAdmin) {
+    try {
+      const response = await this.productosAdminService.obtenerAnalisisCostos(producto.id).toPromise();
+      if (response?.success) {
+        this.analisisCostos.set(response.data);
+        this.selectedProducto.set({ ...producto } as ProductoDetalle);
+        this.showAnalisisModal.set(true);
+      }
+    } catch (error: any) {
+      this.error.set(error.message || 'Error al cargar el análisis de costos');
+    }
+  }
+
+  closeAnalisisModal() {
+    this.showAnalisisModal.set(false);
+    this.selectedProducto.set(null);
+    this.analisisCostos.set(null);
+  }
+
+  // CRUD Operations
+  async submitCreate() {
+    if (this.createForm.valid) {
+      this.submitting.set(true);
+      this.error.set(null);
+
+      try {
+        const formValue = this.createForm.value;
+        const productoData: ProductoCreateUpdate = {
+          nombre: formValue.nombre,
+          descripcion: formValue.descripcion,
+          descripcionDetallada: formValue.descripcionDetallada,
+          precioBase: formValue.precioBase,
+          porcentajeGanancia: formValue.porcentajeGanancia,
+          imagenPrincipal: formValue.imagenPrincipal,
+          videoDemo: formValue.videoDemo,
+          caracteristicas: formValue.caracteristicas.filter((c: string) => c.trim()),
+          beneficios: formValue.beneficios.filter((b: string) => b.trim())
+        };
+
+        const response = await this.productosAdminService.crearProductoAdmin(productoData).toPromise();
+        if (response?.success) {
+          await this.cargarDatos();
+          this.closeCreateModal();
+          this.mostrarMensaje('Producto creado exitosamente', 'success');
+        } else {
+          this.error.set(response?.message || 'Error al crear el producto');
+        }
+      } catch (error: any) {
+        this.error.set(error.message || 'Error al crear el producto');
+      } finally {
+        this.submitting.set(false);
+      }
+    }
+  }
+
+  async submitEdit() {
+    if (this.editForm.valid && this.selectedProducto()) {
+      this.submitting.set(true);
+      this.error.set(null);
+
+      try {
+        const formValue = this.editForm.value;
+        const productoData: ProductoCreateUpdate = {
+          nombre: formValue.nombre,
+          descripcion: formValue.descripcion,
+          descripcionDetallada: formValue.descripcionDetallada,
+          precioBase: formValue.precioBase,
+          porcentajeGanancia: formValue.porcentajeGanancia,
+          imagenPrincipal: formValue.imagenPrincipal,
+          videoDemo: formValue.videoDemo,
+          caracteristicas: formValue.caracteristicas.filter((c: string) => c.trim()),
+          beneficios: formValue.beneficios.filter((b: string) => b.trim()),
+          activo: formValue.activo
+        };
+
+        const response = await this.productosAdminService.actualizarProductoAdmin(
+          this.selectedProducto()!.id,
+          productoData
+        ).toPromise();
+
+        if (response?.success) {
+          await this.cargarDatos();
+          this.closeEditModal();
+          this.mostrarMensaje('Producto actualizado exitosamente', 'success');
+        } else {
+          this.error.set(response?.message || 'Error al actualizar el producto');
+        }
+      } catch (error: any) {
+        this.error.set(error.message || 'Error al actualizar el producto');
+      } finally {
+        this.submitting.set(false);
+      }
+    }
+  }
+
+  async eliminarProducto(producto: ProductoAdmin) {
+    if (confirm(`¿Estás seguro de que deseas eliminar "${producto.nombre}"?`)) {
+      try {
+        const response = await this.productosAdminService.eliminarProductoAdmin(producto.id).toPromise();
+        if (response?.success) {
+          await this.cargarDatos();
+          this.mostrarMensaje('Producto eliminado exitosamente', 'success');
+        }
+      } catch (error: any) {
+        this.mostrarMensaje(error.message || 'Error al eliminar el producto', 'error');
+      }
+    }
+  }
+
+  // Gestión de Materias Primas
+  async agregarMateriaPrima() {
+    if (this.materiaPrimaForm.valid && this.selectedProducto()) {
+      this.submitting.set(true);
+      this.error.set(null);
+
+      try {
+        const formValue = this.materiaPrimaForm.value;
+        const materiaData: ProductoMateriaPrimaCreate = {
+          materiaPrimaId: parseInt(formValue.materiaPrimaId),
+          cantidadRequerida: formValue.cantidadRequerida,
+          notas: formValue.notas
+        };
+
+        const response = await this.productosAdminService.agregarMateriaPrimaProducto(
+          this.selectedProducto()!.id,
+          materiaData
+        ).toPromise();
+
+        if (response?.success) {
+          await this.cargarRecetaActual();
+          this.materiaPrimaForm.reset();
+          this.mostrarMensaje('Materia prima agregada exitosamente', 'success');
+        } else {
+          this.error.set(response?.message || 'Error al agregar la materia prima');
+        }
+      } catch (error: any) {
+        this.error.set(error.message || 'Error al agregar la materia prima');
+      } finally {
+        this.submitting.set(false);
+      }
+    }
+  }
+
+  async eliminarMateriaPrima(materiaPrima: ProductoMateriaPrimaDetalle) {
+    if (confirm(`¿Eliminar "${materiaPrima.nombreMateriaPrima}" de la receta?`)) {
+      try {
+        const response = await this.productosAdminService.eliminarMateriaPrimaProducto(
+          this.selectedProducto()!.id,
+          materiaPrima.id
+        ).toPromise();
+
+        if (response?.success) {
+          await this.cargarRecetaActual();
+          this.mostrarMensaje('Materia prima eliminada de la receta', 'success');
+        }
+      } catch (error: any) {
+        this.mostrarMensaje(error.message || 'Error al eliminar la materia prima', 'error');
+      }
+    }
+  }
+
+  async recalcularPrecio(productoId: number) {
+    try {
+      const response = await this.productosAdminService.recalcularPrecioProducto(productoId).toPromise();
+      if (response?.success) {
+        await this.cargarDatos();
+        await this.cargarRecetaActual();
+        this.mostrarMensaje('Precio recalculado exitosamente', 'success');
+      }
+    } catch (error: any) {
+      this.mostrarMensaje(error.message || 'Error al recalcular el precio', 'error');
+    }
+  }
+
+  private async cargarRecetaActual() {
+    if (this.selectedProducto()) {
+      try {
+        const response = await this.productosAdminService.obtenerMateriasPrimasProducto(
+          this.selectedProducto()!.id
+        ).toPromise();
+        
+        if (response?.success) {
+          this.materiasPrimasProducto.set(response.data.materiasPrimas || []);
+        }
+      } catch (error) {
+        console.error('Error al cargar la receta:', error);
+      }
+    }
+  }
+
+  // Filtros y paginación
+  aplicarFiltros() {
     this.currentPage = 1;
   }
 
-  protected limpiarFiltros(): void {
+  limpiarFiltros() {
     this.filtros = {
       busqueda: '',
-      estado: ''
+      activo: '',
+      precioMinimo: null,
+      precioMaximo: null
     };
-    this.aplicarFiltros();
+    this.currentPage = 1;
   }
 
-  protected abrirModalCrear(): void {
-    this.modoEdicion = false;
-    this.productoEditando = null;
-    this.productoForm.reset({
-      activo: true,
-      porcentajeGanancia: 30
-    });
-    this.error.set(null);
-    this.showModal.set(true);
-  }
-
-  protected editarProducto(producto: Producto): void {
-    this.modoEdicion = true;
-    this.productoEditando = producto;
-    this.productoForm.patchValue({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      descripcionDetallada: producto.descripcionDetallada,
-      precioBase: producto.precioBase,
-      porcentajeGanancia: producto.porcentajeGanancia,
-      imagenPrincipal: producto.imagenPrincipal,
-      activo: producto.activo
-    });
-    this.error.set(null);
-    this.showModal.set(true);
-  }
-
-  protected cerrarModal(): void {
-    this.showModal.set(false);
-    this.productoForm.reset();
-    this.error.set(null);
-    this.modoEdicion = false;
-    this.productoEditando = null;
-  }
-
-  // NUEVO MÉTODO PARA VER DETALLES
-  protected verDetalles(producto: Producto): void {
-    this.productoDetalles = producto;
-    this.showDetailsModal.set(true);
-  }
-
-  // NUEVO MÉTODO PARA CERRAR MODAL DE DETALLES
-  protected cerrarModalDetalles(): void {
-    this.showDetailsModal.set(false);
-    this.productoDetalles = null;
-  }
-
-  protected guardarProducto(): void {
-    if (!this.productoForm.valid) {
-      this.markFormGroupTouched();
-      return;
-    }
-
-    this.loadingModal.set(true);
-    this.error.set(null);
-
-    setTimeout(() => {
-      const formData = this.productoForm.value;
-      const precioVenta = formData.precioBase * (1 + formData.porcentajeGanancia / 100);
-
-      if (this.modoEdicion && this.productoEditando) {
-        const index = this.productos.findIndex(p => p.id === this.productoEditando!.id);
-        if (index !== -1) {
-          this.productos[index] = {
-            ...this.productos[index],
-            ...formData,
-            precioVenta
-          };
-        }
-      } else {
-        const nuevoProducto: Producto = {
-          id: Math.max(...this.productos.map(p => p.id), 0) + 1,
-          ...formData,
-          precioVenta,
-          fechaCreacion: new Date()
-        };
-        this.productos.unshift(nuevoProducto);
-      }
-
-      this.aplicarFiltros();
-      this.loadingModal.set(false);
-      this.cerrarModal();
-    }, 1500);
-  }
-
-  protected toggleEstado(producto: Producto): void {
-    const index = this.productos.findIndex(p => p.id === producto.id);
-    if (index !== -1) {
-      this.productos[index].activo = !this.productos[index].activo;
-      this.aplicarFiltros();
+  cambiarPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= this.totalPages()) {
+      this.currentPage = pagina;
     }
   }
 
-  protected eliminarProducto(producto: Producto): void {
-    if (confirm(`¿Estás seguro de que deseas eliminar "${producto.nombre}"?`)) {
-      const index = this.productos.findIndex(p => p.id === producto.id);
-      if (index !== -1) {
-        this.productos.splice(index, 1);
-        this.aplicarFiltros();
-      }
-    }
-  }
-
-  protected calcularPrecioVenta(): number {
-    const precioBase = this.productoForm.get('precioBase')?.value || 0;
-    const porcentaje = this.productoForm.get('porcentajeGanancia')?.value || 0;
-    return precioBase * (1 + porcentaje / 100);
-  }
-
-  protected cambiarPagina(page: number): void {
-    if (page >= 1 && page <= this.totalPaginas) {
-      this.currentPage = page;
-    }
-  }
-
-  protected getPaginas(): number[] {
+  getPaginas(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage;
     const paginas: number[] = [];
-    const maxPaginas = Math.min(5, this.totalPaginas);
-    let inicio = Math.max(1, this.currentPage - Math.floor(maxPaginas / 2));
-    let fin = Math.min(this.totalPaginas, inicio + maxPaginas - 1);
     
-    if (fin - inicio + 1 < maxPaginas) {
-      inicio = Math.max(1, fin - maxPaginas + 1);
-    }
-
+    const inicio = Math.max(1, current - 2);
+    const fin = Math.min(total, current + 2);
+    
     for (let i = inicio; i <= fin; i++) {
       paginas.push(i);
     }
+    
     return paginas;
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.productoForm.controls).forEach(key => {
-      const control = this.productoForm.get(key);
-      control?.markAsTouched();
-    });
+  // Utilidades
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN'
+    }).format(value);
   }
 
-  protected getFieldError(fieldName: string): string | null {
-    const control = this.productoForm.get(fieldName);
-    if (control && control.invalid && (control.dirty || control.touched)) {
-      if (control.errors?.['required']) {
-        return `${this.getFieldLabel(fieldName)} es requerido`;
-      }
-      if (control.errors?.['minlength']) {
-        return `${this.getFieldLabel(fieldName)} debe tener al menos ${control.errors?.['minlength'].requiredLength} caracteres`;
-      }
-      if (control.errors?.['min']) {
-        return `${this.getFieldLabel(fieldName)} debe ser mayor a ${control.errors?.['min'].min}`;
-      }
-      if (control.errors?.['max']) {
-        return `${this.getFieldLabel(fieldName)} debe ser menor a ${control.errors?.['max'].max}`;
-      }
-      if (control.errors?.['pattern']) {
-        return 'URL inválida. Debe comenzar con http:// o https://';
-      }
+  formatDate(date: Date | string): string {
+    return new Date(date).toLocaleDateString('es-MX');
+  }
+
+  getEstadoInventarioClass(estado: string): string {
+    switch (estado) {
+      case 'Disponible': return 'badge-success';
+      case 'Insuficiente': return 'badge-danger';
+      default: return 'badge-secondary';
+    }
+  }
+
+  getNombreMateriaPrima(id: number): string {
+    const materia = this.materiasPrimasDisponibles().find(m => m.id === id);
+    return materia?.nombre || 'Materia prima';
+  }
+
+  calcularTotalReceta(): number {
+    return this.materiasPrimasProducto().reduce((total, mp) => total + mp.costoTotal, 0);
+  }
+
+  // Validación de formularios
+  isFieldInvalid(fieldName: string, form: FormGroup): boolean {
+    const field = form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  getFieldError(fieldName: string, form: FormGroup): string | null {
+    const field = form.get(fieldName);
+    if (field && field.errors && (field.dirty || field.touched)) {
+      if (field.errors['required']) return `${fieldName} es requerido`;
+      if (field.errors['minlength']) return `${fieldName} es muy corto`;
+      if (field.errors['min']) return `${fieldName} debe ser mayor a ${field.errors['min'].min}`;
     }
     return null;
   }
 
-  private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      nombre: 'El nombre',
-      precioBase: 'El precio base',
-      porcentajeGanancia: 'El porcentaje de ganancia',
-      imagenPrincipal: 'La URL de la imagen'
-    };
-    return labels[fieldName] || fieldName;
+  async retry() {
+    await this.cargarDatos();
   }
 
-  protected isFieldInvalid(fieldName: string): boolean {
-    const control = this.productoForm.get(fieldName);
-    return !!(control && control.invalid && (control.dirty || control.touched));
+  private mostrarMensaje(mensaje: string, tipo: 'success' | 'error') {
+    console.log(`${tipo}: ${mensaje}`);
   }
-
-  protected Math = Math;
 }

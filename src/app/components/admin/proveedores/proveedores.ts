@@ -2,6 +2,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ProveedoresService } from '../../../services/proveedores';
 
 interface Proveedor {
   id: number;
@@ -27,7 +28,7 @@ interface ApiResponse<T> {
 
 @Component({
   selector: 'app-proveedores',
-    imports: [CommonModule, FormsModule, ReactiveFormsModule], 
+  imports: [CommonModule, FormsModule, ReactiveFormsModule], 
   templateUrl: './proveedores.html',
   styleUrl: './proveedores.scss'
 })
@@ -58,7 +59,10 @@ export class Proveedores implements OnInit {
     { value: 'false', label: 'Inactivos' }
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private proveedoresService: ProveedoresService // 🔥 INYECTAR SERVICIO
+  ) {
     this.createForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       razonSocial: ['', [Validators.required, Validators.maxLength(100)]],
@@ -85,61 +89,45 @@ export class Proveedores implements OnInit {
     this.loadProveedores();
   }
 
+  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadProveedores(): void {
     this.loading.set(true);
     this.error.set(null);
     
-    // Simulando datos para demo - en producción usar servicio HTTP
-    setTimeout(() => {
-      const mockProveedores: Proveedor[] = [
-        {
-          id: 1,
-          nombre: 'TechAgro Solutions',
-          razonSocial: 'TechAgro Solutions S.A. de C.V.',
-          rfc: 'TAS123456789',
-          direccion: 'Av. Tecnología 123, León, Guanajuato',
-          telefono: '+52 477 123 4567',
-          email: 'contacto@techagro.com',
-          contactoPrincipal: 'Juan Pérez',
-          activo: true,
-          fechaRegistro: new Date('2023-01-15'),
-          materiasPrimas: []
-        },
-        {
-          id: 2,
-          nombre: 'Sensores Inteligentes MX',
-          razonSocial: 'Sensores Inteligentes México S.A.',
-          rfc: 'SIM987654321',
-          direccion: 'Blvd. Industrial 456, Guadalajara, Jalisco',
-          telefono: '+52 33 987 6543',
-          email: 'ventas@sensores.mx',
-          contactoPrincipal: 'María González',
-          activo: true,
-          fechaRegistro: new Date('2023-03-22'),
-          materiasPrimas: []
-        },
-        {
-          id: 3,
-          nombre: 'Componentes Electrónicos',
-          razonSocial: 'Componentes Electrónicos del Bajío',
-          rfc: 'CEB456789123',
-          direccion: 'Zona Industrial Norte, León, Guanajuato',
-          telefono: '+52 477 456 7890',
-          email: 'info@compelectronicos.com',
-          contactoPrincipal: 'Carlos Rodríguez',
-          activo: false,
-          fechaRegistro: new Date('2022-11-08'),
-          materiasPrimas: []
+    this.proveedoresService.obtenerProveedores().subscribe({
+      next: (response) => {
+        console.log('Proveedores cargados:', response);
+        
+        if (response.success && response.data) {
+          // Mapear datos del backend al formato del frontend
+          const proveedores = response.data.map((p: any) => ({
+            id: p.id,
+            nombre: p.nombre,
+            razonSocial: p.razonSocial,
+            rfc: p.rfc,
+            direccion: p.direccion,
+            telefono: p.telefono,
+            email: p.email,
+            contactoPrincipal: p.contactoPrincipal,
+            activo: p.activo,
+            fechaRegistro: new Date(p.fechaRegistro),
+            materiasPrimas: p.materiasPrimas || [],
+            compras: p.compras || []
+          }));
+          
+          this.proveedores.set(proveedores);
+          this.applyFilters();
         }
-      ];
-      
-      this.proveedores.set(mockProveedores);
-      this.applyFilters();
-      this.loading.set(false);
-    }, 1000);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        console.error('Error al cargar proveedores:', error);
+        this.error.set('Error al cargar proveedores: ' + (error.error?.message || error.message));
+        this.loading.set(false);
+      }
+    });
   }
 
- 
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm.set(target.value);
@@ -171,15 +159,16 @@ export class Proveedores implements OnInit {
     
     this.filteredProveedores.set(filtered);
   }
-protected onEstadoChange(event: Event): void {
-  const target = event.target as HTMLSelectElement;
-  this.selectedEstado.set(target.value);
-  this.applyFilters();
-}
 
-protected trackByValue(index: number, item: { value: string; label: string }): string {
-  return item.value;
-}
+  protected onEstadoChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedEstado.set(target.value);
+    this.applyFilters();
+  }
+
+  protected trackByValue(index: number, item: { value: string; label: string }): string {
+    return item.value;
+  }
 
   protected openCreateModal(): void {
     this.createForm.reset();
@@ -220,83 +209,102 @@ protected trackByValue(index: number, item: { value: string; label: string }): s
     this.selectedProveedor.set(null);
   }
 
+  // 🔥 GUARDAR EN LA BASE DE DATOS REAL
   protected submitCreate(): void {
     if (this.createForm.valid) {
       this.submitting.set(true);
       
-      // Simulando creación - en producción usar servicio HTTP
-      setTimeout(() => {
-        const newProveedor: Proveedor = {
-          id: Date.now(),
-          ...this.createForm.value,
-          activo: true,
-          fechaRegistro: new Date(),
-          materiasPrimas: [],
-          compras: []
-        };
-        
-        const current = this.proveedores();
-        this.proveedores.set([...current, newProveedor]);
-        this.applyFilters();
-        
-        this.submitting.set(false);
-        this.closeCreateModal();
-      }, 1000);
+      const proveedorData = {
+        ...this.createForm.value,
+        activo: true,
+        fechaRegistro: new Date()
+      };
+
+      console.log('Enviando proveedor:', proveedorData);
+
+      this.proveedoresService.crearProveedor(proveedorData).subscribe({
+        next: (response) => {
+          console.log('Proveedor creado:', response);
+          this.loadProveedores(); // Recargar datos
+          this.closeCreateModal();
+          this.submitting.set(false);
+        },
+        error: (error) => {
+          console.error('Error al crear proveedor:', error);
+          this.submitting.set(false);
+        }
+      });
     }
   }
 
+  // 🔥 ACTUALIZAR EN LA BASE DE DATOS REAL
   protected submitEdit(): void {
     if (this.editForm.valid && this.selectedProveedor()) {
       this.submitting.set(true);
       
-      // Simulando edición - en producción usar servicio HTTP
-      setTimeout(() => {
-        const updated = this.proveedores().map(p => 
-          p.id === this.selectedProveedor()!.id 
-            ? { ...p, ...this.editForm.value }
-            : p
-        );
-        this.proveedores.set(updated);
-        this.applyFilters();
-        
-        this.submitting.set(false);
-        this.closeEditModal();
-      }, 1000);
+      const proveedorData = this.editForm.value;
+
+      this.proveedoresService.actualizarProveedor(this.selectedProveedor()!.id, proveedorData).subscribe({
+        next: (response) => {
+          console.log('Proveedor actualizado:', response);
+          this.loadProveedores(); // Recargar datos
+          this.closeEditModal();
+          this.submitting.set(false);
+        },
+        error: (error) => {
+          console.error('Error al actualizar proveedor:', error);
+          this.submitting.set(false);
+        }
+      });
     }
   }
 
+  // 🔥 CAMBIAR ESTADO EN LA BASE DE DATOS REAL
   protected toggleProveedorEstado(proveedor: Proveedor): void {
-    const updated = this.proveedores().map(p => 
-      p.id === proveedor.id 
-        ? { ...p, activo: !p.activo }
-        : p
-    );
-    this.proveedores.set(updated);
-    this.applyFilters();
+    const nuevoEstado = !proveedor.activo;
+    const proveedorActualizado = { ...proveedor, activo: nuevoEstado };
+
+    this.proveedoresService.actualizarProveedor(proveedor.id, proveedorActualizado).subscribe({
+      next: (response) => {
+        console.log('Estado del proveedor cambiado:', response);
+        this.loadProveedores(); // Recargar datos
+      },
+      error: (error) => {
+        console.error('Error al cambiar estado:', error);
+      }
+    });
   }
-protected contarActivos(): number {
-  return this.proveedores().filter(p => p.activo).length;
-}
 
-protected contarInactivos(): number {
-  return this.proveedores().filter(p => !p.activo).length;
-}
+  protected contarActivos(): number {
+    return this.proveedores().filter(p => p.activo).length;
+  }
 
-protected contarNuevos30Dias(): number {
-  const monthAgo = new Date();
-  monthAgo.setMonth(monthAgo.getMonth() - 1);
+  protected contarInactivos(): number {
+    return this.proveedores().filter(p => !p.activo).length;
+  }
 
-  return this.proveedores().filter(p => {
-    const fechaRegistro = new Date(p.fechaRegistro);
-    return fechaRegistro >= monthAgo;
-  }).length;
-}
+  protected contarNuevos30Dias(): number {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
 
+    return this.proveedores().filter(p => {
+      const fechaRegistro = new Date(p.fechaRegistro);
+      return fechaRegistro >= monthAgo;
+    }).length;
+  }
+
+  // 🔥 ELIMINAR DE LA BASE DE DATOS REAL
   protected deleteProveedor(proveedor: Proveedor): void {
     if (confirm(`¿Estás seguro de que deseas eliminar el proveedor "${proveedor.nombre}"?`)) {
-      const filtered = this.proveedores().filter(p => p.id !== proveedor.id);
-      this.proveedores.set(filtered);
-      this.applyFilters();
+      this.proveedoresService.eliminarProveedor(proveedor.id).subscribe({
+        next: (response) => {
+          console.log('Proveedor eliminado:', response);
+          this.loadProveedores(); // Recargar datos
+        },
+        error: (error) => {
+          console.error('Error al eliminar proveedor:', error);
+        }
+      });
     }
   }
 
@@ -315,5 +323,4 @@ protected contarNuevos30Dias(): number {
   protected retry(): void {
     this.loadProveedores();
   }
-  
 }
