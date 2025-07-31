@@ -1,0 +1,384 @@
+<!-- src/app/components/cliente/comentarios/comentarios.html -->
+<div class="comentarios">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>💬 Mis Comentarios</h1>
+    <p>Gestiona tus comentarios y calificaciones de productos</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando comentarios...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <h3>⚠️ Error</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadData()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error" class="content">
+    <!-- Tabs Navigation -->
+    <div class="tabs-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'mis-comentarios'"
+        (click)="setActiveTab('mis-comentarios')"
+      >
+        💬 Mis Comentarios ({{ comments.length }})
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'productos-comentables'"
+        (click)="setActiveTab('productos-comentables')"
+      >
+        📦 Productos Comentables ({{ commentableProducts.length }})
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'estadisticas'"
+        (click)="setActiveTab('estadisticas')"
+      >
+        📊 Estadísticas
+      </button>
+    </div>
+
+    <!-- Tab: Mis Comentarios -->
+    <div *ngIf="activeTab === 'mis-comentarios'" class="tab-content">
+      <!-- Filtros -->
+      <div class="filters-section">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Buscar:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="searchTerm"
+              placeholder="Producto o contenido del comentario..."
+              class="filter-input"
+            >
+          </div>
+          <div class="filter-group">
+            <label>Estado:</label>
+            <select [(ngModel)]="filterStatus" class="filter-select">
+              <option *ngFor="let status of statusOptions" [value]="status === 'Todos' ? '' : status">
+                {{ status }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <button class="btn btn-secondary" (click)="searchTerm = ''; filterStatus = ''">
+              Limpiar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Comentarios -->
+      <div class="comments-list">
+        <div *ngIf="filteredComments.length === 0" class="no-data">
+          <div class="no-data-content">
+            <h3>💬</h3>
+            <p *ngIf="comments.length === 0">Aún no has realizado ningún comentario</p>
+            <p *ngIf="comments.length > 0 && filteredComments.length === 0">No se encontraron comentarios con los filtros seleccionados</p>
+          </div>
+        </div>
+
+        <div 
+          *ngFor="let comment of filteredComments" 
+          class="comment-card"
+        >
+          <div class="comment-header">
+            <div class="product-info">
+              <img 
+                *ngIf="comment.imagenProducto" 
+                [src]="comment.imagenProducto" 
+                [alt]="comment.nombreProducto"
+                class="product-image"
+              >
+              <div class="product-details">
+                <h3>{{ comment.nombreProducto }}</h3>
+                <div class="comment-rating">
+                  {{ renderStars(comment.calificacion) }}
+                  <span class="rating-number">({{ comment.calificacion }}/5)</span>
+                </div>
+              </div>
+            </div>
+            <div class="comment-status">
+              <span class="status-badge" [ngClass]="getStatusClass(comment.estadoTexto)">
+                {{ getStatusIcon(comment.estadoTexto) }} {{ comment.estadoTexto }}
+              </span>
+            </div>
+          </div>
+
+          <div class="comment-content">
+            <p class="comment-text">{{ comment.contenido }}</p>
+            <div class="comment-meta">
+              <span class="comment-date">
+                📅 {{ formatDate(comment.fechaComentario) }}
+              </span>
+              <span *ngIf="comment.fechaRespuesta" class="response-date">
+                💬 Respondido: {{ formatDate(comment.fechaRespuesta) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Respuesta del Admin -->
+          <div *ngIf="comment.respuestaAdmin" class="admin-response">
+            <h4>Respuesta de SmartAgro:</h4>
+            <p>{{ comment.respuestaAdmin }}</p>
+          </div>
+
+          <!-- Acciones -->
+          <div class="comment-actions">
+            <button 
+              *ngIf="canEditComment(comment)"
+              class="btn btn-outline btn-sm"
+              (click)="openEditModal(comment)"
+            >
+              ✏️ Editar
+            </button>
+            <button 
+              *ngIf="canDeleteComment(comment)"
+              class="btn btn-danger btn-sm"
+              (click)="deleteComment(comment)"
+            >
+              🗑️ Eliminar
+            </button>
+            <span *ngIf="!canEditComment(comment) && !canDeleteComment(comment)" class="no-actions">
+              ✅ Comentario {{ comment.aprobado ? 'aprobado' : 'procesado' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Productos Comentables -->
+    <div *ngIf="activeTab === 'productos-comentables'" class="tab-content">
+      <div class="products-grid">
+        <div *ngIf="commentableProducts.length === 0" class="no-data">
+          <div class="no-data-content">
+            <h3>📦</h3>
+            <p>No tienes productos disponibles para comentar</p>
+            <small>Solo puedes comentar productos que hayas comprado</small>
+          </div>
+        </div>
+
+        <div 
+          *ngFor="let product of commentableProducts" 
+          class="product-card"
+        >
+          <div class="product-image-container">
+            <img 
+              *ngIf="product.imagenProducto" 
+              [src]="product.imagenProducto" 
+              [alt]="product.nombreProducto"
+              class="product-image"
+            >
+            <div *ngIf="!product.imagenProducto" class="product-placeholder">
+              📦
+            </div>
+          </div>
+
+          <div class="product-content">
+            <h3>{{ product.nombreProducto }}</h3>
+            <p *ngIf="product.descripcionProducto" class="product-description">
+              {{ product.descripcionProducto }}
+            </p>
+
+            <div class="product-stats">
+              <div class="stat">
+                <span class="stat-label">Total Comprado:</span>
+                <span class="stat-value">{{ product.totalComprado }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Número de Compras:</span>
+                <span class="stat-value">{{ product.numeroCompras }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Última Compra:</span>
+                <span class="stat-value">{{ formatDate(product.fechaUltimaCompra) }}</span>
+              </div>
+            </div>
+
+            <div class="product-actions">
+              <button 
+                class="btn btn-primary"
+                (click)="openCommentModal(product)"
+              >
+                ⭐ Comentar Producto
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Estadísticas -->
+    <div *ngIf="activeTab === 'estadisticas'" class="tab-content">
+      <div *ngIf="stats" class="stats-container">
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-icon">💬</div>
+            <div class="stat-content">
+              <h3>{{ stats.totalComentarios }}</h3>
+              <p>Total de Comentarios</p>
+            </div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <h3>{{ stats.comentariosAprobados }}</h3>
+              <p>Comentarios Aprobados</p>
+            </div>
+          </div>
+
+          <div class="stat-card warning">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-content">
+              <h3>{{ stats.comentariosPendientes }}</h3>
+              <p>Comentarios Pendientes</p>
+            </div>
+          </div>
+
+          <div class="stat-card danger">
+            <div class="stat-icon">❌</div>
+            <div class="stat-content">
+              <h3>{{ stats.comentariosRechazados }}</h3>
+              <p>Comentarios Rechazados</p>
+            </div>
+          </div>
+
+          <div class="stat-card info">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+              <h3>{{ stats.calificacionPromedio }}/5</h3>
+              <p>Calificación Promedio</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico de distribución -->
+        <div class="stats-distribution">
+          <h3>📊 Distribución de Comentarios</h3>
+          <div class="distribution-bars">
+            <div class="distribution-item">
+              <span class="distribution-label">Aprobados</span>
+              <div class="distribution-bar">
+                <div 
+                  class="distribution-fill success"
+                  [style.width.%]="stats.totalComentarios > 0 ? (stats.comentariosAprobados / stats.totalComentarios) * 100 : 0"
+                ></div>
+              </div>
+              <span class="distribution-value">{{ stats.comentariosAprobados }}</span>
+            </div>
+
+            <div class="distribution-item">
+              <span class="distribution-label">Pendientes</span>
+              <div class="distribution-bar">
+                <div 
+                  class="distribution-fill warning"
+                  [style.width.%]="stats.totalComentarios > 0 ? (stats.comentariosPendientes / stats.totalComentarios) * 100 : 0"
+                ></div>
+              </div>
+              <span class="distribution-value">{{ stats.comentariosPendientes }}</span>
+            </div>
+
+            <div class="distribution-item">
+              <span class="distribution-label">Rechazados</span>
+              <div class="distribution-bar">
+                <div 
+                  class="distribution-fill danger"
+                  [style.width.%]="stats.totalComentarios > 0 ? (stats.comentariosRechazados / stats.totalComentarios) * 100 : 0"
+                ></div>
+              </div>
+              <span class="distribution-value">{{ stats.comentariosRechazados }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Comentarios -->
+  <div *ngIf="showCommentModal" class="modal-overlay" (click)="closeCommentModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <span *ngIf="!editingComment">⭐ Comentar Producto</span>
+          <span *ngIf="editingComment">✏️ Editar Comentario</span>
+        </h3>
+        <button class="close-button" (click)="closeCommentModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="selectedProduct" class="product-info">
+          <h4>{{ selectedProduct.nombreProducto }}</h4>
+          <p>Comparte tu experiencia con este producto</p>
+        </div>
+
+        <div *ngIf="editingComment" class="product-info">
+          <h4>{{ editingComment.nombreProducto }}</h4>
+          <p>Modifica tu comentario</p>
+        </div>
+
+        <div class="form-group">
+          <label>Calificación:</label>
+          <div class="rating-selector">
+            <button 
+              *ngFor="let star of [1,2,3,4,5]" 
+              type="button"
+              class="star-button"
+              [class.active]="star <= commentForm.calificacion"
+              (click)="commentForm.calificacion = star"
+            >
+              ⭐
+            </button>
+          </div>
+          <small>Calificación: {{ commentForm.calificacion }}/5</small>
+        </div>
+
+        <div class="form-group">
+          <label>Tu comentario:</label>
+          <textarea 
+            [(ngModel)]="commentForm.contenido"
+            placeholder="Comparte tu experiencia con este producto..."
+            class="comment-textarea"
+            rows="4"
+            maxlength="1000"
+          ></textarea>
+          <small>{{ commentForm.contenido.length }}/1000 caracteres</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          class="btn btn-secondary" 
+          (click)="closeCommentModal()"
+          [disabled]="submittingComment"
+        >
+          Cancelar
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="submitComment()"
+          [disabled]="!commentForm.contenido.trim() || submittingComment"
+        >
+          <span *ngIf="submittingComment">
+            {{ editingComment ? 'Actualizando...' : 'Enviando...' }}
+          </span>
+          <span *ngIf="!submittingComment">
+            {{ editingComment ? '💾 Actualizar' : '📤 Enviar Comentario' }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

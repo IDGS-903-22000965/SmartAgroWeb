@@ -114,7 +114,7 @@
       <p>{{ error() }}</p>
       <button (click)="retry()" class="btn btn-primary">Reintentar</button>
     </div>
-  } @else if (filteredCompras().length === 0) {
+  } @else if (compras().length === 0) {
     <div class="empty-container">
       <div class="empty-icon">📦</div>
       <h3>No hay compras</h3>
@@ -133,7 +133,7 @@
         <div class="col">Acciones</div>
       </div>
       
-      @for (compra of filteredCompras(); track compra.id) {
+      @for (compra of compras(); track compra.id) {
         <div class="table-row">
           <div class="col numero-compra">
             <strong>{{ compra.numeroCompra }}</strong>
@@ -211,124 +211,152 @@
 
   <!-- Create Modal -->
   @if (showCreateModal()) {
-    <div class="modal-overlay" (click)="closeCreateModal()">
-      <div class="modal-content large-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Nueva Compra a Proveedor</h2>
-          <button (click)="closeCreateModal()" class="close-btn">✕</button>
-        </div>
-        
-        <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
-          <div class="modal-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="proveedor">Proveedor *</label>
-                <select
-                  id="proveedor"
-                  formControlName="proveedorId"
-                  class="form-control">
-                  <option value="">Seleccionar proveedor</option>
-                  @for (proveedor of proveedores(); track proveedor.id) {
-                    <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-                  }
-                </select>
-                @if (createForm.get('proveedorId')?.errors && createForm.get('proveedorId')?.touched) {
-                  <div class="error-message">El proveedor es requerido</div>
+  <div class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Nueva Compra a Proveedor</h2>
+        <button (click)="closeCreateModal()" class="close-btn">✕</button>
+      </div>
+      
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="proveedor">Proveedor *</label>
+              <select
+                id="proveedor"
+                formControlName="proveedorId"
+                class="form-control">
+                <option value="">Seleccionar proveedor</option>
+                @for (proveedor of proveedores(); track proveedor.id) {
+                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
                 }
-              </div>
-
-              <div class="form-group">
-                <label for="fechaCompra">Fecha de Compra *</label>
-                <input
-                  id="fechaCompra"
-                  type="date"
-                  formControlName="fechaCompra"
-                  class="form-control">
-                @if (createForm.get('fechaCompra')?.errors && createForm.get('fechaCompra')?.touched) {
-                  <div class="error-message">La fecha es requerida</div>
-                }
-              </div>
-
-              <div class="form-group full-width">
-                <label for="observaciones">Observaciones</label>
-                <textarea
-                  id="observaciones"
-                  formControlName="observaciones"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Observaciones adicionales sobre la compra"></textarea>
-              </div>
+              </select>
+              @if (createForm.get('proveedorId')?.errors && createForm.get('proveedorId')?.touched) {
+                <div class="error-message">El proveedor es requerido</div>
+              }
             </div>
+
+            <div class="form-group">
+              <label for="fechaCompra">Fecha de Compra *</label>
+              <input
+                id="fechaCompra"
+                type="date"
+                formControlName="fechaCompra"
+                class="form-control">
+              @if (createForm.get('fechaCompra')?.errors && createForm.get('fechaCompra')?.touched) {
+                <div class="error-message">La fecha es requerida</div>
+              }
+            </div>
+
+            <div class="form-group full-width">
+              <label for="observaciones">Observaciones</label>
+              <textarea
+                id="observaciones"
+                formControlName="observaciones"
+                class="form-control"
+                rows="3"
+                placeholder="Observaciones adicionales sobre la compra"></textarea>
+            </div>
+          </div>
 
             <!-- Detalles de la Compra -->
             <div class="detalles-section">
-              <div class="detalles-header">
-                <h3>Detalles de la Compra</h3>
-                <button type="button" (click)="addDetalle('create')" class="btn btn-sm btn-success">
-                  ➕ Agregar Item
-                </button>
-              </div>
+            <div class="detalles-header">
+              <h3>Detalles de la Compra</h3>
+              <button type="button" (click)="addDetalle('create')" class="btn btn-sm btn-success">
+                ➕ Agregar Item
+              </button>
+            </div>
 
               <!-- ✅ VERIFICACIÓN MÁS ESTRICTA -->
-              @if (createDetalles && createDetalles.length > 0 && createDetalles.controls) {
+                 <!-- ✅ SECCIÓN DE DETALLES CORREGIDA -->
+            <div formArrayName="detalles">
+              @if (createDetalles.length > 0) {
                 <div class="detalles-table">
                   @for (detalle of createDetalles.controls; track $index; let i = $index) {
-                    @if (detalle && detalle.get('materiaPrimaId') && detalle.get('cantidad') && detalle.get('precioUnitario')) {
-                      <div class="detalle-row" [formGroupName]="i">
-                        <div class="detalle-field">
-                          <label>Materia Prima *</label>
-                          <select formControlName="materiaPrimaId" class="form-control">
-                            <option value="">Seleccionar</option>
-                            @for (mp of materiasPrimas(); track mp.id) {
-                              <option [value]="mp.id">{{ mp.nombre }}</option>
-                            }
-                          </select>
-                        </div>
+                    <div class="detalle-row" [formGroupName]="i">
+                      <div class="detalle-field">
+                        <label>Materia Prima *</label>
+                        <select 
+                          formControlName="materiaPrimaId" 
+                          class="form-control"
+                          (change)="onMateriaPrimaChange(i, 'create')">
+                          <option value="">Seleccionar materia prima</option>
+                          @for (mp of materiasPrimas(); track mp.id) {
+                            <option [value]="mp.id">{{ mp.nombre }} - {{ mp.unidadMedida }}</option>
+                          }
+                        </select>
+                        @if (detalle.get('materiaPrimaId')?.errors && detalle.get('materiaPrimaId')?.touched) {
+                          <div class="error-message">Seleccione una materia prima</div>
+                        }
+                      </div>
 
-                        <div class="detalle-field">
-                          <label>Cantidad *</label>
-                          <input type="number" formControlName="cantidad" class="form-control" min="1">
-                        </div>
+                      <div class="detalle-field">
+                        <label>Cantidad *</label>
+                        <input 
+                          type="number" 
+                          formControlName="cantidad" 
+                          class="form-control" 
+                          min="0.01" 
+                          step="0.01"
+                          placeholder="1.00">
+                        @if (detalle.get('cantidad')?.errors && detalle.get('cantidad')?.touched) {
+                          <div class="error-message">Cantidad requerida (mín. 0.01)</div>
+                        }
+                      </div>
 
-                        <div class="detalle-field">
-                          <label>Precio Unitario *</label>
-                          <input type="number" formControlName="precioUnitario" class="form-control" min="0.01" step="0.01">
-                        </div>
+                      <div class="detalle-field">
+                        <label>Precio Unitario *</label>
+                        <input 
+                          type="number" 
+                          formControlName="precioUnitario" 
+                          class="form-control" 
+                          min="0.01" 
+                          step="0.01"
+                          placeholder="0.00">
+                        @if (detalle.get('precioUnitario')?.errors && detalle.get('precioUnitario')?.touched) {
+                          <div class="error-message">Precio requerido (mín. 0.01)</div>
+                        }
+                      </div>
 
-                        <div class="detalle-field">
-                          <label>Subtotal</label>
-                          <div class="subtotal-display">
-                            {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
-                          </div>
-                        </div>
-
-                        <div class="detalle-actions">
-                          <button type="button" (click)="removeDetalle('create', i)" class="btn btn-sm btn-danger">
-                            🗑️
-                          </button>
+                      <div class="detalle-field">
+                        <label>Subtotal</label>
+                        <div class="subtotal-display">
+                          {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
                         </div>
                       </div>
-                    }
+
+                      <div class="detalle-actions">
+                        <button 
+                          type="button" 
+                          (click)="removeDetalle('create', i)" 
+                          class="btn btn-sm btn-danger"
+                          title="Eliminar item">
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
                   }
                 </div>
-              }
-
-              @if (createDetalles.length === 0) {
+              } @else {
                 <div class="no-detalles">
-                  <p>No hay items agregados</p>
+                  <p>No hay items agregados. Debe agregar al menos un item para crear la compra.</p>
                   <button type="button" (click)="addDetalle('create')" class="btn btn-primary">
                     ➕ Agregar Primer Item
                   </button>
                 </div>
               }
+            </div>
 
-              @if (createDetalles.length > 0) {
-                <div class="total-section">
-                  <div class="total-row">
-                    <strong>Total: {{ formatCurrency(calculateTotal('create')) }}</strong>
-                  </div>
+               @if (createDetalles.length > 0) {
+              <div class="total-section">
+                <div class="total-row">
+                  <strong>Total: {{ formatCurrency(createFormTotal()) }}</strong>
                 </div>
-              }
+              </div>
+            }
+            
             </div>
           </div>
           
@@ -449,7 +477,7 @@
               @if (editDetalles.length > 0) {
                 <div class="total-section">
                   <div class="total-row">
-                    <strong>Total: {{ formatCurrency(calculateTotal('edit')) }}</strong>
+<strong>Total: {{ formatCurrency(calculateTotal('edit')) }}</strong>
                   </div>
                 </div>
               }
@@ -457,18 +485,18 @@
           </div>
           
           <div class="modal-footer">
-            <button type="button" (click)="closeEditModal()" class="btn btn-outline">
-              Cancelar
-            </button>
+          <button type="button" (click)="closeCreateModal()" class="btn btn-outline">
+            Cancelar
+          </button>
             <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!editForm.valid || submitting()">
-              @if (submitting()) {
-                <span class="spinner-sm"></span>
-              }
-              Guardar Cambios
-            </button>
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="!createFormValid() || submitting()">
+            @if (submitting()) {
+              <span class="spinner-sm"></span>
+            }
+            {{ submitting() ? 'Creando...' : 'Crear Compra' }}
+          </button>
           </div>
         </form>
       </div>
@@ -521,8 +549,9 @@
             </div>
 
             <div class="details-section">
-              <h3>Detalles de Items ({{ selectedCompra()!.detalles?.length || 0 }} items)</h3>
-              @if (selectedCompra()!.detalles?.length) {
+<h3 class="text-lg font-semibold">
+  Items ({{ selectedCompra()!.detalles.length || 0 }} items)
+</h3>              @if (selectedCompra()!.detalles.length) {
                 <div class="detalles-table-view">
                   <div class="detalles-header-view">
                     <div class="col">Materia Prima</div>

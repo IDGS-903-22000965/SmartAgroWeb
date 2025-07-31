@@ -1,12 +1,12 @@
-// src/app/components/admin/compras-proveedores/compras-proveedores.component.ts - VERSIÓN FINAL
-import { Component, OnInit, signal } from '@angular/core';
+// src/app/components/admin/compras-proveedores/compras-proveedores.component.ts - VERSIÓN CORREGIDA
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ComprasProveedoresService } from '../../../services/compras-proveedores';
 import { ProveedoresService } from '../../../services/proveedores';
 import { MateriasPrimasService } from '../../../services/materias-primas';
 
-// Interfaces locales (pueden moverse a un archivo separado de modelos)
+// Interfaces
 interface MateriaPrima {
   id: number;
   nombre: string;
@@ -73,11 +73,12 @@ interface CompraStats {
   styleUrl: './compras-proveedores.component.scss'
 })
 export class ComprasProveedores implements OnInit {
+  // Signals
   protected compras = signal<CompraProveedor[]>([]);
-  protected filteredCompras = signal<CompraProveedor[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
   protected stats = signal<CompraStats | null>(null);
+  protected submitting = signal(false);
   
   // Datos auxiliares
   protected proveedores = signal<Proveedor[]>([]);
@@ -93,11 +94,39 @@ export class ComprasProveedores implements OnInit {
   protected showEditModal = signal(false);
   protected showDetailsModal = signal(false);
   protected selectedCompra = signal<CompraDetails | null>(null);
-  protected submitting = signal(false);
   
   // Formularios
   protected createForm!: FormGroup;
   protected editForm!: FormGroup;
+
+  // Computed para total del formulario crear
+  protected createFormTotal = computed(() => {
+    if (!this.createForm) return 0;
+    
+    try {
+      const detalles = this.createForm.get('detalles')?.value || [];
+      return detalles.reduce((total: number, detalle: any) => {
+        const cantidad = Number(detalle.cantidad) || 0;
+        const precio = Number(detalle.precioUnitario) || 0;
+        return total + (cantidad * precio);
+      }, 0);
+    } catch (error) {
+      return 0;
+    }
+  });
+
+  // Computed para validez del formulario crear
+  protected createFormValid = computed(() => {
+    if (!this.createForm) return false;
+    
+    const basicValid = this.createForm.get('proveedorId')?.valid && 
+                      this.createForm.get('fechaCompra')?.valid;
+    
+    const detallesArray = this.createForm.get('detalles') as FormArray;
+    const detallesValid = detallesArray && detallesArray.length > 0 && detallesArray.valid;
+    
+    return basicValid && detallesValid;
+  });
 
   protected estadoOptions = [
     { value: 'todos', label: 'Todos los estados' },
@@ -112,7 +141,6 @@ export class ComprasProveedores implements OnInit {
     private proveedoresService: ProveedoresService,
     private materiasPrimasService: MateriasPrimasService
   ) {
-    // ✅ INICIALIZACIÓN CORRECTA DE FORMULARIOS
     this.initializeForms();
   }
 
@@ -120,15 +148,15 @@ export class ComprasProveedores implements OnInit {
     this.createForm = this.fb.group({
       proveedorId: ['', [Validators.required]],
       fechaCompra: [new Date().toISOString().split('T')[0], [Validators.required]],
-      observaciones: ['', [Validators.maxLength(1000)]],
-      detalles: this.fb.array([]) // ✅ FormArray vacío inicialmente
+      observaciones: [''],
+      detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
     });
 
     this.editForm = this.fb.group({
       proveedorId: ['', [Validators.required]],
       fechaCompra: ['', [Validators.required]],
-      observaciones: ['', [Validators.maxLength(1000)]],
-      detalles: this.fb.array([]) // ✅ FormArray vacío inicialmente
+      observaciones: [''],
+      detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
     });
   }
 
@@ -136,25 +164,16 @@ export class ComprasProveedores implements OnInit {
     this.loadData();
   }
 
-  // ✅ GETTERS SEGUROS PARA FORMARRAYS
+  // Getters seguros para FormArrays
   get createDetalles(): FormArray {
-    const detalles = this.createForm.get('detalles') as FormArray;
-    if (!detalles) {
-      console.error('createDetalles FormArray not found');
-      return this.fb.array([]);
-    }
-    return detalles;
+    return this.createForm.get('detalles') as FormArray;
   }
 
   get editDetalles(): FormArray {
-    const detalles = this.editForm.get('detalles') as FormArray;
-    if (!detalles) {
-      console.error('editDetalles FormArray not found');
-      return this.fb.array([]);
-    }
-    return detalles;
+    return this.editForm.get('detalles') as FormArray;
   }
 
+  // Cargar datos
   private loadData(): void {
     this.loadCompras();
     this.loadProveedores();
@@ -162,7 +181,6 @@ export class ComprasProveedores implements OnInit {
     this.loadStats();
   }
 
-  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadCompras(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -172,7 +190,7 @@ export class ComprasProveedores implements OnInit {
       this.selectedEstado() !== 'todos' ? this.selectedEstado() : undefined
     ).subscribe({
       next: (response) => {
-        console.log('Respuesta del API:', response);
+        console.log('✅ Compras cargadas:', response);
         
         if (response && response.compras) {
           const compras = response.compras.map((c: any) => ({
@@ -187,66 +205,59 @@ export class ComprasProveedores implements OnInit {
           }));
           
           this.compras.set(compras);
-          this.applyFilters();
         }
         this.loading.set(false);
       },
       error: (error) => {
-        console.error('Error al cargar compras:', error);
+        console.error('❌ Error al cargar compras:', error);
         this.error.set('Error al cargar compras: ' + (error.error?.message || error.message));
         this.loading.set(false);
       }
     });
   }
 
-  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadProveedores(): void {
     this.proveedoresService.obtenerProveedores().subscribe({
       next: (response) => {
-        console.log('Proveedores cargados:', response);
+        console.log('✅ Proveedores cargados:', response);
         
         if (response.success && response.data) {
           this.proveedores.set(response.data);
         } else if (Array.isArray(response)) {
-          // En caso de que la respuesta sea directamente un array
           this.proveedores.set(response);
         }
       },
       error: (error) => {
-        console.error('Error al cargar proveedores:', error);
+        console.error('❌ Error al cargar proveedores:', error);
       }
     });
   }
 
-  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadMateriasPrimas(): void {
     this.materiasPrimasService.obtenerMateriasPrimas().subscribe({
       next: (response) => {
-        console.log('Materias primas cargadas:', response);
+        console.log('✅ Materias primas cargadas:', response);
         
         if (response.success && response.data) {
           this.materiasPrimas.set(response.data);
         } else if (Array.isArray(response)) {
-          // En caso de que la respuesta sea directamente un array
           this.materiasPrimas.set(response);
         }
       },
       error: (error) => {
-        console.error('Error al cargar materias primas:', error);
+        console.error('❌ Error al cargar materias primas:', error);
       }
     });
   }
 
-  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadStats(): void {
     this.comprasProveedoresService.obtenerEstadisticas().subscribe({
       next: (response) => {
-        console.log('Estadísticas cargadas:', response);
+        console.log('✅ Estadísticas cargadas:', response);
         this.stats.set(response);
       },
       error: (error) => {
-        console.error('Error al cargar estadísticas:', error);
-        // Establecer estadísticas por defecto en caso de error
+        console.error('❌ Error al cargar estadísticas:', error);
         this.stats.set({
           totalCompras: 0,
           comprasPendientes: 0,
@@ -260,84 +271,60 @@ export class ComprasProveedores implements OnInit {
     });
   }
 
+  // Eventos de filtros
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm.set(target.value);
-    this.loadCompras(); // 🔥 RECARGAR DESDE API
+    this.loadCompras();
   }
 
   protected onEstadoChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedEstado.set(target.value);
-    this.loadCompras(); // 🔥 RECARGAR DESDE API
+    this.loadCompras();
   }
 
   protected onProveedorChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedProveedor.set(target.value);
-    this.loadCompras(); // 🔥 RECARGAR DESDE API
+    this.loadCompras();
   }
 
-  private applyFilters(): void {
-    // Los filtros ahora se aplican en el servidor, solo mostramos los datos
-    this.filteredCompras.set(this.compras());
-  }
-
-  // ✅ CREACIÓN SEGURA DE FORMGROUP PARA DETALLES
+  // Manejo de detalles
   protected createDetalleGroup(): FormGroup {
-    return this.fb.group({
+    const group = this.fb.group({
       materiaPrimaId: ['', [Validators.required]],
-      cantidad: [1, [Validators.required, Validators.min(1)]],
+      cantidad: [1, [Validators.required, Validators.min(0.01)]],
       precioUnitario: [0, [Validators.required, Validators.min(0.01)]]
     });
+
+    // Suscribirse a cambios para recalcular totales
+    group.valueChanges.subscribe(() => {
+      // Disparar recálculo del total
+      setTimeout(() => this.createForm.updateValueAndValidity(), 0);
+    });
+
+    return group;
   }
 
-  // ✅ MÉTODO SEGURO PARA AGREGAR DETALLES
   protected addDetalle(form: 'create' | 'edit'): void {
-    try {
-      const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
-      const newDetalle = this.createDetalleGroup();
-      detalles.push(newDetalle);
-      console.log(`Detalle agregado al formulario ${form}:`, detalles.length);
-    } catch (error) {
-      console.error('Error al agregar detalle:', error);
-    }
+    const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
+    const newDetalle = this.createDetalleGroup();
+    detalles.push(newDetalle);
+    
+    console.log(`✅ Detalle agregado al formulario ${form}. Total detalles:`, detalles.length);
   }
 
-  // ✅ MÉTODO SEGURO PARA REMOVER DETALLES
   protected removeDetalle(form: 'create' | 'edit', index: number): void {
-    try {
-      const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
-      if (index >= 0 && index < detalles.length) {
-        detalles.removeAt(index);
-        console.log(`Detalle ${index} removido del formulario ${form}`);
-      }
-    } catch (error) {
-      console.error('Error al remover detalle:', error);
+    const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
+    if (index >= 0 && index < detalles.length) {
+      detalles.removeAt(index);
+      console.log(`✅ Detalle ${index} removido del formulario ${form}`);
     }
   }
 
   protected calculateSubtotal(cantidad: number, precio: number): number {
-    return cantidad * precio;
-  }
-
-  protected calculateTotal(form: 'create' | 'edit'): number {
-    try {
-      const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
-      return detalles.value.reduce((total: number, detalle: any) => {
-        return total + (detalle.cantidad * detalle.precioUnitario);
-      }, 0);
-    } catch (error) {
-      console.error('Error al calcular total:', error);
-      return 0;
-    }
-  }
-
-  protected calculateFormTotals(): void {
-    // Forzar detección de cambios para recalcular totales
-    setTimeout(() => {
-      this.createForm.updateValueAndValidity();
-    }, 0);
+    return (Number(cantidad) || 0) * (Number(precio) || 0);
   }
 
   protected getMateriaPrimaNombre(id: number): string {
@@ -345,96 +332,94 @@ export class ComprasProveedores implements OnInit {
     return materiaPrima?.nombre || '';
   }
 
-  // ✅ MODAL CREAR COMPLETAMENTE REVISADO
-  protected openCreateModal(): void {
-    try {
-      console.log('🔵 Abriendo modal de crear...');
-      
-      // Reinicializar formulario
-      this.createForm = this.fb.group({
-        proveedorId: ['', [Validators.required]],
-        fechaCompra: [new Date().toISOString().split('T')[0], [Validators.required]],
-        observaciones: ['', [Validators.maxLength(1000)]],
-        detalles: this.fb.array([]) // FormArray completamente nuevo
-      });
-
-      // Esperar a que Angular procese el cambio
-      setTimeout(() => {
-        this.addDetalle('create');
-        this.showCreateModal.set(true);
-        console.log('✅ Modal de crear abierto exitosamente');
-      }, 100);
-      
-    } catch (error) {
-      console.error('❌ Error al abrir modal de crear:', error);
+  protected onMateriaPrimaChange(index: number, form: 'create' | 'edit'): void {
+    const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
+    const detalle = detalles.at(index);
+    const materiaPrimaId = detalle.get('materiaPrimaId')?.value;
+    
+    if (materiaPrimaId) {
+      const materiaPrima = this.materiasPrimas().find(m => m.id == materiaPrimaId);
+      if (materiaPrima) {
+        // Sugerir el costo unitario de la materia prima
+        detalle.get('precioUnitario')?.setValue(materiaPrima.costoUnitario);
+      }
     }
+  }
+
+  // Modales
+  protected openCreateModal(): void {
+    console.log('🔵 Abriendo modal de crear...');
+    
+    // Reinicializar formulario completamente
+    this.createForm = this.fb.group({
+      proveedorId: ['', [Validators.required]],
+      fechaCompra: [new Date().toISOString().split('T')[0], [Validators.required]],
+      observaciones: [''],
+      detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
+    });
+
+    // Agregar un detalle inicial
+    this.addDetalle('create');
+    
+    this.showCreateModal.set(true);
+    console.log('✅ Modal de crear abierto');
   }
 
   protected closeCreateModal(): void {
     this.showCreateModal.set(false);
-    // Reinicializar formulario al cerrar
     this.initializeForms();
   }
 
-  // ✅ MODAL EDITAR COMPLETAMENTE REVISADO
   protected openEditModal(compra: CompraProveedor): void {
-    try {
-      console.log('🔵 Abriendo modal de editar para compra:', compra.id);
-      
-      this.comprasProveedoresService.obtenerCompraPorId(compra.id).subscribe({
-        next: (response) => {
-          console.log('Detalles de compra cargados:', response);
-          
-          const compraDetails: CompraDetails = {
-            ...compra,
-            proveedorId: response.proveedorId,
-            proveedorRazonSocial: response.proveedorRazonSocial,
-            detalles: response.detalles || []
-          };
+    console.log('🔵 Abriendo modal de editar para compra:', compra.id);
+    
+    this.comprasProveedoresService.obtenerCompraPorId(compra.id).subscribe({
+      next: (response) => {
+        console.log('✅ Detalles de compra cargados:', response);
+        
+        const compraDetails: CompraDetails = {
+          ...compra,
+          proveedorId: response.proveedorId,
+          proveedorRazonSocial: response.proveedorRazonSocial,
+          detalles: response.detalles || []
+        };
 
-          // Reinicializar formulario de edición
-          this.editForm = this.fb.group({
-            proveedorId: [compraDetails.proveedorId, [Validators.required]],
-            fechaCompra: [new Date(compraDetails.fechaCompra).toISOString().split('T')[0], [Validators.required]],
-            observaciones: [compraDetails.observaciones || '', [Validators.maxLength(1000)]],
-            detalles: this.fb.array([]) // FormArray completamente nuevo
+        // Reinicializar formulario de edición
+        this.editForm = this.fb.group({
+          proveedorId: [compraDetails.proveedorId, [Validators.required]],
+          fechaCompra: [new Date(compraDetails.fechaCompra).toISOString().split('T')[0], [Validators.required]],
+          observaciones: [compraDetails.observaciones || ''],
+          detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
+        });
+
+        // Agregar detalles existentes
+        const editDetalles = this.editForm.get('detalles') as FormArray;
+        compraDetails.detalles.forEach(detalle => {
+          const detalleGroup = this.createDetalleGroup();
+          detalleGroup.patchValue({
+            materiaPrimaId: detalle.materiaPrimaId,
+            cantidad: detalle.cantidad,
+            precioUnitario: detalle.precioUnitario
           });
+          editDetalles.push(detalleGroup);
+        });
 
-          // Esperar a que Angular procese el cambio
-          setTimeout(() => {
-            // Agregar detalles existentes
-            const editDetalles = this.editForm.get('detalles') as FormArray;
-            compraDetails.detalles.forEach(detalle => {
-              const detalleGroup = this.fb.group({
-                materiaPrimaId: [detalle.materiaPrimaId, [Validators.required]],
-                cantidad: [detalle.cantidad, [Validators.required, Validators.min(1)]],
-                precioUnitario: [detalle.precioUnitario, [Validators.required, Validators.min(0.01)]]
-              });
-              editDetalles.push(detalleGroup);
-            });
-
-            this.selectedCompra.set(compraDetails);
-            this.showEditModal.set(true);
-            console.log('✅ Modal de editar abierto exitosamente');
-          }, 100);
-        },
-        error: (error) => {
-          console.error('❌ Error al cargar detalles:', error);
-        }
-      });
-    } catch (error) {
-      console.error('❌ Error al abrir modal de editar:', error);
-    }
+        this.selectedCompra.set(compraDetails);
+        this.showEditModal.set(true);
+        console.log('✅ Modal de editar abierto');
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar detalles:', error);
+      }
+    });
   }
 
   protected closeEditModal(): void {
     this.showEditModal.set(false);
     this.selectedCompra.set(null);
-    // Reinicializar formulario al cerrar
     this.initializeForms();
   }
 
-  // 🔥 CARGAR DATOS REALES DE LA BASE DE DATOS
   protected openDetailsModal(compra: CompraProveedor): void {
     this.comprasProveedoresService.obtenerCompraPorId(compra.id).subscribe({
       next: (response) => {
@@ -449,7 +434,7 @@ export class ComprasProveedores implements OnInit {
         this.showDetailsModal.set(true);
       },
       error: (error) => {
-        console.error('Error al cargar detalles:', error);
+        console.error('❌ Error al cargar detalles:', error);
       }
     });
   }
@@ -459,45 +444,42 @@ export class ComprasProveedores implements OnInit {
     this.selectedCompra.set(null);
   }
 
-  // 🔥 GUARDAR EN LA BASE DE DATOS REAL
+  // Envío de formularios
   protected submitCreate(): void {
-    console.log('🔍 Form status:', {
-      valid: this.createForm.valid,
-      value: this.createForm.value,
-      errors: this.createForm.errors,
-      detallesValid: this.createDetalles.valid,
-      detallesValue: this.createDetalles.value,
-      detallesErrors: this.createDetalles.errors
-    });
+    console.log('🔍 Intentando crear compra...');
+    console.log('Form valid:', this.createFormValid());
+    console.log('Form value:', this.createForm.value);
+    console.log('Form errors:', this.getFormErrors(this.createForm));
     
-    if (this.createForm.valid) {
+    if (this.createFormValid()) {
       this.submitting.set(true);
       
       const formValue = this.createForm.value;
       const createDto = {
         proveedorId: parseInt(formValue.proveedorId),
         fechaCompra: new Date(formValue.fechaCompra),
-        observaciones: formValue.observaciones,
+        observaciones: formValue.observaciones || '',
         detalles: formValue.detalles.map((d: any) => ({
           materiaPrimaId: parseInt(d.materiaPrimaId),
-          cantidad: d.cantidad,
-          precioUnitario: d.precioUnitario
+          cantidad: Number(d.cantidad),
+          precioUnitario: Number(d.precioUnitario)
         }))
       };
 
-      console.log('Enviando compra:', createDto);
+      console.log('📤 Enviando compra:', createDto);
 
       this.comprasProveedoresService.crearCompra(createDto).subscribe({
         next: (response) => {
-          console.log('Compra creada:', response);
-          this.loadCompras(); // Recargar datos
-          this.loadStats(); // Recargar estadísticas
+          console.log('✅ Compra creada:', response);
+          this.loadCompras();
+          this.loadStats();
           this.closeCreateModal();
           this.submitting.set(false);
         },
         error: (error) => {
-          console.error('Error al crear compra:', error);
+          console.error('❌ Error al crear compra:', error);
           this.submitting.set(false);
+          this.error.set('Error al crear compra: ' + (error.error?.message || error.message));
         }
       });
     } else {
@@ -506,7 +488,6 @@ export class ComprasProveedores implements OnInit {
     }
   }
 
-  // 🔥 ACTUALIZAR EN LA BASE DE DATOS REAL
   protected submitEdit(): void {
     if (this.editForm.valid && this.selectedCompra()) {
       this.submitting.set(true);
@@ -515,24 +496,24 @@ export class ComprasProveedores implements OnInit {
       const updateDto = {
         proveedorId: parseInt(formValue.proveedorId),
         fechaCompra: new Date(formValue.fechaCompra),
-        observaciones: formValue.observaciones,
+        observaciones: formValue.observaciones || '',
         detalles: formValue.detalles.map((d: any) => ({
           materiaPrimaId: parseInt(d.materiaPrimaId),
-          cantidad: d.cantidad,
-          precioUnitario: d.precioUnitario
+          cantidad: Number(d.cantidad),
+          precioUnitario: Number(d.precioUnitario)
         }))
       };
 
       this.comprasProveedoresService.actualizarCompra(this.selectedCompra()!.id, updateDto).subscribe({
         next: (response) => {
-          console.log('Compra actualizada:', response);
-          this.loadCompras(); // Recargar datos
-          this.loadStats(); // Recargar estadísticas
+          console.log('✅ Compra actualizada:', response);
+          this.loadCompras();
+          this.loadStats();
           this.closeEditModal();
           this.submitting.set(false);
         },
         error: (error) => {
-          console.error('Error al actualizar compra:', error);
+          console.error('❌ Error al actualizar compra:', error);
           this.submitting.set(false);
         }
       });
@@ -542,7 +523,7 @@ export class ComprasProveedores implements OnInit {
     }
   }
 
-  // ✅ MÉTODO AUXILIAR PARA MARCAR FORMULARIO COMO TOUCHED
+  // Utilidades
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
       const control = formGroup.get(key);
@@ -558,39 +539,50 @@ export class ComprasProveedores implements OnInit {
     });
   }
 
-  // 🔥 CAMBIAR ESTADO EN LA BASE DE DATOS REAL
+  private getFormErrors(form: FormGroup): any {
+    let formErrors: any = {};
+
+    Object.keys(form.controls).forEach(key => {
+      const controlErrors = form.get(key)?.errors;
+      if (controlErrors) {
+        formErrors[key] = controlErrors;
+      }
+    });
+
+    return formErrors;
+  }
+
   protected cambiarEstado(compra: CompraProveedor, nuevoEstado: string): void {
     if (confirm(`¿Estás seguro de cambiar el estado a "${nuevoEstado}"?`)) {
       this.comprasProveedoresService.cambiarEstado(compra.id, nuevoEstado).subscribe({
         next: (response) => {
-          console.log('Estado cambiado:', response);
-          this.loadCompras(); // Recargar datos
-          this.loadStats(); // Recargar estadísticas
+          console.log('✅ Estado cambiado:', response);
+          this.loadCompras();
+          this.loadStats();
         },
         error: (error) => {
-          console.error('Error al cambiar estado:', error);
+          console.error('❌ Error al cambiar estado:', error);
         }
       });
     }
   }
 
-  // 🔥 ELIMINAR DE LA BASE DE DATOS REAL
   protected deleteCompra(compra: CompraProveedor): void {
     if (confirm(`¿Estás seguro de que deseas eliminar la compra "${compra.numeroCompra}"?`)) {
       this.comprasProveedoresService.eliminarCompra(compra.id).subscribe({
         next: (response) => {
-          console.log('Compra eliminada:', response);
-          this.loadCompras(); // Recargar datos
-          this.loadStats(); // Recargar estadísticas
+          console.log('✅ Compra eliminada:', response);
+          this.loadCompras();
+          this.loadStats();
         },
         error: (error) => {
-          console.error('Error al eliminar compra:', error);
+          console.error('❌ Error al eliminar compra:', error);
         }
       });
     }
   }
 
-  // Utilidades
+  // Formateo
   protected formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -605,7 +597,21 @@ export class ComprasProveedores implements OnInit {
       day: 'numeric'
     });
   }
-
+protected calculateTotal(form: 'create' | 'edit'): number {
+  try {
+    const detalles = form === 'create' ? this.createDetalles : this.editDetalles;
+    if (!detalles || !detalles.value) return 0;
+    
+    return detalles.value.reduce((total: number, detalle: any) => {
+      const cantidad = Number(detalle.cantidad) || 0;
+      const precio = Number(detalle.precioUnitario) || 0;
+      return total + (cantidad * precio);
+    }, 0);
+  } catch (error) {
+    console.error('Error al calcular total:', error);
+    return 0;
+  }
+}
   protected getEstadoBadgeClass(estado: string): string {
     switch (estado) {
       case 'Pendiente': return 'warning';

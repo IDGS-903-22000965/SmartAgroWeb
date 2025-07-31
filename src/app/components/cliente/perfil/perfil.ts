@@ -1,26 +1,34 @@
-// src/app/components/perfil/perfil.ts
-import { Component, OnInit, signal } from '@angular/core';
+// src/app/components/cliente/perfil/perfil.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Auth } from '../../../services/auth'; // Tres niveles arriba
-import { User } from '../../../models/models'; // ← Ajustado según tu estructura
+import { ClientProfileService, ClientProfile, UpdateClientProfile, ChangePassword } from '../../../services/client-profile';
+import { Auth } from '../../../services/auth'; // ← Corregido: Auth en lugar de AuthService
 
 @Component({
   selector: 'app-perfil',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './perfil.html',
   styleUrl: './perfil.scss'
 })
 export class Perfil implements OnInit {
-  protected currentUser = signal<User | null>(null);
-  protected editMode = signal(false);
-  protected loading = signal(false);
-  protected success = signal(false);
-  protected error = signal<string | null>(null);
-  protected profileForm: FormGroup;
+  currentUser: ClientProfile | null = null;
+  profileForm: FormGroup;
+  passwordForm: FormGroup;
+  loading = false;
+  loadingProfile = true;
+  loadingPassword = false;
+  editMode = false;
+  changePasswordMode = false;
+  success = false;
+  error: string | null = null;
+  passwordError: string | null = null;
+  passwordSuccess = false;
 
   constructor(
-    private auth: Auth,
+    private profileService: ClientProfileService,
+    private auth: Auth, // ← Corregido: auth en lugar de authService
     private fb: FormBuilder
   ) {
     this.profileForm = this.fb.group({
@@ -30,22 +38,41 @@ export class Perfil implements OnInit {
       telefono: ['', [Validators.pattern(/^\d{10}$/)]],
       direccion: ['']
     });
+
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
   }
 
   ngOnInit(): void {
-    // Obtener el usuario actual del servicio de auth
-    const user = this.auth.getCurrentUser();
-    console.log('👤 Usuario actual en perfil:', user); // ← Debug
-    
-    if (user) {
-      this.currentUser.set(user);
-      this.loadUserData(user);
-    } else {
-      this.error.set('No se pudo cargar la información del usuario');
-    }
+    this.loadProfile();
   }
 
-  private loadUserData(user: User): void {
+  loadProfile(): void {
+    this.loadingProfile = true;
+    this.error = null;
+
+    this.profileService.getProfile().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.currentUser = response.data;
+          this.loadUserData(response.data);
+        } else {
+          this.error = 'Error al cargar el perfil';
+        }
+        this.loadingProfile = false;
+      },
+      error: (error) => {
+        console.error('Error cargando perfil:', error);
+        this.error = 'Error al cargar el perfil';
+        this.loadingProfile = false;
+      }
+    });
+  }
+
+  private loadUserData(user: ClientProfile): void {
     this.profileForm.patchValue({
       nombre: user.nombre || '',
       apellidos: user.apellidos || '',
@@ -55,66 +82,123 @@ export class Perfil implements OnInit {
     });
   }
 
-  protected toggleEditMode(): void {
-    this.editMode.set(!this.editMode());
-    this.error.set(null);
-    this.success.set(false);
+  toggleEditMode(): void {
+    this.editMode = !this.editMode;
+    this.error = null;
+    this.success = false;
     
-    if (!this.editMode()) {
+    if (!this.editMode && this.currentUser) {
       // Si salimos del modo edición, restaurar datos originales
-      const user = this.currentUser();
-      if (user) {
-        this.loadUserData(user);
-      }
+      this.loadUserData(this.currentUser);
     }
   }
 
-  protected saveProfile(): void {
+  toggleChangePasswordMode(): void {
+    this.changePasswordMode = !this.changePasswordMode;
+    this.passwordError = null;
+    this.passwordSuccess = false;
+    
+    if (!this.changePasswordMode) {
+      this.passwordForm.reset();
+    }
+  }
+
+  saveProfile(): void {
     if (!this.profileForm.valid) {
-      this.markFormGroupTouched();
+      this.markFormGroupTouched(this.profileForm);
       return;
     }
 
-    this.loading.set(true);
-    this.error.set(null);
+    this.loading = true;
+    this.error = null;
 
-    // Por ahora solo simulamos el guardado
-    // En el futuro aquí llamarías a un servicio para actualizar el perfil
-    setTimeout(() => {
-      this.loading.set(false);
-      this.success.set(true);
-      this.editMode.set(false);
-      
-      // Actualizar los datos del usuario local
-      const formData = this.profileForm.value;
-      const currentUser = this.currentUser();
-      if (currentUser) {
-        const updatedUser: User = {
-          ...currentUser,
-          nombre: formData.nombre,
-          apellidos: formData.apellidos,
-          telefono: formData.telefono,
-          direccion: formData.direccion
-        };
-        this.currentUser.set(updatedUser);
-        
-        // Actualizar también en localStorage
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+    const updateData: UpdateClientProfile = {
+      nombre: this.profileForm.value.nombre,
+      apellidos: this.profileForm.value.apellidos,
+      email: this.profileForm.value.email,
+      telefono: this.profileForm.value.telefono || undefined,
+      direccion: this.profileForm.value.direccion || undefined
+    };
+
+    this.profileService.updateProfile(updateData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.success = true;
+          this.editMode = false;
+          
+          // Recargar el perfil actualizado
+          this.loadProfile();
+          
+          // Ocultar mensaje de éxito después de 3 segundos
+          setTimeout(() => this.success = false, 3000);
+        } else {
+          this.error = response.message || 'Error al actualizar el perfil';
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error actualizando perfil:', error);
+        this.error = 'Error al actualizar el perfil';
+        this.loading = false;
       }
-
-      // Ocultar mensaje de éxito después de 3 segundos
-      setTimeout(() => this.success.set(false), 3000);
-    }, 1000);
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.profileForm.controls).forEach(key => {
-      this.profileForm.get(key)?.markAsTouched();
     });
   }
 
-  protected getFieldError(fieldName: string): string | null {
-    const control = this.profileForm.get(fieldName);
+  changePassword(): void {
+    if (!this.passwordForm.valid) {
+      this.markFormGroupTouched(this.passwordForm);
+      return;
+    }
+
+    this.loadingPassword = true;
+    this.passwordError = null;
+
+    const passwordData: ChangePassword = {
+      currentPassword: this.passwordForm.value.currentPassword,
+      newPassword: this.passwordForm.value.newPassword,
+      confirmPassword: this.passwordForm.value.confirmPassword
+    };
+
+    this.profileService.changePassword(passwordData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.passwordSuccess = true;
+          this.changePasswordMode = false;
+          this.passwordForm.reset();
+          
+          // Ocultar mensaje de éxito después de 3 segundos
+          setTimeout(() => this.passwordSuccess = false, 3000);
+        } else {
+          this.passwordError = response.message || 'Error al cambiar la contraseña';
+        }
+        this.loadingPassword = false;
+      },
+      error: (error) => {
+        console.error('Error cambiando contraseña:', error);
+        this.passwordError = 'Error al cambiar la contraseña';
+        this.loadingPassword = false;
+      }
+    });
+  }
+
+  private passwordMatchValidator(form: FormGroup) {
+    const newPassword = form.get('newPassword')?.value;
+    const confirmPassword = form.get('confirmPassword')?.value;
+    
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      return { passwordMismatch: true };
+    }
+    return null;
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach(key => {
+      formGroup.get(key)?.markAsTouched();
+    });
+  }
+
+  getFieldError(fieldName: string, formGroup: FormGroup = this.profileForm): string | null {
+    const control = formGroup.get(fieldName);
     if (control && control.invalid && (control.dirty || control.touched)) {
       if (control.errors?.['required']) {
         return `${this.getFieldLabel(fieldName)} es requerido`;
@@ -123,7 +207,8 @@ export class Perfil implements OnInit {
         return 'Ingrese un email válido';
       }
       if (control.errors?.['minlength']) {
-        return `${this.getFieldLabel(fieldName)} debe tener al menos ${control.errors?.['minlength'].requiredLength} caracteres`;
+        const requiredLength = control.errors?.['minlength'].requiredLength;
+        return `${this.getFieldLabel(fieldName)} debe tener al menos ${requiredLength} caracteres`;
       }
       if (control.errors?.['pattern']) {
         if (fieldName === 'telefono') {
@@ -134,25 +219,42 @@ export class Perfil implements OnInit {
     return null;
   }
 
+  getPasswordFormError(): string | null {
+    if (this.passwordForm.errors?.['passwordMismatch']) {
+      return 'Las contraseñas no coinciden';
+    }
+    return null;
+  }
+
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       nombre: 'El nombre',
       apellidos: 'Los apellidos',
       email: 'El email',
       telefono: 'El teléfono',
-      direccion: 'La dirección'
+      direccion: 'La dirección',
+      currentPassword: 'La contraseña actual',
+      newPassword: 'La nueva contraseña',
+      confirmPassword: 'La confirmación de contraseña'
     };
     return labels[fieldName] || fieldName;
   }
 
-  protected isFieldInvalid(fieldName: string): boolean {
-    const control = this.profileForm.get(fieldName);
+  isFieldInvalid(fieldName: string, formGroup: FormGroup = this.profileForm): boolean {
+    const control = formGroup.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  protected logout(): void {
-    this.auth.logout();
-    // Redirigir al home o login
-    window.location.href = '/';
+  formatDate(date: Date | string): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  logout(): void {
+    this.auth.logout(); // ← Corregido
   }
 }

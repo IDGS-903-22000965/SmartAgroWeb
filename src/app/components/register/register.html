@@ -12,198 +12,213 @@
             <span class="logo-icon">🌱</span>
             <span class="logo-text">SmartAgro</span>
           </div>
-          <h1>Crear Cuenta</h1>
-          <p>Únete a la revolución de la agricultura inteligente</p>
+          <h1>Solicitar Cuenta</h1>
+          <p>Completa el formulario y nos contactaremos contigo para crear tu cuenta</p>
         </div>
 
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-          @if (error()) {
-            <div class="alert alert-error">
-              <span class="alert-icon">⚠️</span>
-              {{ error() }}
-            </div>
-          }
-
-          @if (success()) {
-            <div class="alert alert-success">
-              <span class="alert-icon">✅</span>
-              {{ success() }}
-            </div>
-          }
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="nombre" class="form-label">Nombre *</label>
-              <div class="input-container">
-                <span class="input-icon">👤</span>
-                <input
-                  type="text"
-                  id="nombre"
-                  formControlName="nombre"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('nombre')"
-                  placeholder="Tu nombre"
-                  autocomplete="given-name">
+        @if (!submitted()) {
+          <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="register-form">
+            @if (error()) {
+              <div class="alert alert-error">
+                <span class="alert-icon">⚠️</span>
+                {{ error() }}
               </div>
-              @if (getFieldError('nombre')) {
-                <span class="field-error">{{ getFieldError('nombre') }}</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="apellidos" class="form-label">Apellidos *</label>
-              <div class="input-container">
-                <span class="input-icon">👤</span>
-                <input
-                  type="text"
-                  id="apellidos"
-                  formControlName="apellidos"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('apellidos')"
-                  placeholder="Tus apellidos"
-                  autocomplete="family-name">
-              </div>
-              @if (getFieldError('apellidos')) {
-                <span class="field-error">{{ getFieldError('apellidos') }}</span>
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="email" class="form-label">Email *</label>
-            <div class="input-container">
-              <span class="input-icon">📧</span>
-              <input
-                type="email"
-                id="email"
-                formControlName="email"
-                class="form-input"
-                [class.error]="isFieldInvalid('email')"
-                placeholder="tu@email.com"
-                autocomplete="email">
-            </div>
-            @if (getFieldError('email')) {
-              <span class="field-error">{{ getFieldError('email') }}</span>
             }
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="telefono" class="form-label">Teléfono</label>
-              <div class="input-container">
-                <span class="input-icon">📱</span>
-                <input
-                  type="tel"
-                  id="telefono"
-                  formControlName="telefono"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('telefono')"
-                  placeholder="1234567890"
-                  autocomplete="tel">
-              </div>
-              @if (getFieldError('telefono')) {
-                <span class="field-error">{{ getFieldError('telefono') }}</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="direccion" class="form-label">Dirección</label>
-              <div class="input-container">
-                <span class="input-icon">📍</span>
-                <input
-                  type="text"
-                  id="direccion"
-                  formControlName="direccion"
-                  class="form-input"
-                  placeholder="Tu dirección"
-                  autocomplete="address-line1">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="password" class="form-label">Contraseña *</label>
-            <div class="input-container">
-              <span class="input-icon">🔒</span>
-              <input
-                [type]="showPassword() ? 'text' : 'password'"
-                id="password"
-                formControlName="password"
-                class="form-input"
-                [class.error]="isFieldInvalid('password')"
-                placeholder="Mínimo 6 caracteres"
-                autocomplete="new-password">
-              <button
-                type="button"
-                class="toggle-password"
-                (click)="togglePasswordVisibility('password')">
-                <span>{{ showPassword() ? '🙈' : '👁️' }}</span>
-              </button>
-            </div>
-            @if (registerForm.get('password')?.value && registerForm.get('password')?.value.length > 0) {
-              <div class="password-strength">
-                <div class="strength-bar">
-                  <div class="strength-fill" [class]="getPasswordStrength()"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nombre" class="form-label">Nombre *</label>
+                <div class="input-container">
+                  <span class="input-icon">👤</span>
+                  <input
+                    type="text"
+                    id="nombre"
+                    formControlName="nombre"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('nombre')"
+                    placeholder="Tu nombre"
+                    autocomplete="given-name">
                 </div>
-                <span class="strength-text">Seguridad: {{ getPasswordStrengthText() }}</span>
+                @if (getFieldError('nombre')) {
+                  <span class="field-error">{{ getFieldError('nombre') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="apellidos" class="form-label">Apellidos *</label>
+                <div class="input-container">
+                  <span class="input-icon">👤</span>
+                  <input
+                    type="text"
+                    id="apellidos"
+                    formControlName="apellidos"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('apellidos')"
+                    placeholder="Tus apellidos"
+                    autocomplete="family-name">
+                </div>
+                @if (getFieldError('apellidos')) {
+                  <span class="field-error">{{ getFieldError('apellidos') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email" class="form-label">Email *</label>
+              <div class="input-container">
+                <span class="input-icon">📧</span>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="form-input"
+                  [class.error]="isFieldInvalid('email')"
+                  placeholder="tu@email.com"
+                  autocomplete="email">
+              </div>
+              @if (getFieldError('email')) {
+                <span class="field-error">{{ getFieldError('email') }}</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <div class="input-container">
+                  <span class="input-icon">📱</span>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    formControlName="telefono"
+                    class="form-input"
+                    [class.error]="isFieldInvalid('telefono')"
+                    placeholder="4771234567"
+                    autocomplete="tel">
+                </div>
+                @if (getFieldError('telefono')) {
+                  <span class="field-error">{{ getFieldError('telefono') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="empresa" class="form-label">Empresa / Finca</label>
+                <div class="input-container">
+                  <span class="input-icon">🏢</span>
+                  <input
+                    type="text"
+                    id="empresa"
+                    formControlName="empresa"
+                    class="form-input"
+                    placeholder="Nombre de tu empresa o finca"
+                    autocomplete="organization">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mensaje" class="form-label">
+                Cuéntanos sobre tu proyecto *
+                <span class="character-count">({{ getCharacterCount() }}/500)</span>
+              </label>
+              <div class="textarea-container">
+                <span class="input-icon textarea-icon">💬</span>
+                <textarea
+                  id="mensaje"
+                  formControlName="mensaje"
+                  class="form-textarea"
+                  [class.error]="isFieldInvalid('mensaje')"
+                  placeholder="Describe qué tipo de sistema de riego necesitas, el tamaño de tu cultivo, tus objetivos, etc."
+                  rows="4"
+                  maxlength="500"></textarea>
+              </div>
+              @if (getFieldError('mensaje')) {
+                <span class="field-error">{{ getFieldError('mensaje') }}</span>
+              }
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn-full"
+              [disabled]="loading()">
+              @if (loading()) {
+                <span class="btn-spinner"></span>
+                Enviando solicitud...
+              } @else {
+                📨 Enviar Solicitud
+              }
+            </button>
+          </form>
+        } @else {
+          <div class="success-container">
+            @if (success()) {
+              <div class="alert alert-success">
+                <span class="alert-icon">✅</span>
+                {{ success() }}
               </div>
             }
-            @if (getFieldError('password')) {
-              <span class="field-error">{{ getFieldError('password') }}</span>
-            }
-          </div>
 
-          <div class="form-group">
-            <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
-            <div class="input-container">
-              <span class="input-icon">🔒</span>
-              <input
-                [type]="showConfirmPassword() ? 'text' : 'password'"
-                id="confirmPassword"
-                formControlName="confirmPassword"
-                class="form-input"
-                [class.error]="isFieldInvalid('confirmPassword')"
-                placeholder="Repite tu contraseña"
-                autocomplete="new-password">
-              <button
-                type="button"
-                class="toggle-password"
-                (click)="togglePasswordVisibility('confirmPassword')">
-                <span>{{ showConfirmPassword() ? '🙈' : '👁️' }}</span>
-              </button>
+            <div class="success-content">
+              <div class="success-icon">🎉</div>
+              <h2>¡Solicitud Recibida!</h2>
+              <p>
+                Hemos recibido tu solicitud de cuenta. Nuestro equipo la revisará y 
+                te contactaremos en las próximas 24 horas para proceder con la creación 
+                de tu cuenta.
+              </p>
+
+              <div class="next-steps">
+                <h3>¿Qué sigue?</h3>
+                <div class="steps-list">
+                  <div class="step-item">
+                    <span class="step-number">1</span>
+                    <span class="step-text">Revisaremos tu solicitud</span>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">2</span>
+                    <span class="step-text">Te contactaremos para confirmar detalles</span>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">3</span>
+                    <span class="step-text">Crearemos tu cuenta y te enviaremos las credenciales</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="success-actions">
+                <button class="btn btn-outline" (click)="resetForm()">
+                  📝 Enviar Otra Solicitud
+                </button>
+                <button class="btn btn-primary" (click)="goToLogin()">
+                  🔐 Ir al Login
+                </button>
+              </div>
             </div>
-            @if (getFieldError('confirmPassword')) {
-              <span class="field-error">{{ getFieldError('confirmPassword') }}</span>
-            }
           </div>
-
-          <button
-            type="submit"
-            class="btn btn-primary btn-full"
-            [disabled]="loading()">
-            @if (loading()) {
-              <span class="btn-spinner"></span>
-              Creando cuenta...
-            } @else {
-              Crear Cuenta
-            }
-          </button>
-        </form>
+        }
 
         <div class="register-footer">
           <p>
             ¿Ya tienes una cuenta? 
             <a routerLink="/login" class="link">Inicia sesión aquí</a>
           </p>
+          
+          <div class="contact-urgent">
+            <h4>¿Necesitas ayuda urgente?</h4>
+            <div class="contact-info">
+              <p><strong>📞 Teléfono:</strong> +52 (477) 123-4567</p>
+              <p><strong>📧 Email:</strong> soportesmartagro.com</p>
+              <p><strong>🕒 Horario:</strong> Lunes a Viernes, 8:00 AM - 6:00 PM</p>
+            </div>
+          </div>
         </div>
       </div>
       
       <div class="register-info">
         <div class="info-content">
-          <h2>Únete a SmartAgro</h2>
+          <h2>¿Por qué solicitar una cuenta?</h2>
           <p>
-            Crea tu cuenta y comienza a disfrutar de todos los beneficios 
-            de nuestros sistemas de riego inteligente.
+            Al tener una cuenta en SmartAgro podrás acceder a beneficios exclusivos 
+            y gestionar todos tus sistemas desde un solo lugar.
           </p>
           
           <div class="benefits-list">
@@ -211,15 +226,15 @@
               <span class="benefit-icon">🎯</span>
               <div class="benefit-text">
                 <h4>Cotizaciones Personalizadas</h4>
-                <p>Recibe cotizaciones adaptadas a tus necesidades</p>
+                <p>Recibe cotizaciones adaptadas a tus necesidades específicas</p>
               </div>
             </div>
             
             <div class="benefit-item">
               <span class="benefit-icon">📞</span>
               <div class="benefit-text">
-                <h4>Soporte Técnico</h4>
-                <p>Acceso a nuestro equipo de expertos</p>
+                <h4>Soporte Técnico Prioritario</h4>
+                <p>Acceso directo a nuestro equipo de expertos</p>
               </div>
             </div>
             
@@ -227,16 +242,43 @@
               <span class="benefit-icon">📋</span>
               <div class="benefit-text">
                 <h4>Historial de Compras</h4>
-                <p>Gestiona todas tus adquisiciones</p>
+                <p>Gestiona todas tus adquisiciones y garantías</p>
               </div>
             </div>
             
             <div class="benefit-item">
               <span class="benefit-icon">🔧</span>
               <div class="benefit-text">
-                <h4>Mantenimiento</h4>
-                <p>Programa y gestiona el mantenimiento</p>
+                <h4>Mantenimiento Programado</h4>
+                <p>Programa y gestiona el mantenimiento de tus sistemas</p>
               </div>
+            </div>
+
+            <div class="benefit-item">
+              <span class="benefit-icon">📱</span>
+              <div class="benefit-text">
+                <h4>Panel de Control</h4>
+                <p>Monitorea todos tus sistemas desde una sola plataforma</p>
+              </div>
+            </div>
+
+            <div class="benefit-item">
+              <span class="benefit-icon">📊</span>
+              <div class="benefit-text">
+                <h4>Reportes Detallados</h4>
+                <p>Analiza el rendimiento y eficiencia de tus cultivos</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="security-note">
+            <div class="security-icon">🔒</div>
+            <div class="security-content">
+              <h4>Seguridad y Privacidad</h4>
+              <p>
+                Todas las cuentas son creadas y verificadas manualmente por nuestro equipo 
+                para garantizar la seguridad de nuestros clientes.
+              </p>
             </div>
           </div>
         </div>

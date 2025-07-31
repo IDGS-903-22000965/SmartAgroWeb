@@ -1,1 +1,348 @@
-<p>ventas works!</p>
+<!-- ventas.component.html -->
+<div class="ventas-container">
+  <!-- Header con navegación -->
+  <div class="header-section">
+    <h1 class="page-title">
+      <i class="fas fa-shopping-cart"></i>
+      Gestión de Ventas
+    </h1>
+    
+    <nav class="tab-navigation">
+      <button 
+        class="tab-btn" 
+        [class.active]="vistaActiva === 'lista'"
+        (click)="cambiarVista('lista')">
+        <i class="fas fa-list"></i> Lista de Ventas
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="vistaActiva === 'estadisticas'"
+        (click)="cambiarVista('estadisticas')">
+        <i class="fas fa-chart-bar"></i> Estadísticas
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="vistaActiva === 'reportes'"
+        (click)="cambiarVista('reportes')">
+        <i class="fas fa-file-alt"></i> Reportes
+      </button>
+    </nav>
+  </div>
+
+  <!-- Vista de Lista de Ventas -->
+  <div *ngIf="vistaActiva === 'lista'" class="lista-ventas">
+    <!-- Filtros de búsqueda -->
+    <div class="filtros-section">
+      <div class="filtros-row">
+        <div class="filtro-grupo">
+          <label>Buscar:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filtros.searchTerm" 
+            placeholder="Número de venta, cliente, email..."
+            class="form-input">
+        </div>
+        
+        <div class="filtro-grupo">
+          <label>Estado:</label>
+          <select [(ngModel)]="filtros.estado" class="form-select">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let estado of estados" [value]="estado">{{estado}}</option>
+          </select>
+        </div>
+        
+        <div class="filtro-grupo">
+          <label>Método de Pago:</label>
+          <select [(ngModel)]="filtros.metodoPago" class="form-select">
+            <option value="">Todos los métodos</option>
+            <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="filtros-row">
+        <div class="filtro-grupo">
+          <label>Fecha Inicio:</label>
+          <input 
+            type="date" 
+            [(ngModel)]="filtros.fechaInicio" 
+            class="form-input">
+        </div>
+        
+        <div class="filtro-grupo">
+          <label>Fecha Fin:</label>
+          <input 
+            type="date" 
+            [(ngModel)]="filtros.fechaFin" 
+            class="form-input">
+        </div>
+        
+        <div class="filtro-acciones">
+          <button class="btn btn-primary" (click)="buscar()">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+          <button class="btn btn-secondary" (click)="limpiarFiltros()">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+          <button class="btn btn-success" (click)="exportarCSV()">
+            <i class="fas fa-download"></i> Exportar CSV
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading y Error States -->
+    <div *ngIf="loading" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      Cargando ventas...
+    </div>
+
+    <div *ngIf="error" class="error-state">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{error}}
+    </div>
+
+    <!-- Tabla de Ventas -->
+    <div *ngIf="!loading && !error" class="tabla-container">
+      <table class="ventas-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Método Pago</th>
+            <th>Items</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venta of ventas" class="venta-row">
+            <td class="numero-venta">
+              <strong>{{venta.numeroVenta}}</strong>
+              <small *ngIf="venta.numeroCotizacion" class="cotizacion-ref">
+                Cot: {{venta.numeroCotizacion}}
+              </small>
+            </td>
+            <td class="cliente-info">
+              <div class="cliente-nombre">{{venta.nombreCliente}}</div>
+              <small *ngIf="venta.emailCliente" class="cliente-email">
+                {{venta.emailCliente}}
+              </small>
+            </td>
+            <td class="monto">
+              <strong>{{formatearMoneda(venta.total)}}</strong>
+            </td>
+            <td class="fecha">
+              {{formatearFecha(venta.fechaVenta)}}
+            </td>
+            <td class="estado">
+              <span class="badge" [ngClass]="getEstadoClass(venta.estadoVenta)">
+                {{venta.estadoVenta}}
+              </span>
+            </td>
+            <td class="metodo-pago">
+              {{venta.metodoPago || 'No especificado'}}
+            </td>
+            <td class="items">
+              <span class="items-count">{{venta.cantidadItems}}</span>
+            </td>
+            <td class="acciones">
+              <div class="acciones-grupo">
+                <button class="btn-icon" title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <div class="dropdown">
+                  <button class="btn-icon dropdown-toggle" title="Cambiar estado">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <button 
+                      *ngFor="let estado of estados" 
+                      class="dropdown-item"
+                      [class.active]="estado === venta.estadoVenta"
+                      (click)="actualizarEstado(venta.id, estado)">
+                      {{estado}}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Paginación -->
+      <div class="paginacion" *ngIf="totalPages > 1">
+        <div class="paginacion-info">
+          Mostrando {{(currentPage - 1) * pageSize + 1}} - 
+          {{Math.min(currentPage * pageSize, totalCount)}} 
+          de {{totalCount}} ventas
+        </div>
+        
+        <div class="paginacion-controles">
+          <button 
+            class="btn-pagina" 
+            [disabled]="currentPage === 1"
+            (click)="cambiarPagina(currentPage - 1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <button 
+            *ngFor="let pagina of getPaginationArray()"
+            class="btn-pagina"
+            [class.active]="pagina === currentPage"
+            (click)="cambiarPagina(pagina)">
+            {{pagina}}
+          </button>
+          
+          <button 
+            class="btn-pagina" 
+            [disabled]="currentPage === totalPages"
+            (click)="cambiarPagina(currentPage + 1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista de Estadísticas -->
+  <div *ngIf="vistaActiva === 'estadisticas'" class="estadisticas-ventas">
+    <div *ngIf="estadisticas" class="estadisticas-grid">
+      <!-- Tarjetas de métricas principales -->
+      <div class="metrica-card">
+        <div class="metrica-icon ventas-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{estadisticas.totalVentas}}</h3>
+          <p>Total Ventas</p>
+        </div>
+      </div>
+
+      <div class="metrica-card">
+        <div class="metrica-icon dinero-icon">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{formatearMoneda(estadisticas.montoTotalVentas)}}</h3>
+          <p>Monto Total</p>
+        </div>
+      </div>
+
+      <div class="metrica-card">
+        <div class="metrica-icon hoy-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{estadisticas.ventasHoy}}</h3>
+          <p>Ventas Hoy</p>
+          <small>{{formatearMoneda(estadisticas.montoVentasHoy)}}</small>
+        </div>
+      </div>
+
+      <div class="metrica-card">
+        <div class="metrica-icon mes-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{estadisticas.ventasEsteMes}}</h3>
+          <p>Ventas del Mes</p>
+          <small>{{formatearMoneda(estadisticas.montoVentasEsteMes)}}</small>
+        </div>
+      </div>
+
+      <div class="metrica-card">
+        <div class="metrica-icon pendientes-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{estadisticas.ventasPendientes}}</h3>
+          <p>Pendientes</p>
+        </div>
+      </div>
+
+      <div class="metrica-card">
+        <div class="metrica-icon completadas-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="metrica-content">
+          <h3>{{estadisticas.ventasCompletadas}}</h3>
+          <p>Completadas</p>
+        </div>
+      </div>
+
+      <!-- Gráficos de distribución -->
+      <div class="grafico-card full-width">
+        <h4>Distribución por Estado</h4>
+        <div class="distribucion-barras">
+          <ng-container *ngFor="let estado of estados">
+            <div 
+              class="barra-item"
+              *ngIf="estadisticas?.ventasPorEstado && estadisticas.ventasPorEstado[estado]">
+              <div class="barra-label">{{estado}}</div>
+              <div class="barra-container">
+                <div 
+                  class="barra-fill" 
+                  [style.width.%]="estadisticas && estadisticas.totalVentas > 0 ? (estadisticas.ventasPorEstado[estado] / estadisticas.totalVentas) * 100 : 0">
+                </div>
+              </div>
+              <div class="barra-valor">{{estadisticas.ventasPorEstado[estado]}}</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="grafico-card full-width">
+        <h4>Distribución por Método de Pago</h4>
+        <div class="distribucion-barras">
+          <ng-container *ngFor="let metodo of metodosPago">
+            <div 
+              class="barra-item"
+              *ngIf="estadisticas?.ventasPorMetodoPago && estadisticas.ventasPorMetodoPago[metodo]">
+              <div class="barra-label">{{metodo}}</div>
+              <div class="barra-container">
+                <div 
+                  class="barra-fill metodo-pago" 
+                  [style.width.%]="estadisticas && estadisticas.totalVentas > 0 ? (estadisticas.ventasPorMetodoPago[metodo] / estadisticas.totalVentas) * 100 : 0">
+                </div>
+              </div>
+              <div class="barra-valor">{{estadisticas.ventasPorMetodoPago[metodo]}}</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista de Reportes -->
+  <div *ngIf="vistaActiva === 'reportes'" class="reportes-ventas">
+    <div class="reportes-grid">
+      <div class="reporte-card">
+        <h4><i class="fas fa-chart-line"></i> Reporte de Ventas</h4>
+        <p>Genera reportes detallados de ventas por período</p>
+        <button class="btn btn-primary">Generar Reporte</button>
+      </div>
+
+      <div class="reporte-card">
+        <h4><i class="fas fa-funnel-dollar"></i> Embudo de Conversión</h4>
+        <p>Análisis del proceso de conversión de cotizaciones a ventas</p>
+        <button class="btn btn-primary">Ver Embudo</button>
+      </div>
+
+      <div class="reporte-card">
+        <h4><i class="fas fa-chart-pie"></i> Productos Más Vendidos</h4>
+        <p>Top de productos con mayor volumen de ventas</p>
+        <button class="btn btn-primary">Ver Ranking</button>
+      </div>
+
+      <div class="reporte-card">
+        <h4><i class="fas fa-users"></i> Clientes Frecuentes</h4>
+        <p>Lista de clientes con mayor actividad de compra</p>
+        <button class="btn btn-primary">Ver Clientes</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,364 +1,204 @@
 // src/app/components/cliente/mis-compras/mis-compras.ts
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-
-interface DetalleVenta {
-  id: number;
-  productoId: number;
-  nombreProducto: string;
-  cantidad: number;
-  precioUnitario: number;
-  subtotal: number;
-}
-
-interface Compra {
-  id: number;
-  numeroVenta: string;
-  usuarioId: string;
-  subtotal: number;
-  impuestos: number;
-  total: number;
-  fechaVenta: Date;
-  estadoVenta: string;
-  metodoPago: string;
-  observaciones?: string;
-  detalles: DetalleVenta[];
-}
-
-interface EstadisticasCompras {
-  totalCompras: number;
-  totalGastado: number;
-  comprasEnviadas: number;
-  comprasEntregadas: number;
-}
+import { ClientPurchasesService, ClientPurchase, ClientOwnedProduct, ClientPurchaseStats } from '../../../services/client-purchases';
+import { ClientCommentsService, CreateClientComment } from '../../../services/client-comments';
 
 @Component({
   selector: 'app-mis-compras',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './mis-compras.html',
-  styleUrl: './mis-compras.scss'
+  styleUrls: ['./mis-compras.scss']
 })
 export class MisCompras implements OnInit {
-  protected loading = signal(false);
-  protected showDetalleModal = signal(false);
-  protected compraSeleccionada: Compra | null = null;
+  purchases: ClientPurchase[] = [];
+  ownedProducts: ClientOwnedProduct[] = [];
+  stats: ClientPurchaseStats | null = null;
+  loading = true;
+  error: string | null = null;
+  activeTab = 'compras'; // 'compras' | 'productos' | 'estadisticas'
+  
+  // Modal para comentarios
+  showCommentModal = false;
+  selectedProduct: any = null;
+  commentForm = {
+    calificacion: 5,
+    contenido: ''
+  };
+  submittingComment = false;
 
-  protected compras: Compra[] = [];
-  protected comprasFiltradas: Compra[] = [];
-
-  protected filtros = {
-    busqueda: '',
+  // Filtros
+  filters = {
     estado: '',
-    periodo: ''
+    anio: '',
+    busqueda: ''
   };
 
-  protected estadisticas: EstadisticasCompras = {
-    totalCompras: 0,
-    totalGastado: 0,
-    comprasEnviadas: 0,
-    comprasEntregadas: 0
-  };
+  // Estados disponibles
+  estados = [
+    'Pendiente',
+    'Procesando', 
+    'Enviado',
+    'Entregado',
+    'Cancelado'
+  ];
 
-  // Paginación
-  protected currentPage = 1;
-  protected pageSize = 10;
-  protected totalCompras = 0;
-  protected totalPaginas = 0;
-
-  constructor(private router: Router) {}
+  constructor(
+    private purchasesService: ClientPurchasesService,
+    private commentsService: ClientCommentsService
+  ) {}
 
   ngOnInit(): void {
-    this.cargarCompras();
+    this.loadData();
   }
 
-  private cargarCompras(): void {
-    this.loading.set(true);
-    
-    // Simular datos para demo - reemplazar con servicio real
-    setTimeout(() => {
-      this.compras = [
-        {
-          id: 1,
-          numeroVenta: 'ORD-001234',
-          usuarioId: 'user123',
-          subtotal: 20172.41,
-          impuestos: 3227.59,
-          total: 23400.00,
-          fechaVenta: new Date('2024-07-10T14:30:00'),
-          estadoVenta: 'Entregado',
-          metodoPago: 'Tarjeta de Crédito',
-          observaciones: 'Entrega en horario de oficina',
-          detalles: [
-            {
-              id: 1,
-              productoId: 1,
-              nombreProducto: 'Sistema de Riego Automático Smart-100',
-              cantidad: 1,
-              precioUnitario: 20250.00,
-              subtotal: 20250.00
-            },
-            {
-              id: 2,
-              productoId: 2,
-              nombreProducto: 'Sensor de Humedad Inalámbrico SH-200',
-              cantidad: 3,
-              precioUnitario: 1120.00,
-              subtotal: 3360.00
-            }
-          ]
-        },
-        {
-          id: 2,
-          numeroVenta: 'ORD-001180',
-          usuarioId: 'user123',
-          subtotal: 10991.38,
-          impuestos: 1758.62,
-          total: 12750.00,
-          fechaVenta: new Date('2024-07-05T10:15:00'),
-          estadoVenta: 'Enviado',
-          metodoPago: 'Transferencia Bancaria',
-          detalles: [
-            {
-              id: 3,
-              productoId: 3,
-              nombreProducto: 'Controlador Maestro CM-500',
-              cantidad: 1,
-              precioUnitario: 11050.00,
-              subtotal: 11050.00
-            },
-            {
-              id: 4,
-              productoId: 4,
-              nombreProducto: 'Kit de Instalación Básico',
-              cantidad: 1,
-              precioUnitario: 1700.00,
-              subtotal: 1700.00
-            }
-          ]
-        },
-        {
-          id: 3,
-          numeroVenta: 'ORD-001098',
-          usuarioId: 'user123',
-          subtotal: 2586.21,
-          impuestos: 413.79,
-          total: 3000.00,
-          fechaVenta: new Date('2024-06-20T16:45:00'),
-          estadoVenta: 'Entregado',
-          metodoPago: 'PayPal',
-          detalles: [
-            {
-              id: 5,
-              productoId: 5,
-              nombreProducto: 'Sensor de pH Inteligente',
-              cantidad: 1,
-              precioUnitario: 1850.00,
-              subtotal: 1850.00
-            },
-            {
-              id: 6,
-              productoId: 6,
-              nombreProducto: 'Cable de Extensión 50m',
-              cantidad: 2,
-              precioUnitario: 450.00,
-              subtotal: 900.00
-            }
-          ]
-        },
-        {
-          id: 4,
-          numeroVenta: 'ORD-000987',
-          usuarioId: 'user123',
-          subtotal: 6896.55,
-          impuestos: 1103.45,
-          total: 8000.00,
-          fechaVenta: new Date('2024-06-01T09:20:00'),
-          estadoVenta: 'Cancelado',
-          metodoPago: 'Tarjeta de Débito',
-          observaciones: 'Cancelado por el cliente - producto no disponible',
-          detalles: [
-            {
-              id: 7,
-              productoId: 7,
-              nombreProducto: 'Kit de Expansión Smart-200',
-              cantidad: 1,
-              precioUnitario: 8500.00,
-              subtotal: 8500.00
-            }
-          ]
-        },
-        {
-          id: 5,
-          numeroVenta: 'ORD-000876',
-          usuarioId: 'user123',
-          subtotal: 2758.62,
-          impuestos: 441.38,
-          total: 3200.00,
-          fechaVenta: new Date('2024-05-15T13:10:00'),
-          estadoVenta: 'Entregado',
-          metodoPago: 'Tarjeta de Crédito',
-          detalles: [
-            {
-              id: 8,
-              productoId: 8,
-              nombreProducto: 'Panel Solar 100W',
-              cantidad: 1,
-              precioUnitario: 3200.00,
-              subtotal: 3200.00
-            }
-          ]
-        }
-      ];
+  loadData(): void {
+    this.loading = true;
+    this.error = null;
 
-      this.calcularEstadisticas();
-      this.aplicarFiltros();
-      this.loading.set(false);
-    }, 1000);
+    // Cargar todos los datos en paralelo
+    Promise.all([
+      this.purchasesService.getMyPurchases().toPromise(),
+      this.purchasesService.getOwnedProducts().toPromise(),
+      this.purchasesService.getPurchaseStats().toPromise()
+    ]).then(([purchasesResponse, productsResponse, statsResponse]) => {
+      if (purchasesResponse?.success) {
+        this.purchases = purchasesResponse.data;
+      }
+      if (productsResponse?.success) {
+        this.ownedProducts = productsResponse.data;
+      }
+      if (statsResponse?.success) {
+        this.stats = statsResponse.data;
+      }
+      this.loading = false;
+    }).catch(error => {
+      console.error('Error cargando datos:', error);
+      this.error = 'Error al cargar los datos';
+      this.loading = false;
+    });
   }
 
-  private calcularEstadisticas(): void {
-    const comprasValidas = this.compras.filter(c => c.estadoVenta !== 'Cancelado');
-    
-    this.estadisticas = {
-      totalCompras: comprasValidas.length,
-      totalGastado: comprasValidas.reduce((total, compra) => total + compra.total, 0),
-      comprasEnviadas: this.compras.filter(c => c.estadoVenta === 'Enviado').length,
-      comprasEntregadas: this.compras.filter(c => c.estadoVenta === 'Entregado').length
-    };
-  }
+  get filteredPurchases(): ClientPurchase[] {
+    let filtered = [...this.purchases];
 
-  protected aplicarFiltros(): void {
-    let filtradas = [...this.compras];
+    if (this.filters.estado) {
+      filtered = filtered.filter(p => p.estadoVenta === this.filters.estado);
+    }
 
-    // Filtro por búsqueda
-    if (this.filtros.busqueda.trim()) {
-      const termino = this.filtros.busqueda.toLowerCase();
-      filtradas = filtradas.filter(c => 
-        c.numeroVenta.toLowerCase().includes(termino) ||
-        c.detalles.some(d => d.nombreProducto.toLowerCase().includes(termino))
+    if (this.filters.anio) {
+      filtered = filtered.filter(p => 
+        new Date(p.fechaVenta).getFullYear().toString() === this.filters.anio
       );
     }
 
-    // Filtro por estado
-    if (this.filtros.estado) {
-      filtradas = filtradas.filter(c => c.estadoVenta === this.filtros.estado);
+    if (this.filters.busqueda) {
+      const busqueda = this.filters.busqueda.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.numeroVenta.toLowerCase().includes(busqueda) ||
+        p.productos.some(prod => prod.nombreProducto.toLowerCase().includes(busqueda))
+      );
     }
 
-    // Filtro por período
-    if (this.filtros.periodo) {
-      const ahora = new Date();
-      const fechaLimite = new Date();
-      
-      switch (this.filtros.periodo) {
-        case 'ultima-semana':
-          fechaLimite.setDate(ahora.getDate() - 7);
-          break;
-        case 'ultimo-mes':
-          fechaLimite.setMonth(ahora.getMonth() - 1);
-          break;
-        case 'ultimos-3-meses':
-          fechaLimite.setMonth(ahora.getMonth() - 3);
-          break;
-        case 'ultimo-año':
-          fechaLimite.setFullYear(ahora.getFullYear() - 1);
-          break;
-      }
-      
-      if (this.filtros.periodo !== '') {
-        filtradas = filtradas.filter(c => new Date(c.fechaVenta) >= fechaLimite);
-      }
-    }
-
-    // Ordenar por fecha más reciente
-    filtradas.sort((a, b) => new Date(b.fechaVenta).getTime() - new Date(a.fechaVenta).getTime());
-
-    this.comprasFiltradas = filtradas;
-    this.totalCompras = filtradas.length;
-    this.totalPaginas = Math.ceil(this.totalCompras / this.pageSize);
-    this.currentPage = 1;
+    return filtered;
   }
 
-  protected limpiarFiltros(): void {
-    this.filtros = {
-      busqueda: '',
+  get availableYears(): string[] {
+    const years = this.purchases.map(p => new Date(p.fechaVenta).getFullYear());
+    return [...new Set(years)].sort((a, b) => b - a).map(y => y.toString());
+  }
+
+  clearFilters(): void {
+    this.filters = {
       estado: '',
-      periodo: ''
+      anio: '',
+      busqueda: ''
     };
-    this.aplicarFiltros();
   }
 
-  protected verDetalleCompra(compra: Compra): void {
-    this.compraSeleccionada = compra;
-    this.showDetalleModal.set(true);
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
   }
 
-  protected cerrarModalDetalle(): void {
-    this.showDetalleModal.set(false);
-    this.compraSeleccionada = null;
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN'
+    }).format(amount);
   }
 
-  protected descargarFactura(compra: Compra): void {
-    // Simular descarga de factura
-    const blob = new Blob(['Factura simulada'], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Factura-${compra.numeroVenta}.pdf`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  formatDate(date: Date | string): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   }
 
-  protected calificarCompra(compra: Compra): void {
-    // Navegar a página de calificación o abrir modal
-    this.router.navigate(['/cliente/calificar', compra.id]);
+  getStatusClass(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'entregado': return 'status-success';
+      case 'enviado': return 'status-info';
+      case 'procesando': return 'status-warning';
+      case 'pendiente': return 'status-pending';
+      case 'cancelado': return 'status-danger';
+      default: return 'status-secondary';
+    }
   }
 
-  protected rastrearPedido(compra: Compra): void {
-    // Abrir modal de rastreo o navegar a página de seguimiento
-    alert(`Rastreando pedido ${compra.numeroVenta}. Esta función se implementará próximamente.`);
+  openCommentModal(product: any): void {
+    this.selectedProduct = product;
+    this.commentForm = {
+      calificacion: 5,
+      contenido: ''
+    };
+    this.showCommentModal = true;
   }
 
-  protected cancelarCompra(compra: Compra): void {
-    if (confirm(`¿Estás seguro de que deseas cancelar la orden ${compra.numeroVenta}?`)) {
-      // Simular cancelación
-      const index = this.compras.findIndex(c => c.id === compra.id);
-      if (index !== -1) {
-        this.compras[index].estadoVenta = 'Cancelado';
-        this.calcularEstadisticas();
-        this.aplicarFiltros();
+  closeCommentModal(): void {
+    this.showCommentModal = false;
+    this.selectedProduct = null;
+    this.submittingComment = false;
+  }
+
+  submitComment(): void {
+    if (!this.selectedProduct || !this.commentForm.contenido.trim()) {
+      return;
+    }
+
+    this.submittingComment = true;
+
+    const comment: CreateClientComment = {
+      productoId: this.selectedProduct.productoId,
+      calificacion: this.commentForm.calificacion,
+      contenido: this.commentForm.contenido.trim()
+    };
+
+    this.commentsService.createComment(comment).subscribe({
+      next: (response) => {
+        if (response.success) {
+          alert('Comentario enviado exitosamente. Será revisado antes de publicarse.');
+          this.closeCommentModal();
+          // Recargar productos para actualizar el estado de comentarios
+          this.loadData();
+        } else {
+          alert('Error al enviar comentario: ' + response.message);
+        }
+        this.submittingComment = false;
+      },
+      error: (error) => {
+        console.error('Error enviando comentario:', error);
+        alert('Error al enviar el comentario');
+        this.submittingComment = false;
       }
-    }
+    });
   }
 
-  protected verProductos(): void {
-    this.router.navigate(['/productos']);
+  renderStars(rating: number): string {
+    return '⭐'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
   }
-
-  // Paginación
-  protected cambiarPagina(page: number): void {
-    if (page >= 1 && page <= this.totalPaginas) {
-      this.currentPage = page;
-    }
-  }
-
-  protected getPaginas(): number[] {
-    const paginas: number[] = [];
-    const maxPaginas = Math.min(5, this.totalPaginas);
-    let inicio = Math.max(1, this.currentPage - Math.floor(maxPaginas / 2));
-    let fin = Math.min(this.totalPaginas, inicio + maxPaginas - 1);
-    
-    if (fin - inicio + 1 < maxPaginas) {
-      inicio = Math.max(1, fin - maxPaginas + 1);
-    }
-
-    for (let i = inicio; i <= fin; i++) {
-      paginas.push(i);
-    }
-    return paginas;
-  }
-
-  // Utilitarios
-  protected Math = Math;
 }

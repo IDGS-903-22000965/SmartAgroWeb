@@ -3,9 +3,9 @@
   <div class="page-header">
     <h1>Gestión de Productos</h1>
     <button (click)="abrirModalCrear()" class="btn btn-primary">
-      <span class="btn-icon">➕</span>
-      Nuevo Producto
-    </button>
+  <span class="btn-icon">➕</span>
+  Nuevo Producto
+</button>
   </div>
 
   <!-- Filtros -->
@@ -169,123 +169,75 @@
           </div>
         }
 
-        <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="nombre" class="form-label">Nombre *</label>
-              <input
-                type="text"
-                id="nombre"
-                formControlName="nombre"
-                class="form-input"
-                [class.error]="isFieldInvalid('nombre')"
-                placeholder="Nombre del producto">
-              @if (getFieldError('nombre')) {
-                <span class="field-error">{{ getFieldError('nombre') }}</span>
-              }
-            </div>
+       <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="nombre" class="form-label">Nombre *</label>
+      <input type="text" id="nombre" formControlName="nombre" class="form-input" [class.error]="isFieldInvalid('nombre')" placeholder="Nombre del producto">
+      <span class="field-error" *ngIf="getFieldError('nombre')">{{ getFieldError('nombre') }}</span>
+    </div>
 
-            <div class="form-group">
-              <label for="precioBase" class="form-label">Precio Base *</label>
-              <input
-                type="number"
-                id="precioBase"
-                formControlName="precioBase"
-                class="form-input"
-                [class.error]="isFieldInvalid('precioBase')"
-                placeholder="0.00"
-                min="0"
-                step="0.01">
-              @if (getFieldError('precioBase')) {
-                <span class="field-error">{{ getFieldError('precioBase') }}</span>
-              }
-            </div>
+    <div class="form-group">
+      <label for="precioBase" class="form-label">Precio Base *</label>
+      <input type="number" id="precioBase" formControlName="precioBase" class="form-input" [class.error]="isFieldInvalid('precioBase')" placeholder="0.00" min="0" step="0.01">
+      <span class="field-error" *ngIf="getFieldError('precioBase')">{{ getFieldError('precioBase') }}</span>
+    </div>
 
-            <div class="form-group">
-              <label for="porcentajeGanancia" class="form-label">% Ganancia *</label>
-              <input
-                type="number"
-                id="porcentajeGanancia"
-                formControlName="porcentajeGanancia"
-                class="form-input"
-                [class.error]="isFieldInvalid('porcentajeGanancia')"
-                placeholder="30"
-                min="0"
-                max="100">
-              @if (getFieldError('porcentajeGanancia')) {
-                <span class="field-error">{{ getFieldError('porcentajeGanancia') }}</span>
-              }
-            </div>
+    <div class="form-group">
+      <label for="porcentajeGanancia" class="form-label">% Ganancia *</label>
+      <input type="number" id="porcentajeGanancia" formControlName="porcentajeGanancia" class="form-input" [class.error]="isFieldInvalid('porcentajeGanancia')" placeholder="30" min="0" max="100">
+      <span class="field-error" *ngIf="getFieldError('porcentajeGanancia')">{{ getFieldError('porcentajeGanancia') }}</span>
+    </div>
 
-            <div class="form-group calculated-price">
-              <label class="form-label">Precio de Venta</label>
-              <div class="price-display">
-                ${{ calcularPrecioVenta() | number:'1.2-2' }}
-              </div>
-            </div>
-          </div>
+    <div class="form-group calculated-price">
+      <label class="form-label">Precio de Venta</label>
+      <div class="price-display">${{ calcularPrecioVenta() | number:'1.2-2' }}</div>
+    </div>
+  </div>
 
-          <div class="form-group">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea
-              id="descripcion"
-              formControlName="descripcion"
-              class="form-textarea"
-              placeholder="Descripción breve del producto"
-              rows="3"></textarea>
-          </div>
+  <div class="form-group">
+    <label for="descripcion" class="form-label">Descripción</label>
+    <textarea id="descripcion" formControlName="descripcion" class="form-textarea" placeholder="Descripción breve del producto" rows="3"></textarea>
+  </div>
 
-          <div class="form-group">
-            <label for="descripcionDetallada" class="form-label">Descripción Detallada</label>
-            <textarea
-              id="descripcionDetallada"
-              formControlName="descripcionDetallada"
-              class="form-textarea"
-              placeholder="Descripción completa del producto"
-              rows="5"></textarea>
-          </div>
+  <div class="form-group">
+    <label for="descripcionDetallada" class="form-label">Descripción Detallada</label>
+    <textarea id="descripcionDetallada" formControlName="descripcionDetallada" class="form-textarea" placeholder="Descripción completa del producto" rows="5"></textarea>
+  </div>
 
-          <div class="form-group">
-            <label for="imagenPrincipal" class="form-label">URL Imagen Principal</label>
-            <input
-              type="url"
-              id="imagenPrincipal"
-              formControlName="imagenPrincipal"
-              class="form-input"
-              [class.error]="isFieldInvalid('imagenPrincipal')"
-              placeholder="https://ejemplo.com/imagen.jpg">
-            @if (getFieldError('imagenPrincipal')) {
-              <span class="field-error">{{ getFieldError('imagenPrincipal') }}</span>
-            }
-          </div>
+  <!-- Carga de imagen -->
+  <div class="form-group">
+    <label class="form-label">Imagen Principal</label>
+    <div class="file-upload-container">
+      <div class="file-upload-area" (drop)="onDrop($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (click)="triggerFileInput()">
+        <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+        <ng-container *ngIf="!imagenPreview">
+          <div class="file-upload-icon">📷</div>
+          <div class="file-upload-text">Arrastra una imagen o haz clic para seleccionar</div>
+          <div class="file-upload-hint">Formatos: JPG, PNG, GIF | Máx: 5MB</div>
+        </ng-container>
+        <div class="image-preview" *ngIf="imagenPreview">
+          <img [src]="imagenPreview" alt="Preview" />
+          <button type="button" class="image-preview-overlay" (click)="eliminarImagen()">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <div class="form-group">
-            <label class="form-label">
-              <input
-                type="checkbox"
-                formControlName="activo"
-                style="margin-right: 0.5rem;">
-              Producto Activo
-            </label>
-          </div>
+  <div class="form-group">
+    <label class="form-label">
+      <input type="checkbox" formControlName="activo" style="margin-right: 0.5rem;"> Producto Activo
+    </label>
+  </div>
 
-          <div class="modal-footer">
-            <button type="button" (click)="cerrarModal()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="loadingModal() || !productoForm.valid">
-              @if (loadingModal()) {
-                <span class="btn-spinner"></span>
-                Guardando...
-              } @else {
-                {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
-              }
-            </button>
-          </div>
-        </form>
+  <div class="modal-footer">
+    <button type="button" (click)="cerrarModal()" class="btn btn-outline">Cancelar</button>
+    <button type="submit" class="btn btn-primary" [disabled]="loadingModal() || !productoForm.valid">
+      <span class="btn-spinner" *ngIf="loadingModal()"></span>
+      {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
+    </button>
+  </div>
+</form>
       </div>
     </div>
   </div>
@@ -294,8 +246,8 @@
 <!-- MODAL DE DETALLES DEL PRODUCTO - NUEVO -->
 @if (showDetailsModal() && productoDetalles) {
   <div class="modal-overlay" (click)="cerrarModalDetalles()">
-    <div class="modal-container details-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
+<div class="modal-container details-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
         <h2>Detalles del Producto</h2>
         <button type="button" (click)="cerrarModalDetalles()" class="btn-close">✕</button>
       </div>

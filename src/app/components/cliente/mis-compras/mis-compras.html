@@ -1,297 +1,364 @@
-<!-- src/app/components/cliente/mis-compras/mis-compras.html -->
-<div class="mis-compras-page">
+<div class="mis-compras">
+  <!-- Header -->
   <div class="page-header">
-    <h1>Mis Compras</h1>
-    <p>Historial completo de tus pedidos y compras</p>
+    <h1>📦 Mis Compras</h1>
+    <p>Revisa el historial de tus compras y productos adquiridos</p>
   </div>
 
-  <!-- Estadísticas Rápidas -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">📦</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.totalCompras }}</h3>
-        <p>Total Compras</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">💰</div>
-      <div class="stat-content">
-        <h3>${{ estadisticas.totalGastado | number:'1.2-2' }}</h3>
-        <p>Total Gastado</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">🚚</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.comprasEnviadas }}</h3>
-        <p>Enviadas</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">✅</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.comprasEntregadas }}</h3>
-        <p>Entregadas</p>
-      </div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando información de compras...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <h3>⚠️ Error</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadData()">
+        Reintentar
+      </button>
     </div>
   </div>
 
-  <!-- Lista de Compras -->
-  <div class="compras-container">
-    @if (loading()) {
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Cargando compras...</p>
-      </div>
-    } @else if (comprasFiltradas.length === 0) {
-      <div class="empty-state">
-        <div class="empty-icon">🛒</div>
-        <h3>No se encontraron compras</h3>
-        <p>No hay compras que coincidan con los filtros aplicados.</p>
-        <div class="empty-actions">
-          <button (click)="limpiarFiltros()" class="btn btn-outline">
-            Limpiar Filtros
-          </button>
-          <button (click)="verProductos()" class="btn btn-primary">
-            Explorar Productos
-          </button>
-        </div>
-      </div>
-    } @else {
-      <div class="compras-list">
-        @for (compra of comprasFiltradas; track compra.id) {
-          <div class="compra-card">
-            <div class="compra-header">
-              <div class="compra-info">
-                <h3>Orden {{ compra.numeroVenta }}</h3>
-                <p class="compra-fecha">{{ compra.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</p>
-              </div>
-              <div class="compra-status">
-                <span class="status-badge" [class]="'estado-' + compra.estadoVenta.toLowerCase()">
-                  {{ compra.estadoVenta }}
-                </span>
-                <span class="compra-total">${{ compra.total | number:'1.2-2' }}</span>
-              </div>
-            </div>
-
-            <div class="compra-productos">
-              @for (detalle of compra.detalles; track detalle.id) {
-                <div class="producto-item">
-                  <div class="producto-info">
-                    <h4>{{ detalle.nombreProducto }}</h4>
-                    <p>Cantidad: {{ detalle.cantidad }} x ${{ detalle.precioUnitario | number:'1.2-2' }}</p>
-                  </div>
-                  <div class="producto-total">
-                    ${{ detalle.subtotal | number:'1.2-2' }}
-                  </div>
-                </div>
-              }
-            </div>
-
-            <div class="compra-footer">
-              <div class="compra-acciones">
-                <button (click)="verDetalleCompra(compra)" class="btn btn-outline btn-sm">
-                  Ver Detalles
-                </button>
-                
-                @if (compra.estadoVenta === 'Entregado') {
-                  <button (click)="descargarFactura(compra)" class="btn btn-outline btn-sm">
-                    📄 Factura
-                  </button>
-                  <button (click)="calificarCompra(compra)" class="btn btn-primary btn-sm">
-                    ⭐ Calificar
-                  </button>
-                }
-                
-                @if (compra.estadoVenta === 'Enviado') {
-                  <button (click)="rastrearPedido(compra)" class="btn btn-primary btn-sm">
-                    📍 Rastrear
-                  </button>
-                }
-                
-                @if (compra.estadoVenta === 'Pendiente' || compra.estadoVenta === 'Procesando') {
-                  <button (click)="cancelarCompra(compra)" class="btn btn-outline btn-sm btn-danger">
-                    ❌ Cancelar
-                  </button>
-                }
-              </div>
-              
-              <div class="compra-resumen">
-                <div class="resumen-linea">
-                  <span>Subtotal:</span>
-                  <span>${{ compra.subtotal | number:'1.2-2' }}</span>
-                </div>
-                <div class="resumen-linea">
-                  <span>IVA:</span>
-                  <span>${{ compra.impuestos | number:'1.2-2' }}</span>
-                </div>
-                <div class="resumen-linea total">
-                  <span>Total:</span>
-                  <span>${{ compra.total | number:'1.2-2' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </div>
-
-  <!-- Paginación -->
-  @if (totalCompras > pageSize) {
-    <div class="pagination-container">
-      <div class="pagination-info">
-        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalCompras) }} de {{ totalCompras }} compras
-      </div>
-      <div class="pagination-controls">
-        <button 
-          (click)="cambiarPagina(currentPage - 1)" 
-          [disabled]="currentPage === 1"
-          class="btn btn-outline btn-sm">
-          ← Anterior
-        </button>
-        
-        @for (page of getPaginas(); track page) {
-          <button 
-            (click)="cambiarPagina(page)"
-            [class.active]="page === currentPage"
-            class="btn btn-outline btn-sm page-btn">
-            {{ page }}
-          </button>
-        }
-        
-        <button 
-          (click)="cambiarPagina(currentPage + 1)" 
-          [disabled]="currentPage === totalPaginas"
-          class="btn btn-outline btn-sm">
-          Siguiente →
-        </button>
-      </div>
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error" class="content">
+    <!-- Tabs Navigation -->
+    <div class="tabs-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'compras'"
+        (click)="setActiveTab('compras')"
+      >
+        🛒 Historial de Compras
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'productos'"
+        (click)="setActiveTab('productos')"
+      >
+        📦 Mis Productos
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'estadisticas'"
+        (click)="setActiveTab('estadisticas')"
+      >
+        📊 Estadísticas
+      </button>
     </div>
-  }
-</div>
 
-<!-- Modal de Detalles de Compra -->
-@if (showDetalleModal()) {
-  <div class="modal-overlay" (click)="cerrarModalDetalle()">
-    <div class="modal-container modal-large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Detalles de la Compra</h2>
-        <button (click)="cerrarModalDetalle()" class="btn-close">✕</button>
-      </div>
-      
-      @if (compraSeleccionada) {
-        <div class="modal-body">
-          <div class="detalle-grid">
-            <div class="detalle-section">
-              <h3>Información del Pedido</h3>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>Número de Orden:</label>
-                  <span>{{ compraSeleccionada.numeroVenta }}</span>
-                </div>
-                <div class="info-item">
-                  <label>Fecha:</label>
-                  <span>{{ compraSeleccionada.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-                <div class="info-item">
-                  <label>Estado:</label>
-                  <span class="status-badge" [class]="'estado-' + compraSeleccionada.estadoVenta.toLowerCase()">
-                    {{ compraSeleccionada.estadoVenta }}
-                  </span>
-                </div>
-                <div class="info-item">
-                  <label>Método de Pago:</label>
-                  <span>{{ compraSeleccionada.metodoPago }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="detalle-section">
-              <h3>Productos</h3>
-              <div class="productos-detalle">
-                @for (detalle of compraSeleccionada.detalles; track detalle.id) {
-                  <div class="producto-detalle">
-                    <div class="producto-info">
-                      <h4>{{ detalle.nombreProducto }}</h4>
-                      <p>{{ detalle.cantidad }} unidades x ${{ detalle.precioUnitario | number:'1.2-2' }}</p>
-                    </div>
-                    <div class="producto-subtotal">
-                      ${{ detalle.subtotal | number:'1.2-2' }}
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
+    <!-- Tab: Historial de Compras -->
+    <div *ngIf="activeTab === 'compras'" class="tab-content">
+      <!-- Filtros -->
+      <div class="filters-section">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Buscar:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="filters.busqueda"
+              placeholder="Número de venta o producto..."
+              class="filter-input"
+            >
           </div>
-
-          <div class="resumen-total">
-            <div class="resumen-linea">
-              <span>Subtotal:</span>
-              <span>${{ compraSeleccionada.subtotal | number:'1.2-2' }}</span>
-            </div>
-            <div class="resumen-linea">
-              <span>IVA (16%):</span>
-              <span>${{ compraSeleccionada.impuestos | number:'1.2-2' }}</span>
-            </div>
-            <div class="resumen-linea total">
-              <span>Total:</span>
-              <span>${{ compraSeleccionada.total | number:'1.2-2' }}</span>
-            </div>
+          <div class="filter-group">
+            <label>Estado:</label>
+            <select [(ngModel)]="filters.estado" class="filter-select">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let estado of estados" [value]="estado">
+                {{ estado }}
+              </option>
+            </select>
           </div>
-
-          @if (compraSeleccionada.observaciones) {
-            <div class="observaciones">
-              <h4>Observaciones:</h4>
-              <p>{{ compraSeleccionada.observaciones }}</p>
-            </div>
-          }
-        </div>
-        
-        <div class="modal-footer">
-          <button (click)="cerrarModalDetalle()" class="btn btn-outline">
-            Cerrar
-          </button>
-          @if (compraSeleccionada.estadoVenta === 'Entregado') {
-            <button (click)="descargarFactura(compraSeleccionada)" class="btn btn-primary">
-              📄 Descargar Factura
+           <div class="filter-group">
+            <label>Año:</label>
+            <select [(ngModel)]="filters.anio" class="filter-select">
+              <option value="">Todos los años</option>
+              <option *ngFor="let anio of availableYears" [value]="anio">
+                {{ anio }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <button class="btn btn-secondary" (click)="clearFilters()">
+              Limpiar Filtros
             </button>
-          }
+          </div>
         </div>
-      }
+      </div>
+
+      <!-- Lista de Compras -->
+      <div class="purchases-list">
+        <div *ngIf="filteredPurchases.length === 0" class="no-data">
+          <div class="no-data-content">
+            <h3>📦</h3>
+            <p>No se encontraron compras con los filtros seleccionados</p>
+          </div>
+        </div>
+
+        <div 
+          *ngFor="let purchase of filteredPurchases" 
+          class="purchase-card"
+        >
+          <div class="purchase-header">
+            <div class="purchase-info">
+              <h3>{{ purchase.numeroVenta }}</h3>
+              <p class="purchase-date">{{ formatDate(purchase.fechaVenta) }}</p>
+              <span class="purchase-status" [ngClass]="getStatusClass(purchase.estadoVenta)">
+                {{ purchase.estadoVenta }}
+              </span>
+            </div>
+            <div class="purchase-total">
+              <h4>{{ formatCurrency(purchase.total) }}</h4>
+              <p>{{ purchase.cantidadProductos }} producto(s)</p>
+            </div>
+          </div>
+
+          <div class="purchase-details">
+            <div class="products-summary">
+              <h4>Productos:</h4>
+              <div class="products-list">
+                <div 
+                  *ngFor="let producto of purchase.productos" 
+                  class="product-item"
+                >
+                  <img 
+                    *ngIf="producto.imagenProducto" 
+                    [src]="producto.imagenProducto" 
+                    [alt]="producto.nombreProducto"
+                    class="product-image"
+                  >
+                  <div class="product-info">
+                    <h5>{{ producto.nombreProducto }}</h5>
+                    <p>Cantidad: {{ producto.cantidad }} | {{ formatCurrency(producto.precioUnitario) }}</p>
+                  </div>
+                  <div class="product-total">
+                    {{ formatCurrency(producto.subtotal) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="purchase-actions">
+              <button class="btn btn-outline" [routerLink]="['/cliente/mis-compras', purchase.id]">
+                Ver Detalle
+              </button>
+              <button 
+                *ngIf="purchase.metodoPago" 
+                class="btn btn-secondary"
+                disabled
+              >
+                {{ purchase.metodoPago }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-} Filtros y Búsqueda
-  <div class="filtros-section">
-    <div class="filtros-container">
-      <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="Buscar por número de orden o producto..." 
-          [(ngModel)]="filtros.busqueda"
-          (input)="aplicarFiltros()"
-          class="form-input">
+
+    <!-- Tab: Mis Productos -->
+    <div *ngIf="activeTab === 'productos'" class="tab-content">
+      <div class="products-grid">
+        <div *ngIf="ownedProducts.length === 0" class="no-data">
+          <div class="no-data-content">
+            <h3>📦</h3>
+            <p>Aún no has adquirido ningún producto</p>
+          </div>
+        </div>
+
+        <div 
+          *ngFor="let product of ownedProducts" 
+          class="product-card"
+        >
+          <div class="product-image-container">
+            <img 
+              *ngIf="product.imagenPrincipal" 
+              [src]="product.imagenPrincipal" 
+              [alt]="product.nombreProducto"
+              class="product-image"
+            >
+            <div *ngIf="!product.imagenPrincipal" class="product-placeholder">
+              📦
+            </div>
+          </div>
+
+          <div class="product-content">
+            <h3>{{ product.nombreProducto }}</h3>
+            <p *ngIf="product.descripcionProducto" class="product-description">
+              {{ product.descripcionProducto }}
+            </p>
+
+            <div class="product-stats">
+              <div class="stat">
+                <span class="stat-label">Total Comprado:</span>
+                <span class="stat-value">{{ product.totalComprado }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Compras:</span>
+                <span class="stat-value">{{ product.numeroCompras }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Gastado:</span>
+                <span class="stat-value">{{ formatCurrency(product.totalGastado) }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Calificación:</span>
+                <span class="stat-value">
+                  {{ renderStars(product.calificacionPromedio) }}
+                  ({{ product.totalComentarios }})
+                </span>
+              </div>
+            </div>
+
+            <div class="product-dates">
+              <p><strong>Primera compra:</strong> {{ formatDate(product.primeraCompra) }}</p>
+              <p><strong>Última compra:</strong> {{ formatDate(product.ultimaCompra) }}</p>
+            </div>
+
+            <div class="product-actions">
+              <button 
+                class="btn btn-primary"
+                [routerLink]="['/cliente/documentacion']"
+                [queryParams]="{producto: product.productoId}"
+              >
+                📚 Ver Recursos
+              </button>
+              <button 
+                *ngIf="!product.yaComento"
+                class="btn btn-secondary"
+                (click)="openCommentModal(product)"
+              >
+                ⭐ Comentar
+              </button>
+              <span 
+                *ngIf="product.yaComento"
+                class="commented-badge"
+              >
+                ✅ Ya comentado
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="filter-group">
-        <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()" class="form-select">
-          <option value="">Todos los estados</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="Procesando">Procesando</option>
-          <option value="Enviado">Enviado</option>
-          <option value="Entregado">Entregado</option>
-          <option value="Cancelado">Cancelado</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <select [(ngModel)]="filtros.periodo" (change)="aplicarFiltros()" class="form-select">
-          <option value="">Todos los períodos</option>
-          <option value="ultima-semana">Última semana</option>
-          <option value="ultimo-mes">Último mes</option>
-          <option value="ultimos-3-meses">Últimos 3 meses</option>
-          <option value="ultimo-año">Último año</option>
-        </select>
+    </div>
+
+    <!-- Tab: Estadísticas -->
+    <div *ngIf="activeTab === 'estadisticas'" class="tab-content">
+      <div *ngIf="stats" class="stats-container">
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+              <h3>{{ formatCurrency(stats.totalGastado) }}</h3>
+              <p>Total Gastado</p>
+              <small>{{ stats.totalCompras }} compras realizadas</small>
+            </div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <h3>{{ formatCurrency(stats.promedioGasto) }}</h3>
+              <p>Promedio por Compra</p>
+              <small>Basado en {{ stats.totalCompras }} compras</small>
+            </div>
+          </div>
+
+          <div class="stat-card info">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+              <h3>{{ stats.comprasEsteMes }}</h3>
+              <p>Compras Este Mes</p>
+              <small>{{ formatCurrency(stats.gastoEsteMes) }} gastado</small>
+            </div>
+          </div>
+
+          <div class="stat-card warning">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-content">
+              <h3>{{ formatDate(stats.ultimaCompra || '') }}</h3>
+              <p>Última Compra</p>
+              <small>Primera: {{ formatDate(stats.primeraCompra || '') }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="stats.productosFavoritos.length > 0" class="favorites-section">
+          <h3>❤️ Tus Productos Favoritos</h3>
+          <div class="favorites-list">
+            <span 
+              *ngFor="let producto of stats.productosFavoritos" 
+              class="favorite-tag"
+            >
+              {{ producto }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Modal para Comentarios -->
+  <div *ngIf="showCommentModal" class="modal-overlay" (click)="closeCommentModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⭐ Comentar Producto</h3>
+        <button class="close-button" (click)="closeCommentModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="selectedProduct" class="product-info">
+          <h4>{{ selectedProduct.nombreProducto }}</h4>
+          <p>Comparte tu experiencia con este producto</p>
+        </div>
+
+        <div class="form-group">
+          <label>Calificación:</label>
+          <div class="rating-selector">
+            <button 
+              *ngFor="let star of [1,2,3,4,5]" 
+              type="button"
+              class="star-button"
+              [class.active]="star <= commentForm.calificacion"
+              (click)="commentForm.calificacion = star"
+            >
+              ⭐
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tu comentario:</label>
+          <textarea 
+            [(ngModel)]="commentForm.contenido"
+            placeholder="Comparte tu experiencia con este producto..."
+            class="comment-textarea"
+            rows="4"
+            maxlength="1000"
+          ></textarea>
+          <small>{{ commentForm.contenido.length }}/1000 caracteres</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          class="btn btn-secondary" 
+          (click)="closeCommentModal()"
+          [disabled]="submittingComment"
+        >
+          Cancelar
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="submitComment()"
+          [disabled]="!commentForm.contenido.trim() || submittingComment"
+        >
+          <span *ngIf="submittingComment">Enviando...</span>
+          <span *ngIf="!submittingComment">Enviar Comentario</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

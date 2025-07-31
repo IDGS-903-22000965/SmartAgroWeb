@@ -1,1 +1,424 @@
-<p>documentacion works!</p>
+<!-- src/app/components/cliente/documentacion/documentacion.html -->
+<div class="documentacion">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 *ngIf="activeView === 'list'">📚 Recursos y Documentación</h1>
+    <h1 *ngIf="activeView === 'detail'">📖 {{ selectedProduct?.nombreProducto }}</h1>
+    <h1 *ngIf="activeView === 'warranty'">🛡️ Garantía - {{ selectedWarranty?.nombreProducto }}</h1>
+    
+    <div class="header-actions" *ngIf="activeView !== 'list'">
+      <button class="btn btn-secondary" (click)="backToList()">
+        ← Volver a la lista
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando recursos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <h3>⚠️ Error</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadProductResources()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista Lista de Productos -->
+  <div *ngIf="!loading && !error && activeView === 'list'" class="list-view">
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label>Buscar producto:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm"
+            placeholder="Nombre del producto..."
+            class="filter-input"
+          >
+        </div>
+        <div class="filter-group">
+          <label>Categoría de recursos:</label>
+          <select [(ngModel)]="selectedCategory" class="filter-select">
+            <option value="">Todas las categorías</option>
+            <option *ngFor="let category of categories" [value]="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de productos con recursos -->
+    <div class="products-grid">
+      <div *ngIf="filteredProducts.length === 0" class="no-data">
+        <div class="no-data-content">
+          <h3>📚</h3>
+          <p>No se encontraron productos con recursos disponibles</p>
+        </div>
+      </div>
+
+      <div 
+        *ngFor="let product of filteredProducts" 
+        class="product-card"
+      >
+        <div class="product-header">
+          <img 
+            *ngIf="product.imagenPrincipal" 
+            [src]="product.imagenPrincipal" 
+            [alt]="product.nombreProducto"
+            class="product-image"
+          >
+          <div *ngIf="!product.imagenPrincipal" class="product-placeholder">
+            📦
+          </div>
+          
+          <div class="product-info">
+            <h3>{{ product.nombreProducto }}</h3>
+            <p *ngIf="product.descripcionProducto">{{ product.descripcionProducto }}</p>
+            <div class="product-meta">
+              <span class="meta-item">
+                📦 {{ product.totalComprado }} unidades
+              </span>
+              <span class="meta-item">
+                📅 Última compra: {{ formatDate(product.ultimaCompra) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resources-summary">
+          <h4>Recursos disponibles ({{ getTotalResources(product) }}):</h4>
+          <div class="resources-grid">
+            <div *ngIf="product.manualesDisponibles.length > 0" class="resource-category">
+              <span class="resource-icon">📄</span>
+              <span>{{ product.manualesDisponibles.length }} Manual(es)</span>
+            </div>
+            <div *ngIf="product.videosTutoriales.length > 0" class="resource-category">
+              <span class="resource-icon">🎥</span>
+              <span>{{ product.videosTutoriales.length }} Video(s)</span>
+            </div>
+            <div *ngIf="product.guiasMantenimiento.length > 0" class="resource-category">
+              <span class="resource-icon">🔧</span>
+              <span>{{ product.guiasMantenimiento.length }} Guía(s)</span>
+            </div>
+            <div *ngIf="product.documentosTecnicos.length > 0" class="resource-category">
+              <span class="resource-icon">📋</span>
+              <span>{{ product.documentosTecnicos.length }} Documento(s)</span>
+            </div>
+            <div *ngIf="product.linksUtiles.length > 0" class="resource-category">
+              <span class="resource-icon">🔗</span>
+              <span>{{ product.linksUtiles.length }} Link(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-actions">
+          <button 
+            class="btn btn-primary"
+            (click)="viewProductDetail(product.productoId)"
+          >
+            📖 Ver Recursos
+          </button>
+          <button 
+            class="btn btn-outline"
+            (click)="viewProductWarranty(product.productoId)"
+          >
+            🛡️ Ver Garantía
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Detalle del Producto -->
+  <div *ngIf="!loading && !error && activeView === 'detail' && selectedProduct" class="detail-view">
+    <div class="product-detail-header">
+      <img 
+        *ngIf="selectedProduct.imagenPrincipal" 
+        [src]="selectedProduct.imagenPrincipal" 
+        [alt]="selectedProduct.nombreProducto"
+        class="product-detail-image"
+      >
+      <div class="product-detail-info">
+        <h2>{{ selectedProduct.nombreProducto }}</h2>
+        <p *ngIf="selectedProduct.descripcionProducto">
+          {{ selectedProduct.descripcionProducto }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Información Completa del Producto -->
+    <div *ngIf="selectedProduct.informacionCompleta" class="product-full-info">
+      <h3>📋 Información del Producto</h3>
+      <div class="info-content">
+        <p *ngIf="selectedProduct.informacionCompleta.descripcionDetallada">
+          {{ selectedProduct.informacionCompleta.descripcionDetallada }}
+        </p>
+        
+        <div *ngIf="selectedProduct.informacionCompleta.caracteristicas?.length" class="caracteristicas">
+          <h4>✨ Características:</h4>
+          <ul>
+            <li *ngFor="let caracteristica of selectedProduct.informacionCompleta.caracteristicas">
+              {{ caracteristica }}
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="selectedProduct.informacionCompleta.beneficios?.length" class="beneficios">
+          <h4>💡 Beneficios:</h4>
+          <ul>
+            <li *ngFor="let beneficio of selectedProduct.informacionCompleta.beneficios">
+              {{ beneficio }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documentación -->
+    <div *ngIf="selectedProduct.documentacion" class="documentation-section">
+      <h3>📚 Documentación</h3>
+      
+      <div class="docs-grid">
+        <!-- Manuales de Usuario -->
+        <div *ngIf="selectedProduct.documentacion.manualesUsuario?.length" class="doc-category">
+          <h4>📖 Manuales de Usuario</h4>
+          <div class="resources-list">
+            <div 
+              *ngFor="let manual of selectedProduct.documentacion.manualesUsuario" 
+              class="resource-item"
+            >
+              <div class="resource-info">
+                <span class="resource-icon">{{ getResourceIcon(manual.tipoRecurso) }}</span>
+                <div class="resource-details">
+                  <h5>{{ manual.titulo }}</h5>
+                  <p *ngIf="manual.descripcion">{{ manual.descripcion }}</p>
+                  <small>
+                    {{ manual.tipoRecurso }}
+                    <span *ngIf="manual.tamano"> • {{ manual.tamano }}</span>
+                    • Actualizado: {{ formatDate(manual.fechaActualizacion) }}
+                  </small>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-primary" (click)="downloadResource(manual.url, manual.titulo)">
+                📥 Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guías de Instalación -->
+        <div *ngIf="selectedProduct.documentacion.guiasInstalacion?.length" class="doc-category">
+          <h4>🔧 Guías de Instalación</h4>
+          <div class="resources-list">
+            <div 
+              *ngFor="let guia of selectedProduct.documentacion.guiasInstalacion" 
+              class="resource-item"
+            >
+              <div class="resource-info">
+                <span class="resource-icon">{{ getResourceIcon(guia.tipoRecurso) }}</span>
+                <div class="resource-details">
+                  <h5>{{ guia.titulo }}</h5>
+                  <p *ngIf="guia.descripcion">{{ guia.descripcion }}</p>
+                  <small>
+                    {{ guia.tipoRecurso }}
+                    <span *ngIf="guia.tamano"> • {{ guia.tamano }}</span>
+                    • Actualizado: {{ formatDate(guia.fechaActualizacion) }}
+                  </small>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-primary" (click)="downloadResource(guia.url, guia.titulo)">
+                📥 Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guías de Mantenimiento -->
+        <div *ngIf="selectedProduct.documentacion.guiasMantenimiento?.length" class="doc-category">
+          <h4>🛠️ Guías de Mantenimiento</h4>
+          <div class="resources-list">
+            <div 
+              *ngFor="let mantenimiento of selectedProduct.documentacion.guiasMantenimiento" 
+              class="resource-item"
+            >
+              <div class="resource-info">
+                <span class="resource-icon">{{ getResourceIcon(mantenimiento.tipoRecurso) }}</span>
+                <div class="resource-details">
+                  <h5>{{ mantenimiento.titulo }}</h5>
+                  <p *ngIf="mantenimiento.descripcion">{{ mantenimiento.descripcion }}</p>
+                  <small>
+                    {{ mantenimiento.tipoRecurso }}
+                    <span *ngIf="mantenimiento.tamano"> • {{ mantenimiento.tamano }}</span>
+                    • Actualizado: {{ formatDate(mantenimiento.fechaActualizacion) }}
+                  </small>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-primary" (click)="downloadResource(mantenimiento.url, mantenimiento.titulo)">
+                📥 Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recursos Multimedia -->
+    <div *ngIf="selectedProduct.multimediaResources" class="multimedia-section">
+      <h3>🎥 Recursos Multimedia</h3>
+      
+      <div class="multimedia-grid">
+        <!-- Videos Tutoriales -->
+        <div *ngIf="selectedProduct.multimediaResources.videosTutoriales?.length" class="multimedia-category">
+          <h4>🎬 Videos Tutoriales</h4>
+          <div class="resources-list">
+            <div 
+              *ngFor="let video of selectedProduct.multimediaResources.videosTutoriales" 
+              class="resource-item"
+            >
+              <div class="resource-info">
+                <span class="resource-icon">🎥</span>
+                <div class="resource-details">
+                  <h5>{{ video.titulo }}</h5>
+                  <p *ngIf="video.descripcion">{{ video.descripcion }}</p>
+                  <small>
+                    {{ video.tipoRecurso }}
+                    <span *ngIf="video.tamano"> • {{ video.tamano }}</span>
+                    • Actualizado: {{ formatDate(video.fechaActualizacion) }}
+                  </small>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-primary" (click)="openResource(video.url)">
+                ▶️ Ver Video
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Soporte Técnico -->
+    <div *ngIf="selectedProduct.soporteTecnico" class="support-section">
+      <h3>🛠️ Soporte Técnico</h3>
+      
+      <!-- Contacto -->
+      <div *ngIf="selectedProduct.soporteTecnico.contactoSoporte" class="support-contact">
+        <h4>📞 Contacto de Soporte</h4>
+        <div class="contact-info">
+          <div class="contact-item">
+            <strong>Teléfono:</strong> {{ selectedProduct.soporteTecnico.contactoSoporte.telefonoSoporte }}
+          </div>
+          <div class="contact-item">
+            <strong>Email:</strong> {{ selectedProduct.soporteTecnico.contactoSoporte.emailSoporte }}
+          </div>
+          <div class="contact-item">
+            <strong>Horario:</strong> {{ selectedProduct.soporteTecnico.contactoSoporte.horarioAtencion }}
+          </div>
+          <div *ngIf="selectedProduct.soporteTecnico.contactoSoporte.whatsApp" class="contact-item">
+            <strong>WhatsApp:</strong> {{ selectedProduct.soporteTecnico.contactoSoporte.whatsApp }}
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQs -->
+      <div *ngIf="selectedProduct.soporteTecnico.faQs?.length" class="support-faqs">
+        <h4>❓ Preguntas Frecuentes</h4>
+        <div class="faqs-list">
+          <div 
+            *ngFor="let faq of selectedProduct.soporteTecnico.faQs" 
+            class="faq-item"
+          >
+            <h5>{{ faq.pregunta }}</h5>
+            <p>{{ faq.respuesta }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Garantía -->
+  <div *ngIf="!loading && !error && activeView === 'warranty' && selectedWarranty" class="warranty-view">
+    <div class="warranty-header">
+      <div class="warranty-status" [ngClass]="getWarrantyStatusClass(selectedWarranty.garantiaVigente)">
+        <h2>
+          🛡️ Garantía {{ getWarrantyStatusText(selectedWarranty.garantiaVigente) }}
+        </h2>
+      </div>
+    </div>
+
+    <div class="warranty-details">
+      <div class="warranty-info-grid">
+        <div class="warranty-info-item">
+          <strong>Producto:</strong>
+          <span>{{ selectedWarranty.nombreProducto }}</span>
+        </div>
+        <div class="warranty-info-item">
+          <strong>Fecha de Compra:</strong>
+          <span>{{ formatDate(selectedWarranty.fechaCompra) }}</span>
+        </div>
+        <div class="warranty-info-item">
+          <strong>Número de Venta:</strong>
+          <span>{{ selectedWarranty.numeroVenta }}</span>
+        </div>
+        <div class="warranty-info-item">
+          <strong>Duración:</strong>
+          <span>{{ selectedWarranty.duracionGarantiaMeses }} meses</span>
+        </div>
+        <div class="warranty-info-item">
+          <strong>Vigencia:</strong>
+          <span>{{ formatDate(selectedWarranty.fechaInicioGarantia) }} - {{ formatDate(selectedWarranty.fechaFinGarantia) }}</span>
+        </div>
+        <div class="warranty-info-item">
+          <strong>Días Restantes:</strong>
+          <span [ngClass]="selectedWarranty.garantiaVigente ? 'text-success' : 'text-danger'">
+            {{ selectedWarranty.diasRestantes }} días
+          </span>
+        </div>
+      </div>
+
+      <!-- Términos y Condiciones -->
+      <div class="warranty-terms">
+        <h3>📋 Términos de Garantía</h3>
+        <ul>
+          <li *ngFor="let termino of selectedWarranty.terminosGarantia">
+            {{ termino }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Coberturas -->
+      <div class="warranty-coverage">
+        <h3>✅ Coberturas Incluidas</h3>
+        <ul>
+          <li *ngFor="let cobertura of selectedWarranty.coberturasIncluidas">
+            {{ cobertura }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Exclusiones -->
+      <div class="warranty-exclusions">
+        <h3>❌ Exclusiones</h3>
+        <ul>
+          <li *ngFor="let exclusion of selectedWarranty.exclusionesGarantia">
+            {{ exclusion }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Procedimiento de Reclamación -->
+      <div class="warranty-procedure">
+        <h3>📞 Procedimiento de Reclamación</h3>
+        <pre>{{ selectedWarranty.procedimientoReclamacion }}</pre>
+      </div>
+    </div>
+  </div>
+</div>

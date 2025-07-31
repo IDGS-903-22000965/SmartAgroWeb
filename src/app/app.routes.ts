@@ -4,6 +4,7 @@ import { adminGuard } from './guards/admin-guard';
 import { clienteGuard } from './guards/cliente-guard';
 
 export const routes: Routes = [
+  // Rutas públicas (sin autenticación)
   {
     path: '',
     loadComponent: () => import('./components/home/home').then(m => m.Home)
@@ -40,6 +41,7 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register').then(m => m.Register)
   },
+  // ✅ ACTUALIZADO: Ahora el registro es para solicitar cuenta, no para auto-registrarse
   
   // Rutas de administración
   {
@@ -64,7 +66,7 @@ export const routes: Routes = [
       },
       {
         path: 'ventas',
-        loadComponent: () => import('./components/admin/ventas/ventas').then(m => m.Ventas)
+        loadComponent: () => import('./components/admin/ventas/ventas').then(m => m.VentasComponent)
       },
       {
         path: 'proveedores',
@@ -76,7 +78,7 @@ export const routes: Routes = [
       },
       {
         path: 'productos',
-        loadComponent: () => import('./components/admin/productos-admin/productos-admin').then(m => m.ProductosAdmin)
+        loadComponent: () => import('./components/admin/productos-admin/productos-admin').then(m => m.ProductosAdminComponent)
       },
       {
         path: 'materias-primas',
@@ -89,33 +91,37 @@ export const routes: Routes = [
     ]
   },
   
-  // Rutas del cliente
-  {
-    path: 'cliente',
-    canActivate: [authGuard, clienteGuard],
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('./components/cliente/dashboard-cliente/dashboard-cliente').then(m => m.DashboardCliente)
-      },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./components/cliente/dashboard-cliente/dashboard-cliente').then(m => m.DashboardCliente)
-      },
-      {
-        path: 'mis-compras',
-        loadComponent: () => import('./components/cliente/mis-compras/mis-compras').then(m => m.MisCompras)
-      },
-      {
-        path: 'documentacion',
-        loadComponent: () => import('./components/cliente/documentacion/documentacion').then(m => m.Documentacion)
-      },
-      {
-        path: 'perfil',
-        loadComponent: () => import('./components/cliente/perfil/perfil').then(m => m.Perfil)
-      }
-    ]
-  },
+ // Rutas del cliente
+{
+  path: 'cliente',
+  canActivate: [authGuard, clienteGuard],
+  children: [
+    {
+      path: '',
+      loadComponent: () => import('./components/cliente/dashboard-cliente/dashboard-cliente').then(m => m.DashboardCliente)
+    },
+    {
+      path: 'dashboard',
+      loadComponent: () => import('./components/cliente/dashboard-cliente/dashboard-cliente').then(m => m.DashboardCliente)
+    },
+    {
+      path: 'mis-compras',
+      loadComponent: () => import('./components/cliente/mis-compras/mis-compras').then(m => m.MisCompras)
+    },
+    {
+      path: 'comentarios',  // ⬅️ ESTA LÍNEA FALTA
+      loadComponent: () => import('./components/cliente/comentarios/comentarios').then(m => m.Comentarios)
+    },
+    {
+      path: 'documentacion',
+      loadComponent: () => import('./components/cliente/documentacion/documentacion').then(m => m.Documentacion)
+    },
+    {
+      path: 'perfil',
+      loadComponent: () => import('./components/cliente/perfil/perfil').then(m => m.Perfil)
+    }
+  ]
+},
   
   { path: '**', redirectTo: '' }
 ];

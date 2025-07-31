@@ -3,7 +3,22 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Auth } from '../../services/auth';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
+interface AccountRequestDto {
+  nombre: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  empresa?: string;
+  mensaje: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+}
 
 @Component({
   selector: 'app-register',
@@ -12,93 +27,73 @@ import { Auth } from '../../services/auth';
   styleUrl: './register.scss'
 })
 export class Register {
-  protected registerForm: FormGroup;
+  protected requestForm: FormGroup;
   protected loading = signal(false);
   protected error = signal<string | null>(null);
   protected success = signal<string | null>(null);
-  protected showPassword = signal(false);
-  protected showConfirmPassword = signal(false);
+  protected submitted = signal(false);
 
   constructor(
     private fb: FormBuilder,
-    private authService: Auth,
+    private http: HttpClient,
     private router: Router
   ) {
-    this.registerForm = this.fb.group({
+    this.requestForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^\d{10}$/)]],
-      direccion: [''],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
-  }
-
-  protected passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password');
-    const confirmPassword = form.get('confirmPassword');
-    
-    if (password?.value !== confirmPassword?.value) {
-      confirmPassword?.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
-    }
-    
-    if (confirmPassword?.hasError('passwordMismatch')) {
-      confirmPassword?.setErrors(null);
-    }
-    return null;
+      empresa: [''],
+      mensaje: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
+    });
   }
 
   protected onSubmit(): void {
-    if (this.registerForm.valid) {
+    if (this.requestForm.valid) {
       this.loading.set(true);
       this.error.set(null);
       this.success.set(null);
 
-      const registerData = this.registerForm.value;
+      const requestData: AccountRequestDto = this.requestForm.value;
 
-      this.authService.register(registerData).subscribe({
-        next: (response) => {
-          this.loading.set(false);
-          if (response.isSuccess) {
-            this.success.set('Registro exitoso. Redirigiendo...');
-            // Redirigir después de un breve delay
-            setTimeout(() => {
-              this.router.navigate(['/cliente']);
-            }, 2000);
-          } else {
-            this.error.set(response.message || 'Error en el registro');
+      // Enviar solicitud al backend
+      this.http.post<ApiResponse>(`${environment.apiUrl}/account-request`, requestData)
+        .subscribe({
+          next: (response) => {
+            this.loading.set(false);
+            if (response.success) {
+              this.success.set('¡Solicitud enviada exitosamente! Te contactaremos pronto.');
+              this.submitted.set(true);
+              this.requestForm.disable();
+            } else {
+              this.error.set(response.message || 'Error al enviar la solicitud');
+            }
+          },
+          error: (error) => {
+            this.loading.set(false);
+            console.error('Error al enviar solicitud:', error);
+            
+            if (error.status === 0) {
+              this.error.set('Error de conexión. Verifica tu conexión a internet.');
+            } else {
+              this.error.set('Error al enviar la solicitud. Intenta nuevamente o contáctanos por teléfono.');
+            }
           }
-        },
-        error: (error) => {
-          this.loading.set(false);
-          this.error.set('Error de conexión. Intente nuevamente.');
-          console.error('Register error:', error);
-        }
-      });
+        });
     } else {
       this.markFormGroupTouched();
     }
   }
 
   private markFormGroupTouched(): void {
-    Object.keys(this.registerForm.controls).forEach(key => {
-      const control = this.registerForm.get(key);
+    Object.keys(this.requestForm.controls).forEach(key => {
+      const control = this.requestForm.get(key);
       control?.markAsTouched();
     });
   }
 
-  protected togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
-    if (field === 'password') {
-      this.showPassword.update(value => !value);
-    } else {
-      this.showConfirmPassword.update(value => !value);
-    }
-  }
-
   protected getFieldError(fieldName: string): string | null {
-    const control = this.registerForm.get(fieldName);
+    const control = this.requestForm.get(fieldName);
     if (control && control.invalid && (control.dirty || control.touched)) {
       if (control.errors?.['required']) {
         return `${this.getFieldLabel(fieldName)} es requerido`;
@@ -110,13 +105,14 @@ export class Register {
         const requiredLength = control.errors?.['minlength'].requiredLength;
         return `${this.getFieldLabel(fieldName)} debe tener al menos ${requiredLength} caracteres`;
       }
+      if (control.errors?.['maxlength']) {
+        const maxLength = control.errors?.['maxlength'].requiredLength;
+        return `${this.getFieldLabel(fieldName)} no puede exceder ${maxLength} caracteres`;
+      }
       if (control.errors?.['pattern']) {
         if (fieldName === 'telefono') {
           return 'El teléfono debe tener 10 dígitos';
         }
-      }
-      if (control.errors?.['passwordMismatch']) {
-        return 'Las contraseñas no coinciden';
       }
     }
     return null;
@@ -128,47 +124,30 @@ export class Register {
       apellidos: 'Los apellidos',
       email: 'El email',
       telefono: 'El teléfono',
-      direccion: 'La dirección',
-      password: 'La contraseña',
-      confirmPassword: 'La confirmación de contraseña'
+      empresa: 'La empresa',
+      mensaje: 'El mensaje'
     };
     return labels[fieldName] || fieldName;
   }
 
   protected isFieldInvalid(fieldName: string): boolean {
-    const control = this.registerForm.get(fieldName);
+    const control = this.requestForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  protected getPasswordStrength(): string {
-    const password = this.registerForm.get('password')?.value;
-    if (!password) return '';
-    
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-    
-    switch (strength) {
-      case 0:
-      case 1: return 'weak';
-      case 2:
-      case 3: return 'medium';
-      case 4:
-      case 5: return 'strong';
-      default: return '';
-    }
+  protected getCharacterCount(): number {
+    return this.requestForm.get('mensaje')?.value?.length || 0;
   }
 
-  protected getPasswordStrengthText(): string {
-    const strength = this.getPasswordStrength();
-    switch (strength) {
-      case 'weak': return 'Débil';
-      case 'medium': return 'Medio';
-      case 'strong': return 'Fuerte';
-      default: return '';
-    }
+  protected resetForm(): void {
+    this.requestForm.reset();
+    this.requestForm.enable();
+    this.submitted.set(false);
+    this.success.set(null);
+    this.error.set(null);
+  }
+
+  protected goToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }

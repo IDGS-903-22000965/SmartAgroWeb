@@ -1,9 +1,9 @@
-// src/app/services/auth.ts - SOLUCIÓN DEFINITIVA
+// src/app/services/auth.ts 
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { LoginRequest, RegisterRequest, AuthResponse, User } from '../models/models';
+import { LoginRequest, AuthResponse, User } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -25,6 +25,9 @@ export class Auth {
     this.checkCurrentUser();
   }
 
+  /**
+   * Iniciar sesión de usuario
+   */
   login(loginData: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginData)
       .pipe(
@@ -38,20 +41,17 @@ export class Auth {
       );
   }
 
-  register(registerData: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/register`, registerData)
-      .pipe(
-        tap(response => {
-          if (response.isSuccess && response.token && response.user) {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            this.currentUserSignal.set(response.user);
-          }
-        })
-      );
-  }
-
+  /**
+   * Cerrar sesión
+   */
   logout(): void {
+    // Llamar al endpoint de logout (opcional)
+    this.http.post(`${this.API_URL}/logout`, {}).subscribe({
+      next: () => console.log('Logout exitoso'),
+      error: (error) => console.warn('Error en logout del servidor:', error)
+    });
+
+    // Limpiar datos locales
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUserSignal.set(null);
@@ -142,19 +142,6 @@ export class Auth {
     }
   }
 
-  // Métodos legacy para compatibilidad
-  isAuthenticatedLegacy(): boolean {
-    return this.isAuthenticated();
-  }
-
-  isAdminLegacy(): boolean {
-    return this.isAdmin();
-  }
-
-  isClienteLegacy(): boolean {
-    return this.isCliente();
-  }
-
   private checkCurrentUser(): void {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -170,4 +157,6 @@ export class Auth {
       this.logout();
     }
   }
+
+
 }
