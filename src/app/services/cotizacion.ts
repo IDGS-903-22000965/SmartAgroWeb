@@ -34,6 +34,6 @@ export class CotizacionService {
   }
 
   actualizarEstado(id: number, estado: string): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.API_URL}/${id}/estado`, estado);
-  }
+  return this.http.put<ApiResponse>(`${this.API_URL}/${id}/estado`, { estado });
+}
 } 

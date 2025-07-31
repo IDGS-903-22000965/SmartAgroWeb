@@ -762,34 +762,79 @@ export class Usuarios implements OnInit {
 
   // Métodos de formularios
   protected crearUsuario(): void {
-    if (!this.createUserForm.valid) {
-      this.markFormGroupTouched(this.createUserForm);
-      return;
-    }
-
-    this.loadingModal.set(true);
-    this.error.set(null);
-
-    const userData: CreateUserDto = this.createUserForm.value;
-
-    this.userService.createUser(userData).subscribe({
-      next: (response) => {
-        this.loadingModal.set(false);
-        if (response.success) {
-          this.success.set('Usuario creado exitosamente');
-          this.cargarDatos();
-          setTimeout(() => this.cerrarModales(), 2000);
-        } else {
-          this.error.set(response.message || 'Error al crear usuario');
-        }
-      },
-      error: (error) => {
-        this.loadingModal.set(false);
-        this.error.set('Error de conexión al crear usuario');
-        console.error('Error creating user:', error);
+  if (!this.createUserForm.valid) {
+    console.log('❌ Formulario inválido:', this.createUserForm.errors);
+    
+    // Log de errores específicos por campo
+    Object.keys(this.createUserForm.controls).forEach(key => {
+      const control = this.createUserForm.get(key);
+      if (control && control.invalid) {
+        console.log(`❌ Campo '${key}' inválido:`, control.errors);
       }
     });
+    
+    this.markFormGroupTouched(this.createUserForm);
+    return;
   }
+
+  this.loadingModal.set(true);
+  this.error.set(null);
+
+  const userData: CreateUserDto = this.createUserForm.value;
+  
+  // ✅ LOG DETALLADO DE LOS DATOS QUE SE ENVÍAN
+  console.log('🔥 DATOS QUE SE ENVÍAN AL BACKEND:', {
+    nombre: userData.nombre,
+    apellidos: userData.apellidos,
+    email: userData.email,
+    password: userData.password ? `[${userData.password.length} caracteres]` : 'NO_PASSWORD',
+    telefono: userData.telefono || 'EMPTY',
+    direccion: userData.direccion || 'EMPTY',
+    rol: userData.rol,
+    activo: userData.activo
+  });
+
+  this.userService.createUser(userData).subscribe({
+    next: (response) => {
+      console.log('✅ Respuesta del servidor:', response);
+      this.loadingModal.set(false);
+      if (response.success) {
+        this.success.set('Usuario creado exitosamente');
+        this.cargarDatos();
+        setTimeout(() => this.cerrarModales(), 2000);
+      } else {
+        this.error.set(response.message || 'Error al crear usuario');
+      }
+    },
+    error: (error) => {
+      console.log('❌ Error completo:', error);
+      console.log('❌ Status:', error.status);
+      console.log('❌ StatusText:', error.statusText);
+      console.log('❌ Error body:', error.error);
+      
+      this.loadingModal.set(false);
+      
+      if (error.status === 400 && error.error) {
+        // Si es un error de validación, mostrar detalles
+        if (typeof error.error === 'object') {
+          const errorMessages = [];
+          for (const [field, messages] of Object.entries(error.error)) {
+            if (Array.isArray(messages)) {
+              errorMessages.push(`${field}: ${messages.join(', ')}`);
+            }
+          }
+          this.error.set(`Errores de validación: ${errorMessages.join('; ')}`);
+        } else {
+          this.error.set(error.error.message || 'Error de validación');
+        }
+      } else {
+        this.error.set('Error de conexión al crear usuario');
+      }
+      
+      console.error('Error creating user:', error);
+    }
+  });
+}
 
   protected actualizarUsuario(): void {
     if (!this.editUserForm.valid || !this.usuarioEditando) {

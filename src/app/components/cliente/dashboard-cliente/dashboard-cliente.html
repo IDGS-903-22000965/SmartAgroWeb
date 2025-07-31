@@ -1,222 +1,290 @@
 <!-- src/app/components/cliente/dashboard-cliente/dashboard-cliente.html -->
 <div class="dashboard-cliente">
-  <!-- Header de Bienvenida -->
-  <div class="welcome-header">
-    <div class="welcome-content">
-      <h1>¡Hola, {{ nombreUsuario }}!</h1>
-      <p>Bienvenido a tu panel de control de SmartAgro</p>
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1>¡Bienvenido, {{ user?.nombre }}! 👋</h1>
+      <p>Este es tu panel de control personal</p>
     </div>
-    <div class="quick-actions">
-      <button (click)="solicitarCotizacion()" class="btn btn-primary">
-        💰 Nueva Cotización
-      </button>
-      <button (click)="verProductos()" class="btn btn-outline">
-        🛍️ Ver Productos
+    <div class="header-stats">
+      <div class="header-stat">
+  <span class="stat-icon">📅</span>
+  <span>{{ fechaActual }}</span>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando tu dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <h3>⚠️ Error</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadDashboard()">
+        Reintentar
       </button>
     </div>
   </div>
 
-  <!-- Estadísticas Rápidas -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">📋</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.cotizaciones }}</h3>
-        <p>Cotizaciones</p>
-      </div>
-    </div>
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error && dashboard" class="dashboard-content">
     
-    <div class="stat-card">
-      <div class="stat-icon">🛒</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.compras }}</h3>
-        <p>Compras</p>
+    <!-- Notificaciones Importantes -->
+    <div *ngIf="dashboard.notificacionesImportantes?.length" class="notifications-section">
+      <h2>🔔 Notificaciones Importantes</h2>
+      <div class="notifications-list">
+        <div 
+          *ngFor="let notification of dashboard.notificacionesImportantes.slice(0, 3)" 
+          class="notification-item"
+          [ngClass]="getPriorityClass(notification.prioridad)"
+        >
+          <span class="notification-icon">{{ notification.icono }}</span>
+          <div class="notification-content">
+            <h4>{{ notification.titulo }}</h4>
+            <p>{{ notification.mensaje }}</p>
+            <small>{{ formatDate(notification.fecha) }}</small>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon">💵</div>
-      <div class="stat-content">
-        <h3>${{ estadisticas.totalGastado | number:'1.2-2' }}</h3>
-        <p>Total Gastado</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon">⭐</div>
-      <div class="stat-content">
-        <h3>{{ estadisticas.puntuacionPromedio }}/5</h3>
-        <p>Mi Calificación</p>
-      </div>
-    </div>
-  </div>
 
-  <!-- Secciones Principales -->
-  <div class="main-sections">
-    <!-- Cotizaciones Recientes -->
-    <div class="section-card">
-      <div class="section-header">
-        <h2>Mis Cotizaciones Recientes</h2>
-        <button (click)="verTodasCotizaciones()" class="btn btn-text">
-          Ver todas →
-        </button>
+    <!-- Estadísticas Principales -->
+    <div class="stats-grid">
+      <!-- Resumen de Compras -->
+      <div class="stat-card primary">
+        <div class="stat-header">
+          <h3>💰 Resumen de Compras</h3>
+          <span class="stat-icon">🛒</span>
+        </div>
+        <div class="stat-content">
+          <div class="main-stat">
+            <span class="stat-number">{{ dashboard.resumenCompras.totalCompras }}</span>
+            <span class="stat-label">Compras Realizadas</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.totalGastado) }}</span>
+              <span class="sub-stat-label">Total Gastado</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.promedioGasto) }}</span>
+              <span class="sub-stat-label">Promedio por Compra</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Productos Adquiridos -->
+      <div class="stat-card success">
+        <div class="stat-header">
+          <h3>📦 Mis Productos</h3>
+          <span class="stat-icon">📋</span>
+        </div>
+        <div class="stat-content">
+          <div class="main-stat">
+            <span class="stat-number">{{ dashboard.productosAdquiridos.totalProductosUnicos }}</span>
+            <span class="stat-label">Productos Únicos</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ dashboard.productosAdquiridos.productosConGarantiaVigente }}</span>
+              <span class="sub-stat-label">Con Garantía Vigente</span>
+            </div>
+            <div class="sub-stat favorite-product">
+              <span class="sub-stat-label">Más Comprado:</span>
+              <span class="sub-stat-text">{{ dashboard.productosAdquiridos.productoMasComprado }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado de Comentarios -->
+      <div class="stat-card info">
+        <div class="stat-header">
+          <h3>⭐ Mis Comentarios</h3>
+          <span class="stat-icon">💬</span>
+        </div>
+        <div class="stat-content">
+          <div class="main-stat">
+            <span class="stat-number">{{ dashboard.estadoComentarios.totalComentarios }}</span>
+            <span class="stat-label">Comentarios Totales</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ dashboard.estadoComentarios.comentariosAprobados }}</span>
+              <span class="sub-stat-label">Aprobados</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ dashboard.estadoComentarios.comentariosPendientes }}</span>
+              <span class="sub-stat-label">Pendientes</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ dashboard.estadoComentarios.calificacionPromedio }}/5</span>
+              <span class="sub-stat-label">Calificación Promedio</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad Este Mes -->
+      <div class="stat-card warning">
+        <div class="stat-header">
+          <h3>📊 Este Mes</h3>
+          <span class="stat-icon">📅</span>
+        </div>
+        <div class="stat-content">
+          <div class="main-stat">
+            <span class="stat-number">{{ dashboard.resumenCompras.comprasEsteMes }}</span>
+            <span class="stat-label">Compras Este Mes</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.gastoEsteMes) }}</span>
+              <span class="sub-stat-label">Gastado Este Mes</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-number">{{ dashboard.resumenCompras.ventasPendientes }}</span>
+              <span class="sub-stat-label">Pedidos Pendientes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Principal -->
+    <div class="main-sections">
       
-      @if (loadingCotizaciones()) {
-        <div class="loading-container">
-          <div class="spinner"></div>
-          <p>Cargando cotizaciones...</p>
-        </div>
-      } @else if (cotizacionesRecientes.length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          <h3>No tienes cotizaciones</h3>
-          <p>Solicita tu primera cotización para comenzar</p>
-          <button (click)="solicitarCotizacion()" class="btn btn-primary">
-            Solicitar Cotización
-          </button>
-        </div>
-      } @else {
-        <div class="cotizaciones-list">
-          @for (cotizacion of cotizacionesRecientes; track cotizacion.id) {
-            <div class="cotizacion-item" (click)="verCotizacion(cotizacion.id)">
-              <div class="cotizacion-info">
-                <div class="cotizacion-header">
-                  <span class="cotizacion-numero">{{ cotizacion.numero }}</span>
-                  <span class="cotizacion-estado" [class]="'estado-' + cotizacion.estado.toLowerCase()">
-                    {{ cotizacion.estado }}
-                  </span>
-                </div>
-                <p class="cotizacion-descripcion">{{ cotizacion.descripcion }}</p>
-                <div class="cotizacion-meta">
-                  <span class="cotizacion-fecha">{{ cotizacion.fecha | date:'dd/MM/yyyy' }}</span>
-                  <span class="cotizacion-total">${{ cotizacion.total | number:'1.2-2' }}</span>
-                </div>
-              </div>
-              <div class="cotizacion-arrow">→</div>
-            </div>
-          }
-        </div>
-      }
-    </div>
-
-    <!-- Compras Recientes -->
-    <div class="section-card">
-      <div class="section-header">
-        <h2>Mis Compras Recientes</h2>
-        <button (click)="verTodasCompras()" class="btn btn-text">
-          Ver todas →
-        </button>
-      </div>
-      
-      @if (loadingCompras()) {
-        <div class="loading-container">
-          <div class="spinner"></div>
-          <p>Cargando compras...</p>
-        </div>
-      } @else if (comprasRecientes.length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">🛒</div>
-          <h3>No tienes compras</h3>
-          <p>Explora nuestros productos y realiza tu primera compra</p>
-          <button (click)="verProductos()" class="btn btn-primary">
-            Ver Productos
-          </button>
-        </div>
-      } @else {
-        <div class="compras-list">
-          @for (compra of comprasRecientes; track compra.id) {
-            <div class="compra-item" (click)="verCompra(compra.id)">
-              <div class="compra-info">
-                <div class="compra-header">
-                  <span class="compra-numero">Orden {{ compra.numero }}</span>
-                  <span class="compra-estado" [class]="'estado-' + compra.estado.toLowerCase()">
-                    {{ compra.estado }}
-                  </span>
-                </div>
-                <p class="compra-productos">{{ compra.productos }}</p>
-                <div class="compra-meta">
-                  <span class="compra-fecha">{{ compra.fecha | date:'dd/MM/yyyy' }}</span>
-                  <span class="compra-total">${{ compra.total | number:'1.2-2' }}</span>
-                </div>
-              </div>
-              <div class="compra-arrow">→</div>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- Productos Recomendados -->
-  <div class="section-card full-width">
-    <div class="section-header">
-      <h2>Productos Recomendados para Ti</h2>
-      <button (click)="verProductos()" class="btn btn-text">
-        Ver todos →
-      </button>
-    </div>
-    
-    @if (loadingProductos()) {
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Cargando productos...</p>
-      </div>
-    } @else {
-      <div class="productos-grid">
-        @for (producto of productosRecomendados; track producto.id) {
-          <div class="producto-card" (click)="verProducto(producto.id)">
-            <div class="producto-image">
-              <img [src]="producto.imagen || '/assets/images/default-product.jpg'" 
-                   [alt]="producto.nombre">
-            </div>
-            <div class="producto-info">
-              <h3>{{ producto.nombre }}</h3>
-              <p>{{ producto.descripcion }}</p>
-              <div class="producto-precio">
-                <span class="precio">${{ producto.precio | number:'1.2-2' }}</span>
-                <button class="btn btn-sm btn-primary">Ver Detalles</button>
+      <!-- Actividad Reciente -->
+      <div class="recent-activity">
+        <h2>📋 Actividad Reciente</h2>
+        <div *ngIf="dashboard.actividadReciente?.length; else noActivity" class="activity-list">
+          <div 
+            *ngFor="let activity of dashboard.actividadReciente" 
+            class="activity-item"
+          >
+            <span class="activity-icon">{{ getActivityIcon(activity.tipo) }}</span>
+            <div class="activity-content">
+              <h4>{{ activity.descripcion }}</h4>
+              <div class="activity-meta">
+                <span class="activity-date">{{ formatDate(activity.fecha) }}</span>
+                <span class="activity-status" [ngClass]="'status-' + activity.estado.toLowerCase()">
+                  {{ activity.estado }}
+                </span>
               </div>
             </div>
           </div>
-        }
+        </div>
+        <ng-template #noActivity>
+          <div class="no-activity">
+            <p>No hay actividad reciente</p>
+          </div>
+        </ng-template>
       </div>
-    }
-  </div>
 
-  <!-- Soporte y Ayuda -->
-  <div class="support-section">
-    <div class="support-card">
-      <div class="support-icon">🎧</div>
-      <div class="support-content">
-        <h3>¿Necesitas Ayuda?</h3>
-        <p>Nuestro equipo de soporte está listo para asistirte</p>
-        <button (click)="contactarSoporte()" class="btn btn-outline">
-          Contactar Soporte
-        </button>
+      <!-- Accesos Rápidos -->
+      <div class="quick-access">
+        <h2>🚀 Accesos Rápidos</h2>
+        <div class="quick-access-grid">
+          <a 
+            *ngFor="let access of dashboard.accesosRapidos" 
+            [routerLink]="access.url"
+            class="quick-access-item"
+            [style.border-left-color]="access.color"
+          >
+            <span class="access-icon">{{ access.icono }}</span>
+            <div class="access-content">
+              <h4>{{ access.titulo }}</h4>
+              <p>{{ access.descripcion }}</p>
+            </div>
+            <span class="access-arrow">→</span>
+          </a>
+        </div>
       </div>
     </div>
-    
-    <div class="support-card">
-      <div class="support-icon">📚</div>
-      <div class="support-content">
-        <h3>Documentación</h3>
-        <p>Guías y manuales para sacar el máximo provecho</p>
-        <button (click)="verDocumentacion()" class="btn btn-outline">
-          Ver Documentación
-        </button>
+
+    <!-- Estadísticas Generales -->
+    <div class="general-stats">
+      <h2>📈 Estadísticas Generales</h2>
+      <div class="general-stats-grid">
+        <div class="general-stat-item">
+          <div class="general-stat-icon">👤</div>
+          <div class="general-stat-content">
+            <h4>{{ dashboard.estadisticasGenerales.diasComoCliente }} días</h4>
+            <p>Como cliente SmartAgro</p>
+            <small>Desde {{ formatDate(dashboard.estadisticasGenerales.fechaRegistro) }}</small>
+          </div>
+        </div>
+
+        <div *ngIf="dashboard.estadisticasGenerales.productosFavoritos?.length" class="general-stat-item">
+          <div class="general-stat-icon">❤️</div>
+          <div class="general-stat-content">
+            <h4>Productos Favoritos</h4>
+            <div class="favorite-products">
+              <span 
+                *ngFor="let producto of dashboard.estadisticasGenerales.productosFavoritos.slice(0, 3)" 
+                class="favorite-tag"
+              >
+                {{ producto }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="general-stat-item">
+          <div class="general-stat-icon">🎯</div>
+          <div class="general-stat-content">
+            <h4>Estado de Cuenta</h4>
+            <p>{{ dashboard.resumenCompras.ventasEntregadas }} entregas completadas</p>
+            <small>{{ dashboard.resumenCompras.ventasPendientes }} pedidos en proceso</small>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="support-card">
-      <div class="support-icon">💬</div>
-      <div class="support-content">
-        <h3>Comunidad</h3>
-        <p>Conecta con otros usuarios y comparte experiencias</p>
-        <button (click)="verComunidad()" class="btn btn-outline">
-          Unirse a la Comunidad
-        </button>
+
+    <!-- Próximas Acciones Sugeridas -->
+    <div *ngIf="dashboard.notificacionesImportantes?.length" class="suggested-actions">
+      <h2>💡 Acciones Sugeridas</h2>
+      <div class="actions-list">
+        <div class="action-item" *ngIf="dashboard.estadoComentarios.comentariosPendientes === 0">
+          <span class="action-icon">⭐</span>
+          <div class="action-content">
+            <h4>Comparte tu experiencia</h4>
+            <p>¿Has probado alguno de tus productos? ¡Danos tu opinión!</p>
+          </div>
+          <a routerLink="/cliente/comentarios" class="action-button">
+            Comentar
+          </a>
+        </div>
+
+        <div class="action-item">
+          <span class="action-icon">📚</span>
+          <div class="action-content">
+            <h4>Explora los recursos</h4>
+            <p>Descarga manuales y accede a documentación técnica</p>
+          </div>
+          <a routerLink="/cliente/documentacion" class="action-button">
+            Ver Recursos
+          </a>
+        </div>
+
+        <div class="action-item" *ngIf="dashboard.productosAdquiridos.productosConGarantiaVigente > 0">
+          <span class="action-icon">🛡️</span>
+          <div class="action-content">
+            <h4>Revisa tus garantías</h4>
+            <p>Tienes {{ dashboard.productosAdquiridos.productosConGarantiaVigente }} productos con garantía vigente</p>
+          </div>
+          <a routerLink="/cliente/documentacion" class="action-button">
+            Ver Garantías
+          </a>
+        </div>
       </div>
     </div>
+
   </div>
 </div>

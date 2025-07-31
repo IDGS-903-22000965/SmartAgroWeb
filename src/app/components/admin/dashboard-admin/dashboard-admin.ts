@@ -20,6 +20,9 @@ export class DashboardAdmin implements OnInit {
   protected loading = signal(true);
   protected error = signal<string | null>(null);
 
+  // Exponer Math para el template
+  protected readonly Math = Math;
+
   protected quickActions = [
     {
       title: 'Nueva Cotización',
@@ -29,11 +32,18 @@ export class DashboardAdmin implements OnInit {
       color: 'blue'
     },
     {
+      title: 'Gestionar Ventas',
+      description: 'Administrar órdenes de venta',
+      icon: '🛒',
+      route: '/admin/ventas',
+      color: 'green'
+    },
+    {
       title: 'Gestionar Productos',
       description: 'Agregar o editar productos',
       icon: '📦',
       route: '/admin/productos',
-      color: 'green'
+      color: 'emerald'
     },
     {
       title: 'Materias Primas',

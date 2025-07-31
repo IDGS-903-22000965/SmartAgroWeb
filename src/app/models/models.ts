@@ -1,25 +1,15 @@
-// src/app/models/models.ts
 export interface LoginRequest {
   email: string;
   password: string;
   rememberMe?: boolean;
 }
 
-export interface RegisterRequest {
-  nombre: string;
-  apellidos: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  telefono?: string;
-  direccion?: string;
-}
 
 export interface AuthResponse {
   isSuccess: boolean;
   message: string;
   token?: string;
-  expiration?: Date;
+  expiration?: string;
   user?: User;
 }
 
@@ -31,8 +21,6 @@ export interface User {
   telefono?: string;
   direccion?: string;
   roles: string[];
-  activo: boolean;
-  fechaRegistro: Date;
 }
 
 export interface Producto {
@@ -61,14 +49,59 @@ export interface ProductoDetalle extends Producto {
 
 export interface ProductoMateriaPrima {
   id: number;
+  materiaPrimaId: number;
   nombreMateriaPrima: string;
+  descripcionMateriaPrima?: string;
   cantidadRequerida: number;
   unidadMedida: string;
   costoUnitario: number;
   costoTotal: number;
+  stockDisponible: number;
+  nombreProveedor: string;
   notas?: string;
 }
+export interface ProductoReceta {
+  producto: {
+    id: number;
+    nombre: string;
+    precioBase: number;
+    precioVenta: number;
+    porcentajeGanancia: number;
+  };
+  receta: ProductoMateriaPrima[];
+  costoTotal: number;
+  rentabilidad: number;
+  margenRentabilidad: number;
+}
+export interface ValidarStockRequest {
+  cantidadAProducir: number;
+}
+export interface MaterialDisponible {
+  materiaPrimaId: number;
+  nombreMateriaPrima: string;
+  cantidadDisponible: number;
+  cantidadRequerida: number;
+  unidadMedida: string;
+}
 
+export interface MaterialFaltante {
+  materiaPrimaId: number;
+  nombreMateriaPrima: string;
+  cantidadFaltante: number;
+  unidadMedida: string;
+}
+
+export interface ValidarStockResponse {
+  tieneStockSuficiente: boolean;
+  cantidadAProducir: number;
+  materialesDisponibles: MaterialDisponible[];
+  materialesFaltantes: MaterialFaltante[];
+  resumen: {
+    totalMateriales: number;
+    materialesOk: number;
+    materialesConFaltante: number;
+  };
+}
 export interface ProductoCreateDto {
   nombre: string;
   descripcion?: string;
