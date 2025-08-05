@@ -1,4 +1,3 @@
-// src/app/components/admin/proveedores/proveedores.ts
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -37,19 +36,13 @@ export class Proveedores implements OnInit {
   protected filteredProveedores = signal<Proveedor[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
-  
-  // Filtros
   protected selectedEstado = signal('todos');
   protected searchTerm = signal('');
-  
-  // Modales
   protected showCreateModal = signal(false);
   protected showEditModal = signal(false);
   protected showDetailsModal = signal(false);
   protected selectedProveedor = signal<Proveedor | null>(null);
   protected submitting = signal(false);
-  
-  // Formularios
   protected createForm: FormGroup;
   protected editForm: FormGroup;
 
@@ -88,8 +81,6 @@ export class Proveedores implements OnInit {
   ngOnInit(): void {
     this.loadProveedores();
   }
-
-  // 🔥 CONECTADO A LA BASE DE DATOS REAL
   private loadProveedores(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -99,21 +90,20 @@ export class Proveedores implements OnInit {
         console.log('Proveedores cargados:', response);
         
         if (response.success && response.data) {
-          // Mapear datos del backend al formato del frontend
-          const proveedores = response.data.map((p: any) => ({
-            id: p.id,
-            nombre: p.nombre,
-            razonSocial: p.razonSocial,
-            rfc: p.rfc,
-            direccion: p.direccion,
-            telefono: p.telefono,
-            email: p.email,
-            contactoPrincipal: p.contactoPrincipal,
-            activo: p.activo,
-            fechaRegistro: new Date(p.fechaRegistro),
-            materiasPrimas: p.materiasPrimas || [],
-            compras: p.compras || []
-          }));
+        const proveedores = response.data.map((p: any) => ({
+  id: p.id,
+  nombre: p.nombre,
+  razonSocial: p.razonSocial,
+  rfc: p.rfc,
+  direccion: p.direccion,
+  telefono: p.telefono,
+  email: p.email,
+  contactoPrincipal: p.contactoPrincipal,
+  activo: p.activo,
+  fechaRegistro: new Date(p.fechaRegistro),
+  materiasPrimas: p.materiasPrimas || [],
+  compras: p.compras || []
+}));
           
           this.proveedores.set(proveedores);
           this.applyFilters();
@@ -136,14 +126,10 @@ export class Proveedores implements OnInit {
 
   private applyFilters(): void {
     let filtered = this.proveedores();
-    
-    // Filtro por estado
     if (this.selectedEstado() !== 'todos') {
       const activo = this.selectedEstado() === 'true';
       filtered = filtered.filter(p => p.activo === activo);
     }
-    
-    // Filtro por búsqueda
     const search = this.searchTerm().toLowerCase();
     if (search) {
       filtered = filtered.filter(p => 
@@ -153,8 +139,6 @@ export class Proveedores implements OnInit {
         (p.contactoPrincipal && p.contactoPrincipal.toLowerCase().includes(search))
       );
     }
-    
-    // Ordenar por fecha más reciente
     filtered.sort((a, b) => new Date(b.fechaRegistro).getTime() - new Date(a.fechaRegistro).getTime());
     
     this.filteredProveedores.set(filtered);
@@ -208,8 +192,6 @@ export class Proveedores implements OnInit {
     this.showDetailsModal.set(false);
     this.selectedProveedor.set(null);
   }
-
-  // 🔥 GUARDAR EN LA BASE DE DATOS REAL
   protected submitCreate(): void {
     if (this.createForm.valid) {
       this.submitting.set(true);
@@ -236,8 +218,6 @@ export class Proveedores implements OnInit {
       });
     }
   }
-
-  // 🔥 ACTUALIZAR EN LA BASE DE DATOS REAL
   protected submitEdit(): void {
     if (this.editForm.valid && this.selectedProveedor()) {
       this.submitting.set(true);
@@ -258,8 +238,6 @@ export class Proveedores implements OnInit {
       });
     }
   }
-
-  // 🔥 CAMBIAR ESTADO EN LA BASE DE DATOS REAL
   protected toggleProveedorEstado(proveedor: Proveedor): void {
     const nuevoEstado = !proveedor.activo;
     const proveedorActualizado = { ...proveedor, activo: nuevoEstado };
@@ -292,8 +270,6 @@ export class Proveedores implements OnInit {
       return fechaRegistro >= monthAgo;
     }).length;
   }
-
-  // 🔥 ELIMINAR DE LA BASE DE DATOS REAL
   protected deleteProveedor(proveedor: Proveedor): void {
     if (confirm(`¿Estás seguro de que deseas eliminar el proveedor "${proveedor.nombre}"?`)) {
       this.proveedoresService.eliminarProveedor(proveedor.id).subscribe({

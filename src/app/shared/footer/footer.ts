@@ -1,4 +1,3 @@
-// src/app/components/shared/footer/footer.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -10,7 +9,6 @@ import { RouterLink } from '@angular/router';
     <footer class="footer">
       <div class="container">
         <div class="footer-content">
-          <!-- Company Info -->
           <div class="footer-section">
             <div class="footer-logo">
               <span class="logo-icon">🌱</span>
@@ -27,8 +25,6 @@ import { RouterLink } from '@angular/router';
               <a href="#" class="social-link">📺</a>
             </div>
           </div>
-
-          <!-- Quick Links -->
           <div class="footer-section">
             <h3>Enlaces Rápidos</h3>
             <ul class="footer-links">
@@ -39,8 +35,6 @@ import { RouterLink } from '@angular/router';
               <li><a routerLink="/contacto">Contacto</a></li>
             </ul>
           </div>
-
-          <!-- Services -->
           <div class="footer-section">
             <h3>Servicios</h3>
             <ul class="footer-links">
@@ -51,8 +45,6 @@ import { RouterLink } from '@angular/router';
               <li><a href="#">Soporte Técnico</a></li>
             </ul>
           </div>
-
-          <!-- Contact Info -->
           <div class="footer-section">
             <h3>Contacto</h3>
             <div class="contact-info">
@@ -75,8 +67,6 @@ import { RouterLink } from '@angular/router';
             </div>
           </div>
         </div>
-
-        <!-- Newsletter -->
         <div class="newsletter-section">
           <div class="newsletter-content">
             <h3>Mantente Actualizado</h3>
@@ -90,8 +80,6 @@ import { RouterLink } from '@angular/router';
             <button class="newsletter-btn">Suscribirse</button>
           </div>
         </div>
-
-        <!-- Bottom Bar -->
         <div class="footer-bottom">
           <div class="bottom-content">
             <p class="copyright">

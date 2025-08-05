@@ -1,11 +1,9 @@
-// src/app/components/admin/productos-admin/productos-admin.scss
 .productos-admin-page {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
   background: linear-gradient(135deg, #f8fafb 0%, #f1f5f9 100%);
   min-height: 100vh;
-/* Modal de Detalles Específico */
 .details-modal {
   max-width: 700px;
   width: 90%;
@@ -116,6 +114,112 @@
         background: rgba(239, 68, 68, 0.1);
         color: #dc2626;
       }
+    }
+  }
+}
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+  margin: 0 -20px 20px -20px;
+  
+  .tab-button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    
+    &:first-child {
+      border-top-left-radius: 0;
+    }
+    
+    &:last-child {
+      border-top-right-radius: 0;
+    }
+    
+    &:hover:not(:disabled) {
+      background: #e9ecef;
+      color: #495057;
+    }
+    
+    &.active {
+      background: white;
+      color: #007bff;
+      border-bottom: 2px solid #007bff;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      color: #adb5bd;
+    }
+  }
+}
+
+.tab-content {
+  min-height: 400px;
+  
+  .alert {
+    padding: 20px;
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    margin-bottom: 0;
+    
+    h4 {
+      color: #1976d2;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    p {
+      margin-bottom: 8px;
+      color: #424242;
+      line-height: 1.5;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+.modal.show .modal-dialog {
+  max-width: 800px;
+  
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+.actions-cell {
+  white-space: nowrap;
+  
+  .btn {
+    margin-right: 5px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+@media (max-width: 768px) {
+  .modal-tabs {
+    .tab-button {
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+  }
+  
+  .actions-cell {
+    .btn {
+      margin-bottom: 5px;
+      display: block;
+      width: 100%;
+      margin-right: 0;
     }
   }
 }
@@ -303,8 +407,6 @@
       }
     }
   }
-
-  // Sección de Filtros
   .filtros-section {
     background: white;
     border-radius: 16px;
@@ -368,8 +470,6 @@
       }
     }
   }
-
-  // Tabla de Productos
   .table-container {
     background: white;
     border-radius: 16px;
@@ -612,8 +712,6 @@
       }
     }
   }
-
-  // Paginación
   .pagination-container {
     display: flex;
     justify-content: space-between;
@@ -680,8 +778,6 @@
       }
     }
   }
-
-  // Modal
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -905,8 +1001,6 @@
     }
   }
 }
-
-// Animaciones
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -923,8 +1017,6 @@
     transform: scale(1) translateY(0);
   }
 }
-
-// Responsive
 @media (max-width: 1200px) {
   .productos-admin-page {
     padding: 1.5rem;

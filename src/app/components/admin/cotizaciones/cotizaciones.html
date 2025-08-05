@@ -1,322 +1,265 @@
-<!-- src/app/components/admin/cotizaciones/cotizaciones.html -->
-<div class="cotizaciones-admin">
-  <div class="page-header">
-    <div class="header-content">
-      <h1>Gestión de Cotizaciones</h1>
-      <p>Administrar y dar seguimiento a todas las cotizaciones</p>
-    </div>
-    <div class="header-actions">
-      <button (click)="exportToCSV()" class="btn btn-outline">
-        📊 Exportar CSV
-      </button>
-      <a routerLink="/cotizacion" class="btn btn-primary">
-        ➕ Nueva Cotización
-      </a>
-    </div>
-  </div>
-
-  <!-- Stats Cards -->
-  <div class="stats-grid">
-    <div class="stat-card pending">
-  <div class="stat-icon">🕒</div>
-  <div class="stat-content">
-    <h3>Pendientes</h3>
-    <div class="stat-value">{{ contarPendientes() }}</div>
-  </div>
-</div>
-    <div class="stat-card approved">
-  <div class="stat-icon">✅</div>
-  <div class="stat-content">
-    <h3>Aprobadas</h3>
-    <div class="stat-value">{{ contarAprobadas() }}</div>
-  </div>
-</div>
-    <div class="stat-card expired">
-  <div class="stat-icon">⏰</div>
-  <div class="stat-content">
-    <h3>Expiradas</h3>
-    <div class="stat-value">{{ contarExpiradas() }}</div>
-  </div>
-</div>
-    <div class="stat-card total">
-      <div class="stat-icon">📋</div>
-      <div class="stat-content">
-        <h3>Total</h3>
-        <div class="stat-value">{{ cotizaciones().length }}</div>
+<div class="cotizaciones-container">
+    <div class="header-section">
+    <h1>Gestión de Cotizaciones</h1>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>{{ contarPendientes() }}</h3>
+        <p>Pendientes</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ contarAprobadas() }}</h3>
+        <p>Aprobadas</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ contarExpiradas() }}</h3>
+        <p>Expiradas</p>
       </div>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filters-section">
-    <div class="filters-container">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          placeholder="Buscar por número, cliente, email o cultivo..."
-          [value]="searchTerm()"
-          (input)="onSearchChange($event)"
-          class="search-input">
-      </div>
-      
-      <div class="filter-selects">
-  <select
-    [value]="selectedEstado()"
-    (change)="onEstadoChange($event)"
-    class="filter-select">
-    <option *ngFor="let option of estadoOptions; trackBy: trackByValue" [value]="option.value">
-      {{ option.label }}
-    </option>
-  </select>
-        
-        <select
-    [value]="selectedDateRange()"
-    (change)="onDateRangeChange($event)"
-    class="filter-select">
-    <option *ngFor="let option of dateRangeOptions; trackBy: trackByValue" [value]="option.value">
-      {{ option.label }}
-    </option>
-  </select>
-</div>
+    <div class="filters-section">
+    <div class="filter-group">
+      <label>Estado:</label>
+      <select (change)="onEstadoChange($event)" [value]="selectedEstado()">
+        <option 
+          *ngFor="let option of estadoOptions; trackBy: trackByValue" 
+          [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
     </div>
+
+    <div class="filter-group">
+      <label>Búsqueda:</label>
+      <input 
+        type="text" 
+        placeholder="Buscar por número, cliente, email..."
+        (input)="onSearchChange($event)"
+        [value]="searchTerm()">
+    </div>
+
+    <div class="filter-group">
+      <label>Fecha:</label>
+      <select (change)="onDateRangeChange($event)" [value]="selectedDateRange()">
+        <option 
+          *ngFor="let option of dateRangeOptions; trackBy: trackByValue" 
+          [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-secondary" (click)="exportToCSV()">
+      Exportar CSV
+    </button>
   </div>
 
-  <!-- Content -->
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Cargando cotizaciones...</p>
+    <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando cotizaciones...</p>
+  </div>
+
+    <div *ngIf="error()" class="error-state">
+    <p>{{ error() }}</p>
+    <button class="btn btn-primary" (click)="retry()">Reintentar</button>
+  </div>
+
+    <div *ngIf="!loading() && !error()" class="cotizaciones-list">
+    <div *ngIf="filteredCotizaciones().length === 0" class="empty-state">
+      <p>No se encontraron cotizaciones con los filtros aplicados.</p>
     </div>
-  } @else if (error()) {
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h3>Error al cargar cotizaciones</h3>
-      <p>{{ error() }}</p>
-      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
-    </div>
-  } @else if (filteredCotizaciones().length === 0) {
-    <div class="empty-container">
-      <div class="empty-icon">📋</div>
-      <h3>No hay cotizaciones</h3>
-      <p>No se encontraron cotizaciones que coincidan con los filtros aplicados</p>
-    </div>
-  } @else {
-    <div class="cotizaciones-table">
-      <div class="table-header">
-        <div class="col">Número</div>
-        <div class="col">Cliente</div>
-        <div class="col">Cultivo</div>
-        <div class="col">Área</div>
-        <div class="col">Total</div>
-        <div class="col">Estado</div>
-        <div class="col">Fecha</div>
-        <div class="col">Acciones</div>
+
+    <div class="cotizacion-card" *ngFor="let cotizacion of filteredCotizaciones()">
+      <div class="card-header">
+        <div class="cotizacion-info">
+          <h3>{{ cotizacion.numeroCotizacion }}</h3>
+          <span class="badge" [class]="'badge-' + getEstadoColor(cotizacion.estado)">
+            {{ cotizacion.estado }}
+          </span>
+        </div>
+        <div class="cotizacion-date">
+          {{ formatDate(cotizacion.fechaCotizacion) }}
+        </div>
       </div>
-      
-      @for (cotizacion of filteredCotizaciones(); track cotizacion.id) {
-        <div class="table-row" [class.expired]="isExpired(cotizacion)">
-          <div class="col numero">
-            <span class="numero-badge">{{ cotizacion.numeroCotizacion }}</span>
-          </div>
-          
-          <div class="col cliente">
-            <div class="cliente-info">
-              <strong>{{ cotizacion.nombreCliente }}</strong>
-              <span class="email">{{ cotizacion.emailCliente }}</span>
-            </div>
-          </div>
-          
-          <div class="col cultivo">
-            <span class="cultivo-badge">{{ cotizacion.tipoCultivo }}</span>
-          </div>
-          
-          <div class="col area">
-            {{ cotizacion.areaCultivo }}m²
-          </div>
-          
-          <div class="col total">
-            <span class="price">{{ formatCurrency(cotizacion.total) }}</span>
-          </div>
-          
-          <div class="col estado">
-            <span class="status-badge" [class]="getEstadoColor(cotizacion.estado)">
-              {{ cotizacion.estado }}
-            </span>
-            @if (cotizacion.estado === 'Pendiente' && !isExpired(cotizacion)) {
-              <small class="expiry-info">
-                Vence en {{ getDaysUntilExpiration(cotizacion) }} días
-              </small>
-            }
-          </div>
-          
-          <div class="col fecha">
-            {{ formatDate(cotizacion.fechaCotizacion) }}
-          </div>
-          
-          <div class="col acciones">
+
+      <div class="card-body">
+        <div class="client-info">
+          <p><strong>Cliente:</strong> {{ cotizacion.nombreCliente }}</p>
+          <p><strong>Email:</strong> {{ cotizacion.emailCliente }}</p>
+          <p><strong>Cultivo:</strong> {{ cotizacion.tipoCultivo }}</p>
+          <p><strong>Área:</strong> {{ cotizacion.areaCultivo }} m²</p>
+        </div>
+
+        <div class="cotizacion-summary">
+          <p><strong>Total:</strong> {{ formatCurrency(cotizacion.total) }}</p>
+          <p *ngIf="!isExpired(cotizacion)">
+            <strong>Vence en:</strong> {{ getDaysUntilExpiration(cotizacion) }} días
+          </p>
+          <p *ngIf="isExpired(cotizacion)" class="text-danger">
+            <strong>⚠️ Expirada</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button 
+          class="btn btn-outline-primary" 
+          (click)="openDetailsModal(cotizacion)">
+          Ver Detalles
+        </button>
+
+                <div class="action-buttons">
+                    <ng-container *ngIf="cotizacion.estado === 'Pendiente' && !isExpired(cotizacion)">
             <button 
-              (click)="openDetailsModal(cotizacion)"
-              class="btn btn-sm btn-outline"
-              title="Ver detalles">
-              👁️
-            </button>
-            
-            @if (cotizacion.estado === 'Pendiente') {
-              <button 
-                (click)="updateEstado(cotizacion, 'Aprobada')"
-                class="btn btn-sm btn-success"
-                title="Aprobar"
-                [disabled]="updatingStatus()">
-                ✅
-              </button>
-              <button 
-                (click)="updateEstado(cotizacion, 'Rechazada')"
-                class="btn btn-sm btn-danger"
-                title="Rechazar"
-                [disabled]="updatingStatus()">
-                ❌
-              </button>
-            }
-          </div>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Details Modal -->
-  @if (showDetailsModal() && selectedCotizacion()) {
-    <div class="modal-overlay" (click)="closeDetailsModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Detalles de Cotización</h2>
-          <button (click)="closeDetailsModal()" class="close-btn">✕</button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="cotizacion-details">
-            <!-- Información básica -->
-            <div class="details-section">
-              <h3>Información General</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <label>Número de Cotización:</label>
-                  <span>{{ selectedCotizacion()!.numeroCotizacion }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Estado:</label>
-                  <span class="status-badge" [class]="getEstadoColor(selectedCotizacion()!.estado)">
-                    {{ selectedCotizacion()!.estado }}
-                  </span>
-                </div>
-                <div class="detail-item">
-                  <label>Fecha de Cotización:</label>
-                  <span>{{ formatDate(selectedCotizacion()!.fechaCotizacion) }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Fecha de Vencimiento:</label>
-                  <span>{{ formatDate(selectedCotizacion()!.fechaVencimiento) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Información del cliente -->
-            <div class="details-section">
-              <h3>Cliente</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <label>Nombre:</label>
-                  <span>{{ selectedCotizacion()!.nombreCliente }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Email:</label>
-                  <span>{{ selectedCotizacion()!.emailCliente }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Teléfono:</label>
-                  <span>{{ selectedCotizacion()!.telefonoCliente || 'No proporcionado' }}</span>
-                </div>
-                <div class="detail-item full-width">
-                  <label>Dirección de Instalación:</label>
-                  <span>{{ selectedCotizacion()!.direccionInstalacion }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Información del proyecto -->
-            <div class="details-section">
-              <h3>Proyecto</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <label>Tipo de Cultivo:</label>
-                  <span>{{ selectedCotizacion()!.tipoCultivo }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Área de Cultivo:</label>
-                  <span>{{ selectedCotizacion()!.areaCultivo }}m²</span>
-                </div>
-                <div class="detail-item">
-                  <label>Tipo de Suelo:</label>
-                  <span>{{ selectedCotizacion()!.tipoSuelo }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Fuente de Agua:</label>
-                  <span>{{ selectedCotizacion()!.fuenteAguaDisponible ? 'Disponible' : 'No disponible' }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Energía Eléctrica:</label>
-                  <span>{{ selectedCotizacion()!.energiaElectricaDisponible ? 'Disponible' : 'No disponible' }}</span>
-                </div>
-                @if (selectedCotizacion()!.requierimientosEspeciales) {
-                  <div class="detail-item full-width">
-                    <label>Requerimientos Especiales:</label>
-                    <span>{{ selectedCotizacion()!.requierimientosEspeciales }}</span>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Información financiera -->
-            <div class="details-section">
-              <h3>Resumen Financiero</h3>
-              <div class="financial-summary">
-                <div class="financial-item">
-                  <label>Subtotal:</label>
-                  <span>{{ formatCurrency(selectedCotizacion()!.subtotal) }}</span>
-                </div>
-                <div class="financial-item">
-                  <label>Impuestos ({{ selectedCotizacion()!.porcentajeImpuesto }}%):</label>
-                  <span>{{ formatCurrency(selectedCotizacion()!.impuestos) }}</span>
-                </div>
-                <div class="financial-item total">
-                  <label>Total:</label>
-                  <span>{{ formatCurrency(selectedCotizacion()!.total) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          @if (selectedCotizacion()!.estado === 'Pendiente') {
-            <button 
-              (click)="updateEstado(selectedCotizacion()!, 'Aprobada')"
-              class="btn btn-success"
+              class="btn btn-success" 
+              (click)="updateEstado(cotizacion, 'Aprobada')"
               [disabled]="updatingStatus()">
-              ✅ Aprobar Cotización
+              {{ updatingStatus() ? 'Procesando...' : 'Aprobar' }}
             </button>
             <button 
-              (click)="updateEstado(selectedCotizacion()!, 'Rechazada')"
-              class="btn btn-danger"
+              class="btn btn-danger" 
+              (click)="updateEstado(cotizacion, 'Rechazada')"
               [disabled]="updatingStatus()">
-              ❌ Rechazar Cotización
+              Rechazar
             </button>
-          }
-          <button (click)="closeDetailsModal()" class="btn btn-outline">
-            Cerrar
+          </ng-container>
+
+                    <ng-container *ngIf="canConvertToSale(cotizacion)">
+            <button 
+              class="btn btn-primary" 
+              (click)="openConvertModal(cotizacion)">
+              🛒 Convertir a Venta
+            </button>
+          </ng-container>
+
+                    <ng-container *ngIf="isAlreadySold(cotizacion)">
+            <span class="badge badge-info">✅ Ya convertida a venta</span>
+          </ng-container>
+
+                    <ng-container *ngIf="isExpired(cotizacion)">
+            <span class="badge badge-secondary">⚠️ Expirada</span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showConvertModal()" class="modal-overlay" (click)="closeConvertModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Convertir Cotización a Venta</h2>
+      <button class="close-btn" (click)="closeConvertModal()">×</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedCotizacion()">
+      <div class="cotizacion-summary">
+        <h3>{{ selectedCotizacion()?.numeroCotizacion }}</h3>
+        <p><strong>Cliente:</strong> {{ selectedCotizacion()?.nombreCliente }}</p>
+        <p><strong>Total:</strong> {{ formatCurrency(selectedCotizacion()?.total || 0) }}</p>
+      </div>
+
+      <form #convertForm="ngForm" (ngSubmit)="convertToSale(metodoPago.value, direccionEntrega.value, observaciones.value)">
+        <div class="form-group">
+          <label for="metodoPago">Método de Pago *</label>
+          <select 
+            #metodoPago 
+            id="metodoPago" 
+            required 
+            class="form-control">
+            <option value="">Seleccione método de pago</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+            <option value="Transferencia">Transferencia Bancaria</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="direccionEntrega">Dirección de Entrega</label>
+          <textarea 
+            #direccionEntrega 
+            id="direccionEntrega" 
+            class="form-control"
+            rows="3"
+            [placeholder]="'Por defecto: ' + selectedCotizacion()?.direccionInstalacion"></textarea>
+          <small class="form-text text-muted">
+            Deje vacío para usar la dirección de instalación de la cotización
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="observaciones">Observaciones</label>
+          <textarea 
+            #observaciones 
+            id="observaciones" 
+            class="form-control"
+            rows="3"
+            placeholder="Observaciones adicionales (opcional)"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="closeConvertModal()">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="!convertForm.valid || convertingToSale()">
+            {{ convertingToSale() ? 'Creando Venta...' : 'Crear Venta' }}
           </button>
         </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDetailsModal()" class="modal-overlay" (click)="closeDetailsModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalles de Cotización</h2>
+      <button class="close-btn" (click)="closeDetailsModal()">×</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedCotizacion()">
+            <div class="details-grid">
+        <div class="detail-section">
+          <h3>Información del Cliente</h3>
+          <p><strong>Nombre:</strong> {{ selectedCotizacion()?.nombreCliente }}</p>
+          <p><strong>Email:</strong> {{ selectedCotizacion()?.emailCliente }}</p>
+          <p><strong>Teléfono:</strong> {{ selectedCotizacion()?.telefonoCliente || 'No proporcionado' }}</p>
+        </div>
+
+        <div class="detail-section">
+          <h3>Información del Proyecto</h3>
+          <p><strong>Dirección:</strong> {{ selectedCotizacion()?.direccionInstalacion }}</p>
+          <p><strong>Tipo de Cultivo:</strong> {{ selectedCotizacion()?.tipoCultivo }}</p>
+          <p><strong>Área:</strong> {{ selectedCotizacion()?.areaCultivo }} m²</p>
+          <p><strong>Tipo de Suelo:</strong> {{ selectedCotizacion()?.tipoSuelo }}</p>
+        </div>
+
+        <div class="detail-section">
+          <h3>Recursos Disponibles</h3>
+          <p><strong>Fuente de Agua:</strong> {{ selectedCotizacion()?.fuenteAguaDisponible ? 'Sí' : 'No' }}</p>
+          <p><strong>Energía Eléctrica:</strong> {{ selectedCotizacion()?.energiaElectricaDisponible ? 'Sí' : 'No' }}</p>
+        </div>
+
+        <div class="detail-section">
+          <h3>Información Financiera</h3>
+          <p><strong>Subtotal:</strong> {{ formatCurrency(selectedCotizacion()?.subtotal || 0) }}</p>
+          <p><strong>Impuestos:</strong> {{ formatCurrency(selectedCotizacion()?.impuestos || 0) }}</p>
+          <p><strong>Total:</strong> {{ formatCurrency(selectedCotizacion()?.total || 0) }}</p>
+        </div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedCotizacion()?.requerimientosEspeciales">
+        <h3>Requerimientos Especiales</h3>
+        <p>{{ selectedCotizacion()?.requerimientosEspeciales }}</p>
       </div>
     </div>
-  }
+  </div>
 </div>

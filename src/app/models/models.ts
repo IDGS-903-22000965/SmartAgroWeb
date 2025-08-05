@@ -139,8 +139,6 @@ export interface ComentarioCreateDto {
 export interface ComentarioRespuestaDto {
   respuesta: string;
 }
-
-// Interfaces para cotización
 export interface CotizacionRequest {
   nombreCliente: string;
   emailCliente: string;
@@ -151,10 +149,8 @@ export interface CotizacionRequest {
   tipoSuelo: string;
   fuenteAguaDisponible: boolean;
   energiaElectricaDisponible: boolean;
-  requierimientosEspeciales?: string;
+  requerimientosEspeciales?: string;
 }
-
-// Alias para compatibilidad
 export interface CotizacionRequestDto extends CotizacionRequest {}
 
 export interface Cotizacion {
@@ -164,21 +160,19 @@ export interface Cotizacion {
   nombreCliente: string;
   emailCliente: string;
   telefonoCliente?: string;
-  direccionInstalacion?: string;
+  direccionInstalacion: string;
   areaCultivo: number;
   tipoCultivo: string;
   tipoSuelo: string;
   fuenteAguaDisponible: boolean;
   energiaElectricaDisponible: boolean;
-  requierimientosEspeciales?: string;
+  requerimientosEspeciales?: string;
   subtotal: number;
-  porcentajeImpuesto: number;
   impuestos: number;
   total: number;
+  estado: string; // 'Pendiente' | 'Aprobada' | 'Rechazada' | 'Expirada' | 'Vendida'
   fechaCotizacion: Date;
   fechaVencimiento: Date;
-  estado: string;
-  observaciones?: string;
   detalles?: DetalleCotizacion[];
 }
 
@@ -190,10 +184,8 @@ export interface DetalleCotizacion {
   precioUnitario: number;
   subtotal: number;
   descripcion?: string;
-  producto?: Producto;
+  nombreProducto?: string;
 }
-
-// Interface para contacto
 export interface ContactoRequest {
   nombre: string;
   email: string;
@@ -202,7 +194,11 @@ export interface ContactoRequest {
   asunto: string;
   mensaje: string;
 }
-
+export interface ConvertToSaleRequest {
+  metodoPago: string;
+  direccionEntrega?: string;
+  observaciones?: string;
+}
 export interface Venta {
   id: number;
   numeroVenta: string;

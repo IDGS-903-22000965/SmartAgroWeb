@@ -1,4 +1,4 @@
-// src/app/components/admin/dashboard-admin/dashboard-admin.ts
+
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -20,7 +20,7 @@ export class DashboardAdmin implements OnInit {
   protected loading = signal(true);
   protected error = signal<string | null>(null);
 
-  // Exponer Math para el template
+
   protected readonly Math = Math;
 
   protected quickActions = [
@@ -92,7 +92,7 @@ export class DashboardAdmin implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    // Cargar métricas principales
+
     this.dashboardService.obtenerMetricas().subscribe({
       next: (response) => {
         if (response.success && response.data) {

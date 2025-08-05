@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductoService } from '../../../services/producto';
 import { Producto } from '../../../models/models';
+import { ProductDocumentsAdminComponent } from '../product-documents/product-documents-admin.component';
+
 
 @Component({
   selector: 'app-productos-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ProductDocumentsAdminComponent],
   templateUrl: './productos-admin.html',
   styleUrls: ['./productos-admin.scss']
 })
@@ -38,19 +40,21 @@ export class ProductosAdminComponent implements OnInit {
   protected totalPaginas = 0;
 
   protected productoForm: FormGroup;
+ protected activeTab = 'general'; 
 
-  constructor(
-    private fb: FormBuilder,
-    private productoService: ProductoService
-  ) {
-    this.productoForm = this.fb.group({
-  nombre: ['', [Validators.required, Validators.minLength(2)]],
-  descripcion: [''],
-  descripcionDetallada: [''],
-  precioBase: ['', [Validators.required, Validators.min(0.01)]],
-  porcentajeGanancia: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-  ...(this.modoEdicion ? { activo: [true] } : {}) // Solo en edición
-});
+constructor(
+  private fb: FormBuilder,
+  private productoService: ProductoService
+) {
+  this.productoForm = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2)]],
+    descripcion: [''],
+    descripcionDetallada: [''],
+    precioBase: ['', [Validators.required, Validators.min(0.01)]],
+    porcentajeGanancia: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+    activo: [true] 
+  });
+
 
   }
 
@@ -75,7 +79,13 @@ export class ProductosAdminComponent implements OnInit {
       }
     });
   }
+protected setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
 
+  protected canShowDocumentsTab(): boolean {
+  return this.modoEdicion && this.productoEditando !== null && this.productoEditando.id > 0;
+}
   protected aplicarFiltros(): void {
     let filtrados = [...this.productos];
     if (this.filtros.busqueda.trim()) {
@@ -100,42 +110,48 @@ export class ProductosAdminComponent implements OnInit {
     this.aplicarFiltros();
   }
 
-  protected abrirModalCrear(): void {
-    this.modoEdicion = false;
-    this.productoEditando = null;
-    this.productoForm.reset({ activo: true, porcentajeGanancia: 30 });
-    this.imagenPreview = null;
-    this.imagenFile = null;
-    this.error.set(null);
-    this.showModal.set(true);
-  }
+ protected abrirModalCrear(): void {
+  this.modoEdicion = false;
+  this.productoEditando = null;
+  this.productoForm.reset({ 
+    activo: true, 
+    porcentajeGanancia: 30 
+  }); 
+  this.imagenPreview = null;
+  this.imagenFile = null;
+  this.error.set(null);
+  this.activeTab = 'general'; 
+  this.showModal.set(true);
+}
 
-  protected editarProducto(producto: Producto): void {
-    this.modoEdicion = true;
-    this.productoEditando = producto;
-    this.productoForm.patchValue({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      descripcionDetallada: producto.descripcionDetallada,
-      precioBase: producto.precioBase,
-      porcentajeGanancia: producto.porcentajeGanancia,
-      activo: producto.activo
-    });
-    this.imagenPreview = producto.imagenPrincipal || null;
-    this.imagenFile = null;
-    this.error.set(null);
-    this.showModal.set(true);
-  }
+ protected editarProducto(producto: Producto, openDocuments = false): void {
+  this.modoEdicion = true;
+  this.productoEditando = producto;
+  this.productoForm.patchValue({
+    nombre: producto.nombre,
+    descripcion: producto.descripcion,
+    descripcionDetallada: producto.descripcionDetallada,
+    precioBase: producto.precioBase,
+    porcentajeGanancia: producto.porcentajeGanancia,
+    activo: producto.activo
+  });
+  this.imagenPreview = producto.imagenPrincipal || null;
+  this.imagenFile = null;
+  this.error.set(null);
+  this.activeTab = openDocuments ? 'documentos' : 'general';
+  this.showModal.set(true);
+}
 
   protected cerrarModal(): void {
-    this.showModal.set(false);
-    this.productoForm.reset();
-    this.error.set(null);
-    this.modoEdicion = false;
-    this.productoEditando = null;
-    this.imagenPreview = null;
-    this.imagenFile = null;
-  }
+  this.showModal.set(false);
+  this.productoForm.reset();
+  this.error.set(null);
+  this.modoEdicion = false;
+  this.productoEditando = null;
+  this.imagenPreview = null;
+  this.imagenFile = null;
+  this.activeTab = 'general'; 
+}
 
   protected verDetalles(producto: Producto): void {
     this.productoDetalles = producto;
@@ -148,7 +164,6 @@ export class ProductosAdminComponent implements OnInit {
   }
 private async convertirArchivoABase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Verificar tamaño del archivo antes de procesar
     if (file.size > 5 * 1024 * 1024) { // 5MB
       reject(new Error('El archivo es demasiado grande. Máximo 5MB permitido.'));
       return;
@@ -159,13 +174,10 @@ private async convertirArchivoABase64(file: File): Promise<string> {
     const img = new Image();
 
     img.onload = () => {
-      // Configurar tamaño máximo para mantener calidad pero reducir peso
       const maxWidth = 800;
       const maxHeight = 600;
       
       let { width, height } = img;
-      
-      // Calcular nuevas dimensiones manteniendo proporción
       if (width > height) {
         if (width > maxWidth) {
           height = (height * maxWidth) / width;
@@ -180,18 +192,12 @@ private async convertirArchivoABase64(file: File): Promise<string> {
       
       canvas.width = width;
       canvas.height = height;
-      
-      // Dibujar imagen redimensionada con alta calidad
       ctx!.imageSmoothingEnabled = true;
       ctx!.imageSmoothingQuality = 'high';
       ctx!.drawImage(img, 0, 0, width, height);
-      
-      // Convertir a Base64 con buena calidad (0.8 = 80% calidad)
       const base64 = canvas.toDataURL('image/jpeg', 0.8);
       
       console.log(`✅ Imagen procesada: ${file.size} bytes -> ${base64.length} caracteres`);
-      
-      // Verificar que no exceda el límite de la BD (por si acaso)
       if (base64.length > 100000) { // Límite conservador
         console.warn('⚠️ Imagen aún muy grande, reduciendo calidad...');
         const base64Reducido = canvas.toDataURL('image/jpeg', 0.5);
@@ -205,6 +211,7 @@ private async convertirArchivoABase64(file: File): Promise<string> {
     img.src = URL.createObjectURL(file);
   });
 }
+
 protected async guardarProducto(): Promise<void> {
   if (!this.productoForm.valid) {
     this.markFormGroupTouched();
@@ -235,7 +242,7 @@ protected async guardarProducto(): Promise<void> {
       descripcionDetallada: formData.descripcionDetallada,
       precioBase: Number(formData.precioBase),
       porcentajeGanancia: Number(formData.porcentajeGanancia),
-      imagenPrincipal: imagenBase64, // Ahora con imagen procesada
+      imagenPrincipal: imagenBase64, 
       imagenesSecundarias: [],
       caracteristicas: [],
       beneficios: []

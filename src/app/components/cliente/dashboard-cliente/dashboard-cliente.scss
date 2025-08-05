@@ -1,12 +1,9 @@
-// src/app/components/cliente/dashboard-cliente/dashboard-cliente.scss
 .dashboard-cliente {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
   background: #f8f9fa;
   min-height: 100vh;
-
-  // Header Section
   .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -51,8 +48,6 @@
       }
     }
   }
-
-  // Loading & Error States
   .loading-container {
     display: flex;
     flex-direction: column;
@@ -101,8 +96,6 @@
       }
     }
   }
-
-  // Notifications Section
   .notifications-section {
     margin-bottom: 30px;
 
@@ -178,8 +171,6 @@
       }
     }
   }
-
-  // Stats Grid
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -313,8 +304,6 @@
       }
     }
   }
-
-  // Main Sections
   .main-sections {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -480,8 +469,6 @@
       }
     }
   }
-
-  // General Stats
   .general-stats {
     background: white;
     border-radius: 15px;
@@ -563,8 +550,6 @@
       }
     }
   }
-
-  // Suggested Actions
   .suggested-actions {
     background: white;
     border-radius: 15px;
@@ -638,8 +623,6 @@
       }
     }
   }
-
-  // Buttons
   .btn {
     padding: 10px 20px;
     border: none;
@@ -663,14 +646,10 @@
       }
     }
   }
-
-  // Animations
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-
-  // Responsive Design
   @media (max-width: 1024px) {
     .main-sections {
       grid-template-columns: 1fr;

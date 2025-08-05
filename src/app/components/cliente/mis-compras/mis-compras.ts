@@ -1,4 +1,3 @@
-// src/app/components/cliente/mis-compras/mis-compras.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -20,8 +19,6 @@ export class MisCompras implements OnInit {
   loading = true;
   error: string | null = null;
   activeTab = 'compras'; // 'compras' | 'productos' | 'estadisticas'
-  
-  // Modal para comentarios
   showCommentModal = false;
   selectedProduct: any = null;
   commentForm = {
@@ -29,15 +26,11 @@ export class MisCompras implements OnInit {
     contenido: ''
   };
   submittingComment = false;
-
-  // Filtros
   filters = {
     estado: '',
     anio: '',
     busqueda: ''
   };
-
-  // Estados disponibles
   estados = [
     'Pendiente',
     'Procesando', 
@@ -58,8 +51,6 @@ export class MisCompras implements OnInit {
   loadData(): void {
     this.loading = true;
     this.error = null;
-
-    // Cargar todos los datos en paralelo
     Promise.all([
       this.purchasesService.getMyPurchases().toPromise(),
       this.purchasesService.getOwnedProducts().toPromise(),
@@ -67,6 +58,7 @@ export class MisCompras implements OnInit {
     ]).then(([purchasesResponse, productsResponse, statsResponse]) => {
       if (purchasesResponse?.success) {
         this.purchases = purchasesResponse.data;
+         console.log('🛒 Mis compras cargadas:', this.purchases); 
       }
       if (productsResponse?.success) {
         this.ownedProducts = productsResponse.data;
@@ -183,7 +175,6 @@ export class MisCompras implements OnInit {
         if (response.success) {
           alert('Comentario enviado exitosamente. Será revisado antes de publicarse.');
           this.closeCommentModal();
-          // Recargar productos para actualizar el estado de comentarios
           this.loadData();
         } else {
           alert('Error al enviar comentario: ' + response.message);

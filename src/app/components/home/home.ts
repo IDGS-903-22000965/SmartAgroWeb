@@ -1,4 +1,3 @@
-// src/app/components/home/home.ts
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -15,8 +14,6 @@ export class Home implements OnInit {
   protected productos = signal<Producto[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
-
-  // Features del sistema
   protected features = [
     {
       icon: '💧',
@@ -49,8 +46,6 @@ export class Home implements OnInit {
       description: 'Sistema plug-and-play con instalación rápida y sin complicaciones'
     }
   ];
-
-  // Beneficios clave
   protected benefits = [
     {
       stat: '40%',

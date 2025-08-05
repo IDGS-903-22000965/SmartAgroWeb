@@ -1,6 +1,4 @@
-<!-- src/app/components/cliente/documentacion/documentacion.html -->
 <div class="documentacion">
-  <!-- Header -->
   <div class="page-header">
     <h1 *ngIf="activeView === 'list'">📚 Recursos y Documentación</h1>
     <h1 *ngIf="activeView === 'detail'">📖 {{ selectedProduct?.nombreProducto }}</h1>
@@ -12,14 +10,10 @@
       </button>
     </div>
   </div>
-
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando recursos...</p>
   </div>
-
-  <!-- Error State -->
   <div *ngIf="error && !loading" class="error-container">
     <div class="error-message">
       <h3>⚠️ Error</h3>
@@ -29,10 +23,7 @@
       </button>
     </div>
   </div>
-
-  <!-- Vista Lista de Productos -->
   <div *ngIf="!loading && !error && activeView === 'list'" class="list-view">
-    <!-- Filtros -->
     <div class="filters-section">
       <div class="filters-grid">
         <div class="filter-group">
@@ -55,8 +46,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Lista de productos con recursos -->
     <div class="products-grid">
       <div *ngIf="filteredProducts.length === 0" class="no-data">
         <div class="no-data-content">
@@ -137,8 +126,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Vista Detalle del Producto -->
   <div *ngIf="!loading && !error && activeView === 'detail' && selectedProduct" class="detail-view">
     <div class="product-detail-header">
       <img 
@@ -154,8 +141,6 @@
         </p>
       </div>
     </div>
-
-    <!-- Información Completa del Producto -->
     <div *ngIf="selectedProduct.informacionCompleta" class="product-full-info">
       <h3>📋 Información del Producto</h3>
       <div class="info-content">
@@ -182,13 +167,10 @@
         </div>
       </div>
     </div>
-
-    <!-- Documentación -->
     <div *ngIf="selectedProduct.documentacion" class="documentation-section">
       <h3>📚 Documentación</h3>
       
       <div class="docs-grid">
-        <!-- Manuales de Usuario -->
         <div *ngIf="selectedProduct.documentacion.manualesUsuario?.length" class="doc-category">
           <h4>📖 Manuales de Usuario</h4>
           <div class="resources-list">
@@ -214,8 +196,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Guías de Instalación -->
         <div *ngIf="selectedProduct.documentacion.guiasInstalacion?.length" class="doc-category">
           <h4>🔧 Guías de Instalación</h4>
           <div class="resources-list">
@@ -241,8 +221,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Guías de Mantenimiento -->
         <div *ngIf="selectedProduct.documentacion.guiasMantenimiento?.length" class="doc-category">
           <h4>🛠️ Guías de Mantenimiento</h4>
           <div class="resources-list">
@@ -270,13 +248,10 @@
         </div>
       </div>
     </div>
-
-    <!-- Recursos Multimedia -->
     <div *ngIf="selectedProduct.multimediaResources" class="multimedia-section">
       <h3>🎥 Recursos Multimedia</h3>
       
       <div class="multimedia-grid">
-        <!-- Videos Tutoriales -->
         <div *ngIf="selectedProduct.multimediaResources.videosTutoriales?.length" class="multimedia-category">
           <h4>🎬 Videos Tutoriales</h4>
           <div class="resources-list">
@@ -304,12 +279,8 @@
         </div>
       </div>
     </div>
-
-    <!-- Soporte Técnico -->
     <div *ngIf="selectedProduct.soporteTecnico" class="support-section">
       <h3>🛠️ Soporte Técnico</h3>
-      
-      <!-- Contacto -->
       <div *ngIf="selectedProduct.soporteTecnico.contactoSoporte" class="support-contact">
         <h4>📞 Contacto de Soporte</h4>
         <div class="contact-info">
@@ -327,8 +298,6 @@
           </div>
         </div>
       </div>
-
-      <!-- FAQs -->
       <div *ngIf="selectedProduct.soporteTecnico.faQs?.length" class="support-faqs">
         <h4>❓ Preguntas Frecuentes</h4>
         <div class="faqs-list">
@@ -343,8 +312,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Vista Garantía -->
   <div *ngIf="!loading && !error && activeView === 'warranty' && selectedWarranty" class="warranty-view">
     <div class="warranty-header">
       <div class="warranty-status" [ngClass]="getWarrantyStatusClass(selectedWarranty.garantiaVigente)">
@@ -383,8 +350,6 @@
           </span>
         </div>
       </div>
-
-      <!-- Términos y Condiciones -->
       <div class="warranty-terms">
         <h3>📋 Términos de Garantía</h3>
         <ul>
@@ -393,8 +358,6 @@
           </li>
         </ul>
       </div>
-
-      <!-- Coberturas -->
       <div class="warranty-coverage">
         <h3>✅ Coberturas Incluidas</h3>
         <ul>
@@ -403,8 +366,6 @@
           </li>
         </ul>
       </div>
-
-      <!-- Exclusiones -->
       <div class="warranty-exclusions">
         <h3>❌ Exclusiones</h3>
         <ul>
@@ -413,8 +374,6 @@
           </li>
         </ul>
       </div>
-
-      <!-- Procedimiento de Reclamación -->
       <div class="warranty-procedure">
         <h3>📞 Procedimiento de Reclamación</h3>
         <pre>{{ selectedWarranty.procedimientoReclamacion }}</pre>

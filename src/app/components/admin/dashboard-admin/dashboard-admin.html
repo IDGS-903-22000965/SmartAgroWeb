@@ -1,4 +1,3 @@
-<!-- src/app/components/admin/dashboard-admin/dashboard-admin.html -->
 <div class="dashboard-admin">
   @if (loading()) {
     <div class="loading-container">
@@ -14,20 +13,18 @@
     </div>
   } @else {
     <div class="dashboard-container">
-      <!-- Header -->
-      <div class="dashboard-header">
+            <div class="dashboard-header">
         <div class="header-content">
           <h1>Panel de Administración</h1>
           <p>Bienvenido al centro de control de SmartAgro</p>
         </div>
-        <div class="header-actions">
+        <!-- <div class="header-actions">
           <button class="btn btn-outline">📊 Exportar Datos</button>
           <button class="btn btn-primary">➕ Acción Rápida</button>
-        </div>
+        </div> -->
       </div>
 
-      <!-- Métricas Principales -->
-      @if (metricas()) {
+            <!-- @if (metricas()) {
         <div class="metrics-grid">
           <div class="metric-card revenue">
             <div class="metric-icon">💰</div>
@@ -86,10 +83,9 @@
             </div>
           </div>
         </div>
-      }
+      } -->
 
-      <!-- Quick Actions -->
-      <div class="quick-actions-section">
+            <div class="quick-actions-section">
         <h2>Acciones Rápidas</h2>
         <div class="quick-actions-grid">
           @for (action of quickActions; track action.title) {
@@ -104,11 +100,9 @@
         </div>
       </div>
 
-      <!-- Charts and Analytics -->
-      <div class="analytics-section">
+            <div class="analytics-section">
         <div class="analytics-grid">
-          <!-- Ventas por Mes Chart -->
-          <div class="chart-card">
+                    <div class="chart-card">
             <div class="chart-header">
               <h3>Ventas por Mes</h3>
               <span class="chart-period">Últimos 12 meses</span>
@@ -133,8 +127,7 @@
             </div>
           </div>
 
-          <!-- Cotizaciones por Estado -->
-          <div class="chart-card">
+                    <div class="chart-card">
             <div class="chart-header">
               <h3>Estado de Cotizaciones</h3>
               <span class="chart-period">Resumen actual</span>
@@ -158,8 +151,7 @@
         </div>
       </div>
 
-      <!-- Actividad Reciente -->
-      <div class="activity-section">
+            <div class="activity-section">
         <div class="activity-header">
           <h2>Actividad Reciente</h2>
           <span class="activity-period">Últimos 7 días</span>

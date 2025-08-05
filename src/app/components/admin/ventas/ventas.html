@@ -1,6 +1,4 @@
-<!-- ventas.component.html -->
 <div class="ventas-container">
-  <!-- Header con navegación -->
   <div class="header-section">
     <h1 class="page-title">
       <i class="fas fa-shopping-cart"></i>
@@ -28,10 +26,7 @@
       </button>
     </nav>
   </div>
-
-  <!-- Vista de Lista de Ventas -->
   <div *ngIf="vistaActiva === 'lista'" class="lista-ventas">
-    <!-- Filtros de búsqueda -->
     <div class="filtros-section">
       <div class="filtros-row">
         <div class="filtro-grupo">
@@ -90,8 +85,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Loading y Error States -->
     <div *ngIf="loading" class="loading-state">
       <i class="fas fa-spinner fa-spin"></i>
       Cargando ventas...
@@ -101,8 +94,6 @@
       <i class="fas fa-exclamation-triangle"></i>
       {{error}}
     </div>
-
-    <!-- Tabla de Ventas -->
     <div *ngIf="!loading && !error" class="tabla-container">
       <table class="ventas-table">
         <thead>
@@ -150,9 +141,12 @@
             </td>
             <td class="acciones">
               <div class="acciones-grupo">
-                <button class="btn-icon" title="Ver detalles">
-                  <i class="fas fa-eye"></i>
-                </button>
+                <button 
+  class="btn-icon" 
+  title="Ver detalles"
+  (click)="verDetalles(venta.id)">
+  <i class="fas fa-eye"></i>
+</button>
                 <div class="dropdown">
                   <button class="btn-icon dropdown-toggle" title="Cambiar estado">
                     <i class="fas fa-edit"></i>
@@ -172,8 +166,6 @@
           </tr>
         </tbody>
       </table>
-
-      <!-- Paginación -->
       <div class="paginacion" *ngIf="totalPages > 1">
         <div class="paginacion-info">
           Mostrando {{(currentPage - 1) * pageSize + 1}} - 
@@ -207,11 +199,8 @@
       </div>
     </div>
   </div>
-
-  <!-- Vista de Estadísticas -->
   <div *ngIf="vistaActiva === 'estadisticas'" class="estadisticas-ventas">
     <div *ngIf="estadisticas" class="estadisticas-grid">
-      <!-- Tarjetas de métricas principales -->
       <div class="metrica-card">
         <div class="metrica-icon ventas-icon">
           <i class="fas fa-shopping-cart"></i>
@@ -273,8 +262,6 @@
           <p>Completadas</p>
         </div>
       </div>
-
-      <!-- Gráficos de distribución -->
       <div class="grafico-card full-width">
         <h4>Distribución por Estado</h4>
         <div class="distribucion-barras">
@@ -316,8 +303,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Vista de Reportes -->
   <div *ngIf="vistaActiva === 'reportes'" class="reportes-ventas">
     <div class="reportes-grid">
       <div class="reporte-card">

@@ -15,13 +15,9 @@ export class ProductosComponent implements OnInit {
   protected productos = signal<Producto[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
-  
-  // Filtros
   protected searchTerm = signal('');
   protected selectedPriceRange = signal('all');
   protected sortBy = signal('name');
-  
-  // Opciones de filtros
   protected priceRanges = [
     { value: 'all', label: 'Todos los precios' },
     { value: '0-5000', label: 'Menos de $5,000' },
@@ -37,12 +33,8 @@ export class ProductosComponent implements OnInit {
     { value: 'price-desc', label: 'Precio (Mayor a Menor)' },
     { value: 'newest', label: 'Más Recientes' }
   ];
-
-  // Productos filtrados y ordenados
   protected filteredProducts = computed(() => {
     let filtered = this.productos();
-    
-    // Filtro por búsqueda
     const search = this.searchTerm().toLowerCase();
     if (search) {
       filtered = filtered.filter(producto => 
@@ -50,8 +42,6 @@ export class ProductosComponent implements OnInit {
         producto.descripcion?.toLowerCase().includes(search)
       );
     }
-    
-    // Filtro por rango de precio
     const priceRange = this.selectedPriceRange();
     if (priceRange !== 'all') {
       const [min, max] = this.getPriceRange(priceRange);
@@ -60,8 +50,6 @@ export class ProductosComponent implements OnInit {
         return price >= min && (max === Infinity || price <= max);
       });
     }
-    
-    // Ordenamiento
     const sort = this.sortBy();
     filtered = [...filtered].sort((a, b) => {
       switch (sort) {
@@ -118,8 +106,6 @@ export class ProductosComponent implements OnInit {
       default: return [0, Infinity];
     }
   }
-
-  // Cambios aquí: recibir Event y hacer cast para acceder a value de forma segura
   protected onSearchChange(event: Event): void {
     const input = event.target as HTMLInputElement | null;
     if (input) {
@@ -156,8 +142,6 @@ export class ProductosComponent implements OnInit {
   protected getProductFeatures(producto: Producto): string[] {
     try {
       if (!producto.caracteristicas) return [];
-      
-      // El backend puede enviar array directamente o string JSON
       if (Array.isArray(producto.caracteristicas)) {
         return producto.caracteristicas;
       }

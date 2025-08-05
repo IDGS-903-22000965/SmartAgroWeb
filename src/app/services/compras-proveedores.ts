@@ -56,8 +56,6 @@ export class ComprasProveedoresService {
   generarNumero(): Observable<any> {
     return this.http.get(`${this.apiUrl}/generar-numero`);
   }
-
-  // Métodos adicionales para compatibilidad
   obtenerPorProveedor(proveedorId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/proveedor/${proveedorId}`);
   }

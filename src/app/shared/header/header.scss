@@ -1,4 +1,3 @@
-/* src/app/shared/header/header.scss */
 .header {
   position: fixed;
   top: 0;
@@ -248,8 +247,6 @@
     }
   }
 }
-
-// Responsive Design
 @media (max-width: 768px) {
   .mobile-menu-toggle {
     display: flex;

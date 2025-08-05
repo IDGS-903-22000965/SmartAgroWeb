@@ -1,4 +1,3 @@
-// src/app/services/materias-primas.service.ts - ACTUALIZADO
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -43,8 +42,6 @@ export class MateriasPrimasService {
   obtenerBajoStock(): Observable<any> {
     return this.http.get(`${this.apiUrl}/bajo-stock`);
   }
-
-  // 🔥 NUEVOS MÉTODOS PARA COSTEO
   obtenerMovimientosStock(materiaPrimaId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${materiaPrimaId}/movimientos`);
   }
@@ -73,8 +70,6 @@ export class MateriasPrimasService {
   obtenerValorInventario(): Observable<any> {
     return this.http.get(`${this.apiUrl}/valor-inventario`);
   }
-
-  // Búsqueda y filtros avanzados
   buscarMateriasPrimas(filtros: any): Observable<any> {
     let params = new HttpParams();
     

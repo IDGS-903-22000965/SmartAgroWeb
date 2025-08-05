@@ -1,11 +1,9 @@
-// src/app/components/producto-detalle/producto-detalle.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto';
 import { Auth } from '../../services/auth';
-// Cambio: Renombrar la interfaz para evitar conflicto de nombres
 import { ProductoDetalle as ProductoDetalleModel, ComentarioCreateDto } from '../../models/models';
 
 @Component({
@@ -22,15 +20,9 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
   protected activeTab = signal('descripcion');
   protected showCommentForm = signal(false);
   protected commentLoading = signal(false);
-  
-  // Form para comentarios
   protected commentForm: FormGroup;
-  
-  // Usuario actual - Cambio: Inicializar en el constructor
   protected currentUser = computed(() => this.authService.currentUser());
   protected isAuthenticated = computed(() => !!this.currentUser());
-
-  // Cambio: Hacer Math accesible en el template
   protected Math = Math;
 
   constructor(
@@ -88,7 +80,6 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
     
     if (producto.imagenesSecundarias) {
       try {
-        // El backend puede enviar array directamente o string JSON
         if (Array.isArray(producto.imagenesSecundarias)) {
           images.push(...producto.imagenesSecundarias);
         } else if (typeof producto.imagenesSecundarias === 'string') {
@@ -98,7 +89,6 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
           }
         }
       } catch {
-        // Si falla el parse, ignorar las imágenes secundarias
       }
     }
     
@@ -110,7 +100,6 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
     if (!producto?.caracteristicas) return [];
     
     try {
-      // El backend puede enviar array directamente o string JSON
       if (Array.isArray(producto.caracteristicas)) {
         return producto.caracteristicas;
       }
@@ -128,7 +117,6 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
     if (!producto?.beneficios) return [];
     
     try {
-      // El backend puede enviar array directamente o string JSON
       if (Array.isArray(producto.beneficios)) {
         return producto.beneficios;
       }
@@ -169,7 +157,6 @@ export class ProductoDetalleComponent implements OnInit { // Cambio: Renombrar l
         if (response.success) {
           this.showCommentForm.set(false);
           this.commentForm.reset({ calificacion: 5, contenido: '' });
-          // Recargar producto para mostrar el nuevo comentario
           this.loadProducto(this.producto()!.id);
         }
       },

@@ -1,4 +1,3 @@
-// src/app/components/contacto/contacto.ts
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -16,8 +15,6 @@ export class Contacto {
   protected loading = signal(false);
   protected success = signal(false);
   protected error = signal<string | null>(null);
-
-  // Información de contacto
   protected contactInfo = [
     {
       icon: '📍',
@@ -44,8 +41,6 @@ export class Contacto {
       link: null
     }
   ];
-
-  // Departamentos disponibles
   protected departments = [
     'Ventas',
     'Soporte Técnico',

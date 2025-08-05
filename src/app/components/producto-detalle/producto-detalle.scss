@@ -1,4 +1,3 @@
-/* src/app/components/producto-detalle/producto-detalle.scss */
 .producto-detalle-page {
   .container {
     max-width: 1200px;
@@ -741,8 +740,6 @@
     animation: spin 1s linear infinite;
   }
 }
-
-// Responsive Design
 @media (max-width: 768px) {
   .product-main {
     padding: 2rem 0;

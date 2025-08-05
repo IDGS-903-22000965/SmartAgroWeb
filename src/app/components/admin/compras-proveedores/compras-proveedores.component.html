@@ -1,4 +1,3 @@
-<!-- src/app/components/admin/compras-proveedores/compras-proveedores.component.html -->
 <div class="compras-admin">
   <div class="page-header">
     <div class="header-content">
@@ -12,7 +11,7 @@
     </div>
   </div>
 
-  <!-- Stats Cards -->
+    
   @if (stats()) {
     <div class="stats-grid">
       <div class="stat-card total">
@@ -65,7 +64,7 @@
     </div>
   }
 
-  <!-- Filters -->
+  
   <div class="filters-section">
     <div class="filters-container">
       <div class="search-box">
@@ -101,7 +100,7 @@
     </div>
   </div>
 
-  <!-- Content -->
+  
   @if (loading()) {
     <div class="loading-container">
       <div class="spinner"></div>
@@ -209,7 +208,7 @@
     </div>
   }
 
-  <!-- Create Modal -->
+  
   @if (showCreateModal()) {
   <div class="modal-overlay" (click)="closeCreateModal()">
     <div class="modal-content large-modal" (click)="$event.stopPropagation()">
@@ -260,7 +259,7 @@
             </div>
           </div>
 
-            <!-- Detalles de la Compra -->
+            
             <div class="detalles-section">
             <div class="detalles-header">
               <h3>Detalles de la Compra</h3>
@@ -269,8 +268,8 @@
               </button>
             </div>
 
-              <!-- ✅ VERIFICACIÓN MÁS ESTRICTA -->
-                 <!-- ✅ SECCIÓN DE DETALLES CORREGIDA -->
+              
+                 
             <div formArrayName="detalles">
               @if (createDetalles.length > 0) {
                 <div class="detalles-table">
@@ -379,7 +378,7 @@
     </div>
   }
 
-  <!-- Edit Modal -->
+  
   @if (showEditModal() && selectedCompra()) {
     <div class="modal-overlay" (click)="closeEditModal()">
       <div class="modal-content large-modal" (click)="$event.stopPropagation()">
@@ -422,7 +421,7 @@
               </div>
             </div>
 
-            <!-- Detalles de la Compra -->
+            
             <div class="detalles-section">
               <div class="detalles-header">
                 <h3>Detalles de la Compra</h3>
@@ -431,7 +430,7 @@
                 </button>
               </div>
 
-              <!-- ✅ VERIFICACIÓN MÁS ESTRICTA PARA EDIT -->
+              
               @if (editDetalles && editDetalles.length > 0 && editDetalles.controls) {
                 <div class="detalles-table">
                   @for (detalle of editDetalles.controls; track $index; let i = $index) {
@@ -503,7 +502,7 @@
     </div>
   }
 
-  <!-- Details Modal -->
+  
   @if (showDetailsModal() && selectedCompra()) {
     <div class="modal-overlay" (click)="closeDetailsModal()">
       <div class="modal-content large-modal" (click)="$event.stopPropagation()">

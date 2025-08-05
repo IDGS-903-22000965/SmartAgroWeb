@@ -1,4 +1,3 @@
-// src/app/components/faq/faq.ts
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

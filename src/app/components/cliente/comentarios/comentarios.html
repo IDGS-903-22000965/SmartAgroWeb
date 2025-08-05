@@ -1,18 +1,12 @@
-<!-- src/app/components/cliente/comentarios/comentarios.html -->
 <div class="comentarios">
-  <!-- Header -->
   <div class="page-header">
     <h1>💬 Mis Comentarios</h1>
     <p>Gestiona tus comentarios y calificaciones de productos</p>
   </div>
-
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando comentarios...</p>
   </div>
-
-  <!-- Error State -->
   <div *ngIf="error && !loading" class="error-container">
     <div class="error-message">
       <h3>⚠️ Error</h3>
@@ -22,10 +16,7 @@
       </button>
     </div>
   </div>
-
-  <!-- Main Content -->
   <div *ngIf="!loading && !error" class="content">
-    <!-- Tabs Navigation -->
     <div class="tabs-navigation">
       <button 
         class="tab-button"
@@ -49,10 +40,7 @@
         📊 Estadísticas
       </button>
     </div>
-
-    <!-- Tab: Mis Comentarios -->
     <div *ngIf="activeTab === 'mis-comentarios'" class="tab-content">
-      <!-- Filtros -->
       <div class="filters-section">
         <div class="filters-grid">
           <div class="filter-group">
@@ -79,8 +67,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Lista de Comentarios -->
       <div class="comments-list">
         <div *ngIf="filteredComments.length === 0" class="no-data">
           <div class="no-data-content">
@@ -128,14 +114,10 @@
               </span>
             </div>
           </div>
-
-          <!-- Respuesta del Admin -->
           <div *ngIf="comment.respuestaAdmin" class="admin-response">
             <h4>Respuesta de SmartAgro:</h4>
             <p>{{ comment.respuestaAdmin }}</p>
           </div>
-
-          <!-- Acciones -->
           <div class="comment-actions">
             <button 
               *ngIf="canEditComment(comment)"
@@ -158,8 +140,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tab: Productos Comentables -->
     <div *ngIf="activeTab === 'productos-comentables'" class="tab-content">
       <div class="products-grid">
         <div *ngIf="commentableProducts.length === 0" class="no-data">
@@ -219,8 +199,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tab: Estadísticas -->
     <div *ngIf="activeTab === 'estadisticas'" class="tab-content">
       <div *ngIf="stats" class="stats-container">
         <div class="stats-grid">
@@ -264,8 +242,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Gráfico de distribución -->
         <div class="stats-distribution">
           <h3>📊 Distribución de Comentarios</h3>
           <div class="distribution-bars">
@@ -306,8 +282,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal para Comentarios -->
   <div *ngIf="showCommentModal" class="modal-overlay" (click)="closeCommentModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">

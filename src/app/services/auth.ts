@@ -1,6 +1,6 @@
-// src/app/services/auth.ts 
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LoginRequest, AuthResponse, User } from '../models/models';
@@ -12,22 +12,18 @@ import { environment } from '../../environments/environment';
 export class Auth {
   private readonly API_URL = `${environment.apiUrl}/auth`;
   
-  // Signal principal
   private currentUserSignal = signal<User | null>(null);
-  
-  // Computed signals públicos
   public currentUser = computed(() => this.currentUserSignal());
   public isAuthenticatedSignal = computed(() => !!this.currentUserSignal());
   public isAdminSignal = computed(() => this.currentUserSignal()?.roles?.includes('Admin') ?? false);
   public isClienteSignal = computed(() => this.currentUserSignal()?.roles?.includes('Cliente') ?? false);
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private router: Router 
+  ) {
     this.checkCurrentUser();
   }
-
-  /**
-   * Iniciar sesión de usuario
-   */
   login(loginData: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, loginData)
       .pipe(
@@ -40,24 +36,16 @@ export class Auth {
         })
       );
   }
-
-  /**
-   * Cerrar sesión
-   */
-  logout(): void {
-    // Llamar al endpoint de logout (opcional)
-    this.http.post(`${this.API_URL}/logout`, {}).subscribe({
-      next: () => console.log('Logout exitoso'),
-      error: (error) => console.warn('Error en logout del servidor:', error)
-    });
-
-    // Limpiar datos locales
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    this.currentUserSignal.set(null);
-  }
-
-  // MÉTODOS PRINCIPALES - USAR SOLO LOCALSTORAGE
+ logout(): void {
+  this.http.post(`${this.API_URL}/logout`, {}).subscribe({
+    next: () => console.log('Logout exitoso'),
+    error: (error) => console.warn('Error en logout del servidor:', error)
+  });
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  this.currentUserSignal.set(null);
+  this.router.navigate(['/login']);
+}
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
@@ -111,8 +99,6 @@ export class Auth {
     const token = localStorage.getItem('token');
     
     if (!token) return null;
-    
-    // Verificar que el token no esté expirado
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const exp = payload.exp * 1000;

@@ -1,18 +1,12 @@
-<!-- src/app/components/cliente/perfil/perfil.html -->
 <div class="perfil">
-  <!-- Header -->
   <div class="page-header">
     <h1>👤 Mi Perfil</h1>
     <p>Administra tu información personal y configuración de cuenta</p>
   </div>
-
-  <!-- Loading State -->
   <div *ngIf="loadingProfile" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando perfil...</p>
   </div>
-
-  <!-- Error State -->
   <div *ngIf="error && !loadingProfile" class="error-container">
     <div class="error-message">
       <h3>⚠️ Error</h3>
@@ -22,11 +16,7 @@
       </button>
     </div>
   </div>
-
-  <!-- Profile Content -->
   <div *ngIf="!loadingProfile && !error && currentUser" class="profile-content">
-    
-    <!-- Success Messages -->
     <div *ngIf="success" class="success-message">
       <h4>✅ ¡Perfil actualizado exitosamente!</h4>
     </div>
@@ -34,8 +24,6 @@
     <div *ngIf="passwordSuccess" class="success-message">
       <h4>✅ ¡Contraseña cambiada exitosamente!</h4>
     </div>
-
-    <!-- Profile Info Card -->
     <div class="profile-card">
       <div class="profile-header">
         <div class="profile-avatar">
@@ -76,8 +64,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Edit Profile Form -->
       <div *ngIf="editMode" class="edit-form">
         <h3>✏️ Editar Información Personal</h3>
         
@@ -176,8 +162,6 @@
           </div>
         </form>
       </div>
-
-      <!-- Change Password Form -->
       <div *ngIf="changePasswordMode" class="password-form">
         <h3>🔒 Cambiar Contraseña</h3>
         
@@ -254,8 +238,6 @@
           </div>
         </form>
       </div>
-
-      <!-- Profile Details (Read Only) -->
       <div *ngIf="!editMode && !changePasswordMode" class="profile-details">
         <h3>📋 Información Personal</h3>
         
@@ -299,8 +281,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Account Security Section -->
     <div *ngIf="!editMode && !changePasswordMode" class="security-section">
       <h3>🛡️ Seguridad de la Cuenta</h3>
       
@@ -340,8 +320,7 @@
       </div>
     </div>
 
-    <!-- Account Actions -->
-    <div *ngIf="!editMode && !changePasswordMode" class="account-actions">
+    <!-- <div *ngIf="!editMode && !changePasswordMode" class="account-actions">
       <h3>⚙️ Acciones de Cuenta</h3>
       
       <div class="actions-grid">
@@ -389,7 +368,7 @@
           </a>
         </div>
       </div>
-    </div>
+    </div> -->
 
   </div>
 </div>

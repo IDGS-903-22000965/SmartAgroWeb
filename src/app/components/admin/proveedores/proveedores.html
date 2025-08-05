@@ -1,4 +1,3 @@
-<!-- src/app/components/admin/proveedores/proveedores.html -->
 <div class="proveedores-admin">
   <div class="page-header">
     <div class="header-content">
@@ -11,8 +10,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card total">
       <div class="stat-icon">🏢</div>
@@ -46,8 +43,6 @@
 </div>
 
   </div>
-
-  <!-- Filters -->
   <div class="filters-section">
     <div class="filters-container">
       <div class="search-box">
@@ -73,8 +68,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Content -->
   @if (loading()) {
     <div class="loading-container">
       <div class="spinner"></div>
@@ -178,8 +171,6 @@
       }
     </div>
   }
-
-  <!-- Create Modal -->
   @if (showCreateModal()) {
     <div class="modal-overlay" (click)="closeCreateModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -292,8 +283,6 @@
       </div>
     </div>
   }
-
-  <!-- Edit Modal -->
   @if (showEditModal() && selectedProveedor()) {
     <div class="modal-overlay" (click)="closeEditModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -401,8 +390,6 @@
       </div>
     </div>
   }
-
-  <!-- Details Modal -->
   @if (showDetailsModal() && selectedProveedor()) {
     <div class="modal-overlay" (click)="closeDetailsModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">

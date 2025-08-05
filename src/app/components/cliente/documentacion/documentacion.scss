@@ -1,4 +1,3 @@
-// src/app/components/cliente/documentacion/documentacion.scss
 .documentacion {
   padding: 20px;
   max-width: 1200px;
@@ -73,8 +72,6 @@
       }
     }
   }
-
-  // Filters Section
   .filters-section {
     background: #f8f9fa;
     padding: 20px;
@@ -113,8 +110,6 @@
       }
     }
   }
-
-  // Products Grid
   .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -236,8 +231,6 @@
       }
     }
   }
-
-  // Detail View
   .detail-view {
     .product-detail-header {
       display: flex;
@@ -440,8 +433,6 @@
       }
     }
   }
-
-  // Warranty View
   .warranty-view {
     .warranty-header {
       margin-bottom: 30px;
@@ -567,8 +558,6 @@
       }
     }
   }
-
-  // No Data State
   .no-data {
     display: flex;
     justify-content: center;
@@ -589,8 +578,6 @@
       }
     }
   }
-
-  // Buttons
   .btn {
     padding: 10px 20px;
     border: none;
@@ -648,14 +635,10 @@
       font-size: 0.8rem;
     }
   }
-
-  // Animations
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-
-  // Responsive Design
   @media (max-width: 768px) {
     padding: 15px;
 

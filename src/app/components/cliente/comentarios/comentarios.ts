@@ -1,4 +1,3 @@
-// src/app/components/cliente/comentarios/comentarios.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -26,8 +25,6 @@ export class Comentarios implements OnInit {
   loading = true;
   error: string | null = null;
   activeTab = 'mis-comentarios'; // 'mis-comentarios' | 'productos-comentables' | 'estadisticas'
-  
-  // Modal para comentarios
   showCommentModal = false;
   selectedProduct: CommentableProduct | null = null;
   editingComment: ClientComment | null = null;
@@ -36,8 +33,6 @@ export class Comentarios implements OnInit {
     contenido: ''
   };
   submittingComment = false;
-
-  // Filtros
   filterStatus = '';
   searchTerm = '';
   statusOptions = [
@@ -56,8 +51,6 @@ export class Comentarios implements OnInit {
   loadData(): void {
     this.loading = true;
     this.error = null;
-
-    // Cargar todos los datos en paralelo
     Promise.all([
       this.commentsService.getMyComments().toPromise(),
       this.commentsService.getCommentableProducts().toPromise(),
@@ -137,7 +130,6 @@ export class Comentarios implements OnInit {
     this.submittingComment = true;
 
     if (this.editingComment) {
-      // Editar comentario existente
       const updateData: UpdateClientComment = {
         calificacion: this.commentForm.calificacion,
         contenido: this.commentForm.contenido.trim()
@@ -161,7 +153,6 @@ export class Comentarios implements OnInit {
         }
       });
     } else if (this.selectedProduct) {
-      // Crear nuevo comentario
       const comment: CreateClientComment = {
         productoId: this.selectedProduct.productoId,
         calificacion: this.commentForm.calificacion,

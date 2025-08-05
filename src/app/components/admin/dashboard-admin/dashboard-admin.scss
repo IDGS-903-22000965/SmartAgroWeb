@@ -1,4 +1,4 @@
-/* src/app/components/admin/dashboard-admin/dashboard-admin.scss */
+
 .dashboard-admin {
   min-height: 100vh;
   background: #f8f9fa;
@@ -96,7 +96,7 @@
   }
 }
 
-// Metrics Grid
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -228,7 +228,7 @@
   }
 }
 
-// Quick Actions
+
 .quick-actions-section {
   margin-bottom: 3rem;
   
@@ -322,7 +322,7 @@
   }
 }
 
-// Analytics Section
+
 .analytics-section {
   margin-bottom: 3rem;
   
@@ -458,7 +458,7 @@
   }
 }
 
-// Activity Section
+
 .activity-section {
   .activity-header {
     display: flex;
@@ -587,7 +587,7 @@
   }
 }
 
-// Button Styles
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -624,7 +624,7 @@
   }
 }
 
-// Responsive Design
+
 @media (max-width: 768px) {
   .dashboard-admin {
     padding: 1rem;

@@ -1,4 +1,3 @@
-// src/app/components/cliente/documentacion/documentacion.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
@@ -20,8 +19,6 @@ export class Documentacion implements OnInit {
   error: string | null = null;
   activeView = 'list'; // 'list' | 'detail' | 'warranty'
   selectedProductId: number | null = null;
-
-  // Filtros
   searchTerm = '';
   selectedCategory = '';
   categories = [
@@ -38,7 +35,6 @@ export class Documentacion implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Verificar si se especificó un producto en la URL
     this.route.queryParams.subscribe(params => {
       if (params['producto']) {
         this.selectedProductId = +params['producto'];
@@ -56,8 +52,6 @@ export class Documentacion implements OnInit {
       next: (response) => {
         if (response.success) {
           this.productResources = response.data;
-          
-          // Si hay un producto seleccionado en la URL, cargar sus detalles
           if (this.selectedProductId) {
             this.loadProductDetail(this.selectedProductId);
           }
@@ -165,13 +159,25 @@ export class Documentacion implements OnInit {
   }
 
   downloadResource(url: string, title: string): void {
-    // Aquí implementarías la lógica de descarga
     console.log(`Descargando: ${title} desde ${url}`);
-    window.open(url, '_blank');
+    if (url.startsWith('/api/')) {
+      const fullUrl = `http://localhost:5194${url}`;
+      console.log('URL completa para descarga:', fullUrl);
+      window.open(fullUrl, '_blank');
+    } else {
+      window.open(url, '_blank');
+    }
   }
 
-  openResource(url: string): void {
-    window.open(url, '_blank');
+   openResource(url: string): void {
+    console.log(`Abriendo recurso: ${url}`);
+    if (url.startsWith('/api/')) {
+      const fullUrl = `http://localhost:5194${url}`;
+      console.log('URL completa para abrir:', fullUrl);
+      window.open(fullUrl, '_blank');
+    } else {
+      window.open(url, '_blank');
+    }
   }
 
   formatDate(date: Date | string): string {

@@ -1,4 +1,3 @@
-// src/app/components/register/register.ts
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -55,8 +54,6 @@ export class Register {
       this.success.set(null);
 
       const requestData: AccountRequestDto = this.requestForm.value;
-
-      // Enviar solicitud al backend
       this.http.post<ApiResponse>(`${environment.apiUrl}/account-request`, requestData)
         .subscribe({
           next: (response) => {

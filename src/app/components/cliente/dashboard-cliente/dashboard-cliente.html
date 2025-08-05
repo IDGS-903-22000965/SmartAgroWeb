@@ -1,6 +1,4 @@
-<!-- src/app/components/cliente/dashboard-cliente/dashboard-cliente.html -->
 <div class="dashboard-cliente">
-  <!-- Header -->
   <div class="dashboard-header">
     <div class="welcome-section">
       <h1>¡Bienvenido, {{ user?.nombre }}! 👋</h1>
@@ -14,14 +12,10 @@
 
     </div>
   </div>
-
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando tu dashboard...</p>
   </div>
-
-  <!-- Error State -->
   <div *ngIf="error && !loading" class="error-container">
     <div class="error-message">
       <h3>⚠️ Error</h3>
@@ -31,11 +25,7 @@
       </button>
     </div>
   </div>
-
-  <!-- Dashboard Content -->
   <div *ngIf="!loading && !error && dashboard" class="dashboard-content">
-    
-    <!-- Notificaciones Importantes -->
     <div *ngIf="dashboard.notificacionesImportantes?.length" class="notifications-section">
       <h2>🔔 Notificaciones Importantes</h2>
       <div class="notifications-list">
@@ -53,10 +43,7 @@
         </div>
       </div>
     </div>
-
-    <!-- Estadísticas Principales -->
     <div class="stats-grid">
-      <!-- Resumen de Compras -->
       <div class="stat-card primary">
         <div class="stat-header">
           <h3>💰 Resumen de Compras</h3>
@@ -79,8 +66,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Productos Adquiridos -->
       <div class="stat-card success">
         <div class="stat-header">
           <h3>📦 Mis Productos</h3>
@@ -103,8 +88,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Estado de Comentarios -->
       <div class="stat-card info">
         <div class="stat-header">
           <h3>⭐ Mis Comentarios</h3>
@@ -131,8 +114,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Actividad Este Mes -->
       <div class="stat-card warning">
         <div class="stat-header">
           <h3>📊 Este Mes</h3>
@@ -156,11 +137,7 @@
         </div>
       </div>
     </div>
-
-    <!-- Sección Principal -->
     <div class="main-sections">
-      
-      <!-- Actividad Reciente -->
       <div class="recent-activity">
         <h2>📋 Actividad Reciente</h2>
         <div *ngIf="dashboard.actividadReciente?.length; else noActivity" class="activity-list">
@@ -186,8 +163,6 @@
           </div>
         </ng-template>
       </div>
-
-      <!-- Accesos Rápidos -->
       <div class="quick-access">
         <h2>🚀 Accesos Rápidos</h2>
         <div class="quick-access-grid">
@@ -207,8 +182,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Estadísticas Generales -->
     <div class="general-stats">
       <h2>📈 Estadísticas Generales</h2>
       <div class="general-stats-grid">
@@ -246,8 +219,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Próximas Acciones Sugeridas -->
     <div *ngIf="dashboard.notificacionesImportantes?.length" class="suggested-actions">
       <h2>💡 Acciones Sugeridas</h2>
       <div class="actions-list">

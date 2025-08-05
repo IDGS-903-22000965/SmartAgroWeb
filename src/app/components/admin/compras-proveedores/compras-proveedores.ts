@@ -1,12 +1,9 @@
-// src/app/components/admin/compras-proveedores/compras-proveedores.component.ts - VERSIÓN CORREGIDA
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ComprasProveedoresService } from '../../../services/compras-proveedores';
 import { ProveedoresService } from '../../../services/proveedores';
 import { MateriasPrimasService } from '../../../services/materias-primas';
-
-// Interfaces
 interface MateriaPrima {
   id: number;
   nombre: string;
@@ -73,33 +70,22 @@ interface CompraStats {
   styleUrl: './compras-proveedores.component.scss'
 })
 export class ComprasProveedores implements OnInit {
-  // Signals
   protected compras = signal<CompraProveedor[]>([]);
   protected loading = signal(true);
   protected error = signal<string | null>(null);
   protected stats = signal<CompraStats | null>(null);
   protected submitting = signal(false);
-  
-  // Datos auxiliares
   protected proveedores = signal<Proveedor[]>([]);
   protected materiasPrimas = signal<MateriaPrima[]>([]);
-  
-  // Filtros
   protected selectedEstado = signal('todos');
   protected selectedProveedor = signal('todos');
   protected searchTerm = signal('');
-  
-  // Modales
   protected showCreateModal = signal(false);
   protected showEditModal = signal(false);
   protected showDetailsModal = signal(false);
   protected selectedCompra = signal<CompraDetails | null>(null);
-  
-  // Formularios
   protected createForm!: FormGroup;
   protected editForm!: FormGroup;
-
-  // Computed para total del formulario crear
   protected createFormTotal = computed(() => {
     if (!this.createForm) return 0;
     
@@ -114,8 +100,6 @@ export class ComprasProveedores implements OnInit {
       return 0;
     }
   });
-
-  // Computed para validez del formulario crear
   protected createFormValid = computed(() => {
     if (!this.createForm) return false;
     
@@ -163,8 +147,6 @@ export class ComprasProveedores implements OnInit {
   ngOnInit(): void {
     this.loadData();
   }
-
-  // Getters seguros para FormArrays
   get createDetalles(): FormArray {
     return this.createForm.get('detalles') as FormArray;
   }
@@ -172,8 +154,6 @@ export class ComprasProveedores implements OnInit {
   get editDetalles(): FormArray {
     return this.editForm.get('detalles') as FormArray;
   }
-
-  // Cargar datos
   private loadData(): void {
     this.loadCompras();
     this.loadProveedores();
@@ -270,8 +250,6 @@ export class ComprasProveedores implements OnInit {
       }
     });
   }
-
-  // Eventos de filtros
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm.set(target.value);
@@ -289,18 +267,13 @@ export class ComprasProveedores implements OnInit {
     this.selectedProveedor.set(target.value);
     this.loadCompras();
   }
-
-  // Manejo de detalles
   protected createDetalleGroup(): FormGroup {
     const group = this.fb.group({
       materiaPrimaId: ['', [Validators.required]],
       cantidad: [1, [Validators.required, Validators.min(0.01)]],
       precioUnitario: [0, [Validators.required, Validators.min(0.01)]]
     });
-
-    // Suscribirse a cambios para recalcular totales
     group.valueChanges.subscribe(() => {
-      // Disparar recálculo del total
       setTimeout(() => this.createForm.updateValueAndValidity(), 0);
     });
 
@@ -340,25 +313,18 @@ export class ComprasProveedores implements OnInit {
     if (materiaPrimaId) {
       const materiaPrima = this.materiasPrimas().find(m => m.id == materiaPrimaId);
       if (materiaPrima) {
-        // Sugerir el costo unitario de la materia prima
         detalle.get('precioUnitario')?.setValue(materiaPrima.costoUnitario);
       }
     }
   }
-
-  // Modales
   protected openCreateModal(): void {
     console.log('🔵 Abriendo modal de crear...');
-    
-    // Reinicializar formulario completamente
     this.createForm = this.fb.group({
       proveedorId: ['', [Validators.required]],
       fechaCompra: [new Date().toISOString().split('T')[0], [Validators.required]],
       observaciones: [''],
       detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
     });
-
-    // Agregar un detalle inicial
     this.addDetalle('create');
     
     this.showCreateModal.set(true);
@@ -383,16 +349,12 @@ export class ComprasProveedores implements OnInit {
           proveedorRazonSocial: response.proveedorRazonSocial,
           detalles: response.detalles || []
         };
-
-        // Reinicializar formulario de edición
         this.editForm = this.fb.group({
           proveedorId: [compraDetails.proveedorId, [Validators.required]],
           fechaCompra: [new Date(compraDetails.fechaCompra).toISOString().split('T')[0], [Validators.required]],
           observaciones: [compraDetails.observaciones || ''],
           detalles: this.fb.array([], [Validators.required, Validators.minLength(1)])
         });
-
-        // Agregar detalles existentes
         const editDetalles = this.editForm.get('detalles') as FormArray;
         compraDetails.detalles.forEach(detalle => {
           const detalleGroup = this.createDetalleGroup();
@@ -443,8 +405,6 @@ export class ComprasProveedores implements OnInit {
     this.showDetailsModal.set(false);
     this.selectedCompra.set(null);
   }
-
-  // Envío de formularios
   protected submitCreate(): void {
     console.log('🔍 Intentando crear compra...');
     console.log('Form valid:', this.createFormValid());
@@ -522,8 +482,6 @@ export class ComprasProveedores implements OnInit {
       this.markFormGroupTouched(this.editForm);
     }
   }
-
-  // Utilidades
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
       const control = formGroup.get(key);
@@ -581,8 +539,6 @@ export class ComprasProveedores implements OnInit {
       });
     }
   }
-
-  // Formateo
   protected formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',

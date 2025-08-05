@@ -1,4 +1,3 @@
-// src/app/components/cotizacion/cotizacion.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -20,8 +19,6 @@ export class Cotizacion implements OnInit {
   protected error = signal<string | null>(null);
   protected estimatedCost = signal<number | null>(null);
   protected estimatedCostWithTax = signal<number | null>(null);
-
-  // Opciones para los selectores
   protected tiposCultivo = [
     'Hortalizas',
     'Frutales', 
@@ -51,31 +48,22 @@ export class Cotizacion implements OnInit {
     private router: Router
   ) {
     this.cotizacionForm = this.fb.group({
-      // Paso 1: Información Personal
       nombreCliente: ['', [Validators.required, Validators.minLength(2)]],
       emailCliente: ['', [Validators.required, Validators.email]],
       telefonoCliente: ['', [Validators.pattern(/^\d{10}$/)]],
-      
-      // Paso 2: Información del Proyecto
       direccionInstalacion: ['', [Validators.required]],
       areaCultivo: ['', [Validators.required, Validators.min(1), Validators.max(10000)]],
       tipoCultivo: ['', [Validators.required]],
       tipoSuelo: ['', [Validators.required]],
-      
-      // Paso 3: Recursos Disponibles
       fuenteAguaDisponible: [false],
       energiaElectricaDisponible: [false],
-      
-      // Paso 4: Requerimientos Especiales
       requierimientosEspeciales: ['']
     });
   }
 
   ngOnInit(): void {
-    // Verificar si hay un producto específico en los query params
     this.route.queryParams.subscribe(params => {
       if (params['producto']) {
-        // Aquí podrías pre-cargar información específica del producto
         console.log('Cotización para producto:', params['producto']);
       }
     });
@@ -98,7 +86,6 @@ export class Cotizacion implements OnInit {
   }
 
   protected goToStep(step: number): void {
-    // Solo permitir ir a pasos anteriores o al siguiente si el actual es válido
     if (step <= this.currentStep() || (step === this.currentStep() + 1 && this.isCurrentStepValid())) {
       this.currentStep.set(step);
     }
@@ -172,32 +159,38 @@ const formData = this.cotizacionForm.value as CotizacionRequest;
     });
   }
 
-  protected submitCotizacion(): void {
-    if (!this.cotizacionForm.valid) {
-      this.markAllFieldsAsTouched();
-      return;
-    }
-
-    this.loading.set(true);
-    this.error.set(null);
-
-const formData = this.cotizacionForm.value as CotizacionRequest;
-
-    this.cotizacionService.crearCotizacion(formData).subscribe({
-      next: (response) => {
-        this.loading.set(false);
-        if (response.success) {
-          this.success.set(true);
-        } else {
-          this.error.set(response.message || 'Error al crear la cotización');
-        }
-      },
-      error: () => {
-        this.loading.set(false);
-        this.error.set('Error de conexión. Intente nuevamente.');
-      }
-    });
+ protected submitCotizacion(): void {
+  if (!this.cotizacionForm.valid) {
+    this.markAllFieldsAsTouched();
+    return;
   }
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('⚠️ Debes iniciar sesión o registrarte para enviar una cotización.');
+    this.router.navigate(['/login']); // Opcional: redirigir al login
+    return;
+  }
+
+  this.loading.set(true);
+  this.error.set(null);
+
+  const formData = this.cotizacionForm.value as CotizacionRequest;
+
+  this.cotizacionService.crearCotizacion(formData).subscribe({
+    next: (response) => {
+      this.loading.set(false);
+      if (response.success) {
+        this.success.set(true);
+      } else {
+        this.error.set(response.message || 'Error al crear la cotización');
+      }
+    },
+    error: () => {
+      this.loading.set(false);
+      this.error.set('Error de conexión. Intente nuevamente.');
+    }
+  });
+}
 
   private markAllFieldsAsTouched(): void {
     Object.keys(this.cotizacionForm.controls).forEach(key => {

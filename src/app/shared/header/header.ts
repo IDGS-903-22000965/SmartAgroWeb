@@ -1,4 +1,3 @@
-// src/app/components/shared/header/header.ts
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
@@ -10,15 +9,12 @@ import { Auth } from '../../services/auth';
     <header class="header">
       <div class="container">
         <div class="header-content">
-          <!-- Logo -->
           <div class="logo">
             <a routerLink="/" class="logo-link">
               <span class="logo-icon">🌱</span>
               <span class="logo-text">SmartAgro</span>
             </a>
           </div>
-
-          <!-- Desktop Navigation -->
           <nav class="nav-desktop">
             <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
             <a routerLink="/productos" routerLinkActive="active">Productos</a>
@@ -26,8 +22,6 @@ import { Auth } from '../../services/auth';
             <a routerLink="/contacto" routerLinkActive="active">Contacto</a>
             <a routerLink="/cotizacion" routerLinkActive="active">Cotización</a>
           </nav>
-
-          <!-- User Actions -->
           <div class="user-actions">
             @if (isAuthenticated()) {
               <div class="user-menu" [class.open]="showUserMenu()">
@@ -69,8 +63,6 @@ import { Auth } from '../../services/auth';
               </div>
             }
           </div>
-
-          <!-- Mobile Menu Button -->
           <button 
             (click)="toggleMobileMenu()" 
             class="mobile-menu-btn"
@@ -80,8 +72,6 @@ import { Auth } from '../../services/auth';
             <span></span>
           </button>
         </div>
-
-        <!-- Mobile Navigation -->
         <nav class="nav-mobile" [class.open]="showMobileMenu()">
           <a routerLink="/" (click)="closeMobileMenu()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
           <a routerLink="/productos" (click)="closeMobileMenu()" routerLinkActive="active">Productos</a>

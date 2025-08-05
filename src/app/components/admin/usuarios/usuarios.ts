@@ -1,4 +1,3 @@
-// src/app/components/admin/usuarios/usuarios.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -554,29 +553,20 @@ import {
   `]
 })
 export class Usuarios implements OnInit {
-  // Signals para estado del componente
   protected loading = signal(false);
   protected loadingModal = signal(false);
   protected error = signal<string | null>(null);
   protected success = signal<string | null>(null);
-  
-  // Modales
   protected showCreateModal = signal(false);
   protected showEditModal = signal(false);
   protected showResetPasswordModal = signal(false);
-  
-  // Estados
   protected modoEdicion = false;
   protected usuarioEditando: UserListDto | null = null;
   protected usuarioResetPassword: UserListDto | null = null;
-
-  // Datos
   protected usuarios: UserListDto[] = [];
   protected usuariosFiltrados: UserListDto[] = [];
   protected stats = signal<UserStatsDto | null>(null);
   protected rolesDisponibles: string[] = [];
-  
-  // Filtros y paginación
   protected filtros = {
     busqueda: '',
     rol: '',
@@ -586,8 +576,6 @@ export class Usuarios implements OnInit {
   protected pageSize = 10;
   protected totalUsuarios = 0;
   protected totalPaginas = 0;
-
-  // Formularios
   protected createUserForm: FormGroup;
   protected editUserForm: FormGroup;
   protected resetPasswordForm: FormGroup;
@@ -711,8 +699,6 @@ export class Usuarios implements OnInit {
     };
     this.aplicarFiltros();
   }
-
-  // Métodos para modales
   protected abrirModalCrear(): void {
     this.modoEdicion = false;
     this.createUserForm.reset({
@@ -759,13 +745,9 @@ export class Usuarios implements OnInit {
     this.error.set(null);
     this.success.set(null);
   }
-
-  // Métodos de formularios
   protected crearUsuario(): void {
   if (!this.createUserForm.valid) {
     console.log('❌ Formulario inválido:', this.createUserForm.errors);
-    
-    // Log de errores específicos por campo
     Object.keys(this.createUserForm.controls).forEach(key => {
       const control = this.createUserForm.get(key);
       if (control && control.invalid) {
@@ -781,8 +763,6 @@ export class Usuarios implements OnInit {
   this.error.set(null);
 
   const userData: CreateUserDto = this.createUserForm.value;
-  
-  // ✅ LOG DETALLADO DE LOS DATOS QUE SE ENVÍAN
   console.log('🔥 DATOS QUE SE ENVÍAN AL BACKEND:', {
     nombre: userData.nombre,
     apellidos: userData.apellidos,
@@ -815,7 +795,6 @@ export class Usuarios implements OnInit {
       this.loadingModal.set(false);
       
       if (error.status === 400 && error.error) {
-        // Si es un error de validación, mostrar detalles
         if (typeof error.error === 'object') {
           const errorMessages = [];
           for (const [field, messages] of Object.entries(error.error)) {
@@ -931,8 +910,6 @@ export class Usuarios implements OnInit {
       });
     }
   }
-
-  // Métodos de paginación
   protected cambiarPagina(page: number): void {
     if (page >= 1 && page <= this.totalPaginas) {
       this.currentPage = page;
@@ -955,8 +932,6 @@ export class Usuarios implements OnInit {
     }
     return paginas;
   }
-
-  // Utilidades
   protected getInitials(usuario: UserListDto): string {
     return `${usuario.nombre.charAt(0)}${usuario.apellidos.charAt(0)}`.toUpperCase();
   }
@@ -976,8 +951,6 @@ export class Usuarios implements OnInit {
       day: 'numeric'
     });
   }
-
-  // Validaciones
   private passwordMatchValidator(form: FormGroup) {
     const password = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
