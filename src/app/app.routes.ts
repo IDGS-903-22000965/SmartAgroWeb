@@ -4,7 +4,6 @@ import { adminGuard } from './guards/admin-guard';
 import { clienteGuard } from './guards/cliente-guard';
 
 export const routes: Routes = [
-  // Rutas públicas (sin autenticación)
   {
     path: '',
     loadComponent: () => import('./components/home/home').then(m => m.Home)
@@ -41,9 +40,6 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register').then(m => m.Register)
   },
-  // ✅ ACTUALIZADO: Ahora el registro es para solicitar cuenta, no para auto-registrarse
-  
-  // Rutas de administración
   {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
@@ -90,8 +86,6 @@ export const routes: Routes = [
       }
     ]
   },
-  
- // Rutas del cliente
 {
   path: 'cliente',
   canActivate: [authGuard, clienteGuard],

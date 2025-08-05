@@ -1,11 +1,8 @@
-// src/app/components/admin/proveedores/proveedores.scss
 .proveedores-admin {
   padding: 2rem;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  // Page Header
   .page-header {
     display: flex;
     justify-content: space-between;
@@ -53,8 +50,6 @@
       }
     }
   }
-
-  // Stats Grid
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -129,8 +124,6 @@
       }
     }
   }
-
-  // Filters Section
   .filters-section {
     margin-bottom: 2rem;
 
@@ -210,8 +203,6 @@
       }
     }
   }
-
-  // Loading, Error, Empty States
   .loading-container, .error-container, .empty-container {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -252,8 +243,6 @@
       margin-bottom: 1.5rem;
     }
   }
-
-  // Proveedores Table
   .proveedores-table {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -444,8 +433,6 @@
       }
     }
   }
-
-  // Modal Styles
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -568,8 +555,6 @@
             }
           }
         }
-
-        // Details specific styles
         .proveedor-details {
           .details-section {
             margin-bottom: 2rem;
@@ -691,8 +676,6 @@
       }
     }
   }
-
-  // Responsive Design
   @media (max-width: 1200px) {
     .proveedores-table {
       .table-header, .table-row {

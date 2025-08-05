@@ -1,4 +1,3 @@
-// ventas.component.ts - CORREGIDO
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -55,27 +54,17 @@ export class VentasComponent implements OnInit {
   estadisticas: EstadisticasVentas | null = null;
   loading = false;
   error: string | null = null;
-
-  // Paginación
   currentPage = 1;
   pageSize = 10;
   totalPages = 0;
   totalCount = 0;
-
-  // Exponer Math para el template
   protected readonly Math = Math;
-
-  // Filtros
   filtros: FiltrosVenta = {
     pageNumber: 1,
     pageSize: 10
   };
-
-  // Estados y métodos de pago disponibles
   estados = ['Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado'];
   metodosPago = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia', 'Cheque'];
-
-  // Vista activa
   vistaActiva: 'lista' | 'estadisticas' | 'reportes' = 'lista';
 
   constructor(private http: HttpClient) {}
@@ -100,19 +89,17 @@ export class VentasComponent implements OnInit {
       
       params.append('pageNumber', this.currentPage.toString());
       params.append('pageSize', this.pageSize.toString());
-
-      // ✅ CORREGIDO: Solo usar /Venta ya que apiUrl incluye /api
       const response = await this.http.get<any>(
         `${environment.apiUrl}/Venta?${params.toString()}`
       ).toPromise();
-
-      if (response && response.success) {
-        this.ventas = response.data.ventas;
-        this.totalCount = response.data.totalCount;
-        this.totalPages = response.data.totalPages;
-      } else {
-        this.error = response?.message || 'Error al cargar las ventas';
-      }
+if (response) {
+  this.ventas = response.ventas || [];
+  this.totalCount = response.totalCount || 0;
+  this.totalPages = response.totalPages || 0;
+} else {
+  this.error = response?.message || 'Error al cargar las ventas';
+  console.error('❌ Error en respuesta:', response);
+}
     } catch (error: any) {
       this.error = error?.error?.message || error?.message || 'Error de conexión al cargar las ventas';
       console.error('Error:', error);
@@ -120,23 +107,37 @@ export class VentasComponent implements OnInit {
       this.loading = false;
     }
   }
+  async verDetalles(ventaId: number) {
+    try {
+      const response = await this.http.get<any>(
+        `${environment.apiUrl}/Venta/${ventaId}`
+      ).toPromise();
 
+      if (response){
+        console.log('Detalles de la venta:', response.data);
+      } else {
+        alert('Error al cargar los detalles de la venta');
+      }
+    } catch (error: any) {
+      console.error('Error al cargar detalles de la venta:', error);
+      alert('Error de conexión al cargar los detalles de la venta');
+    }
+  }
+
+  
   async cargarEstadisticas() {
     try {
-      // ✅ CORREGIDO: Solo usar /Venta/estadisticas ya que apiUrl incluye /api
       const response = await this.http.get<any>(
         `${environment.apiUrl}/Venta/estadisticas`
       ).toPromise();
 
-      if (response && response.success) {
+      if (response) {
         this.estadisticas = response.data;
       }
     } catch (error: any) {
       console.error('Error al cargar estadísticas:', error);
     }
   }
-
-  // Métodos de filtrado y búsqueda
   buscar() {
     this.currentPage = 1;
     this.cargarVentas();
@@ -150,16 +151,12 @@ export class VentasComponent implements OnInit {
     this.currentPage = 1;
     this.cargarVentas();
   }
-
-  // Métodos de paginación
   cambiarPagina(pagina: number) {
     if (pagina >= 1 && pagina <= this.totalPages) {
       this.currentPage = pagina;
       this.cargarVentas();
     }
   }
-
-  // Métodos de utilidad
   formatearFecha(fecha: Date | string): string {
     const fechaObj = new Date(fecha);
     return fechaObj.toLocaleDateString('es-ES', {
@@ -185,58 +182,38 @@ export class VentasComponent implements OnInit {
       default: return 'badge-secondary';
     }
   }
-
-  // Cambiar vista activa
   cambiarVista(vista: 'lista' | 'estadisticas' | 'reportes') {
     this.vistaActiva = vista;
   }
-
-  // Método para actualizar estado de venta
-  async actualizarEstado(ventaId: number, nuevoEstado: string) {
-    try {
-      // ✅ CORREGIDO: Solo usar /Venta/{id}/estado ya que apiUrl incluye /api
-      const response = await this.http.put<any>(
-        `${environment.apiUrl}/Venta/${ventaId}/estado`,
-        { estadoVenta: nuevoEstado }
-      ).toPromise();
-
-      if (response && response.success) {
-        // Actualizar la venta en la lista local
-        const venta = this.ventas.find(v => v.id === ventaId);
-        if (venta) {
-          venta.estadoVenta = nuevoEstado;
-        }
-        
-        // Recargar estadísticas
-        this.cargarEstadisticas();
-      } else {
-        alert('Error al actualizar el estado de la venta');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert('Error de conexión al actualizar el estado');
+ async actualizarEstado(ventaId: number, nuevoEstado: string) {
+  try {
+    const response = await this.http.put<any>(
+      `${environment.apiUrl}/Venta/${ventaId}/estado`,
+      { estadoVenta: nuevoEstado }
+    ).toPromise();
+    const venta = this.ventas.find(v => v.id === ventaId);
+    if (venta) {
+      venta.estadoVenta = nuevoEstado;
     }
-  }
 
-  // Método para exportar a CSV
+    this.cargarEstadisticas();
+  } catch (error: any) {
+    console.error('Error al actualizar estado:', error);
+    alert('Error al actualizar el estado: ' + (error.error?.message || error.message));
+  }
+}
   async exportarCSV() {
     try {
       const params = new URLSearchParams();
       if (this.filtros.fechaInicio) params.append('fechaInicio', this.filtros.fechaInicio);
       if (this.filtros.fechaFin) params.append('fechaFin', this.filtros.fechaFin);
-
-      // ✅ CORREGIDO: Solo usar /ReporteVentas/exportar-csv ya que apiUrl incluye /api
       const response = await this.http.get(
         `${environment.apiUrl}/ReporteVentas/exportar-csv?${params.toString()}`,
         { responseType: 'blob' }
       ).toPromise();
-
-      // Verificar que la respuesta existe
       if (!response) {
         throw new Error('No se recibió respuesta del servidor');
       }
-
-      // Crear y descargar el archivo
       const blob = new Blob([response], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -249,21 +226,16 @@ export class VentasComponent implements OnInit {
       alert('Error al exportar el reporte');
     }
   }
-
-  // Alternativa usando subscribe (más estable)
   exportarCSVAlternativo() {
     try {
       const params = new URLSearchParams();
       if (this.filtros.fechaInicio) params.append('fechaInicio', this.filtros.fechaInicio);
       if (this.filtros.fechaFin) params.append('fechaFin', this.filtros.fechaFin);
-
-      // ✅ CORREGIDO: Solo usar /ReporteVentas/exportar-csv ya que apiUrl incluye /api
       this.http.get(
         `${environment.apiUrl}/ReporteVentas/exportar-csv?${params.toString()}`,
         { responseType: 'blob' }
       ).subscribe({
         next: (response) => {
-          // Crear y descargar el archivo
           const blob = new Blob([response], { type: 'text/csv' });
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -282,8 +254,6 @@ export class VentasComponent implements OnInit {
       alert('Error al exportar el reporte');
     }
   }
-
-  // Obtener array para paginación
   getPaginationArray(): number[] {
     const pages: number[] = [];
     const startPage = Math.max(1, this.currentPage - 2);

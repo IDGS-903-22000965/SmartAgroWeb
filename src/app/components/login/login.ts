@@ -1,13 +1,12 @@
-// src/app/components/login/login.ts
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
@@ -41,9 +40,6 @@ export class Login {
         next: (response) => {
           this.loading.set(false);
           if (response.isSuccess) {
-            console.log('✅ Login exitoso:', response.user);
-            
-            // Obtener la URL de retorno o redirigir según el rol
             const returnUrl = this.route.snapshot.queryParams['returnUrl'] || this.getDefaultRoute(response.user?.roles || []);
             this.router.navigateByUrl(returnUrl);
           } else {
@@ -52,15 +48,8 @@ export class Login {
         },
         error: (error) => {
           this.loading.set(false);
-          console.error('❌ Error en login:', error);
-          
-          if (error.status === 401) {
-            this.error.set('Credenciales inválidas o cuenta desactivada');
-          } else if (error.status === 0) {
-            this.error.set('Error de conexión. Verifica tu conexión a internet');
-          } else {
-            this.error.set('Error de conexión. Intente nuevamente.');
-          }
+          this.error.set('Error de conexión. Intente nuevamente.');
+          console.error('Login error:', error);
         }
       });
     } else {
@@ -70,9 +59,9 @@ export class Login {
 
   private getDefaultRoute(roles: string[]): string {
     if (roles.includes('Admin')) {
-      return '/admin/dashboard';
+      return '/admin';
     } else if (roles.includes('Cliente')) {
-      return '/cliente/dashboard';
+      return '/cliente';
     }
     return '/';
   }

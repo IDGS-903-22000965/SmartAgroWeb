@@ -1,4 +1,3 @@
-// src/app/services/productos-admin.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -89,8 +88,6 @@ export class ProductosAdminService {
   private apiUrl = `${environment.apiUrl}/ProductoAdmin`;
 
   constructor(private http: HttpClient) {}
-
-  // CRUD de Productos
   obtenerProductosAdmin(): Observable<any> {
     return this.http.get(this.apiUrl);
   }
@@ -110,8 +107,6 @@ export class ProductosAdminService {
   eliminarProductoAdmin(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
-
-  // Gestión de Materias Primas del Producto (Explosión de Materiales)
   obtenerMateriasPrimasProducto(productoId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${productoId}/materias-primas`);
   }
@@ -127,8 +122,6 @@ export class ProductosAdminService {
   eliminarMateriaPrimaProducto(productoId: number, materiaPrimaId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${productoId}/materias-primas/${materiaPrimaId}`);
   }
-
-  // Análisis y Reportes
   recalcularPrecioProducto(productoId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${productoId}/recalcular-precio`, {});
   }
@@ -136,8 +129,6 @@ export class ProductosAdminService {
   obtenerAnalisisCostos(productoId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${productoId}/analisis-costos`);
   }
-
-  // Búsqueda y Filtros
   buscarProductosAdmin(filtros: {
     nombre?: string;
     activo?: boolean;
@@ -153,8 +144,6 @@ export class ProductosAdminService {
 
     return this.http.get(`${this.apiUrl}/buscar`, { params });
   }
-
-  // Utilidades
   validarInventarioParaProduccion(productoId: number, cantidadProducir: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${productoId}/validar-inventario`, { cantidadProducir });
   }

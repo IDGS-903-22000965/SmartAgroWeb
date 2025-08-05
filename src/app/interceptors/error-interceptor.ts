@@ -13,10 +13,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = '';
 
       if (error.error instanceof ErrorEvent) {
-        // Error del lado del cliente
         errorMessage = `Error: ${error.error.message}`;
       } else {
-        // Error del lado del servidor
         switch (error.status) {
           case 400:
             errorMessage = 'Solicitud incorrecta';

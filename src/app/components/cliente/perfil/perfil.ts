@@ -1,4 +1,3 @@
-// src/app/components/cliente/perfil/perfil.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -88,7 +87,6 @@ export class Perfil implements OnInit {
     this.success = false;
     
     if (!this.editMode && this.currentUser) {
-      // Si salimos del modo edición, restaurar datos originales
       this.loadUserData(this.currentUser);
     }
   }
@@ -125,11 +123,7 @@ export class Perfil implements OnInit {
         if (response.success) {
           this.success = true;
           this.editMode = false;
-          
-          // Recargar el perfil actualizado
           this.loadProfile();
-          
-          // Ocultar mensaje de éxito después de 3 segundos
           setTimeout(() => this.success = false, 3000);
         } else {
           this.error = response.message || 'Error al actualizar el perfil';
@@ -165,8 +159,6 @@ export class Perfil implements OnInit {
           this.passwordSuccess = true;
           this.changePasswordMode = false;
           this.passwordForm.reset();
-          
-          // Ocultar mensaje de éxito después de 3 segundos
           setTimeout(() => this.passwordSuccess = false, 3000);
         } else {
           this.passwordError = response.message || 'Error al cambiar la contraseña';

@@ -1,13 +1,14 @@
-// src/app/components/admin/comentarios/comentarios.ts
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ComentarioService } from '../../../services/ComentarioService';
 
-// Simulamos el servicio y modelos ya que no los veo en el código
 interface Comentario {
   id: number;
   nombreUsuario: string;
+  emailUsuario: string;
   producto: string;
+  productoId: number;
   calificacion: number;
   contenido: string;
   fechaComentario: Date;
@@ -29,61 +30,13 @@ export class Comentarios implements OnInit {
   protected loading = signal(true);
   protected error = signal<string | null>(null);
   
-  // Filtros
   protected selectedFilter = signal('todos');
   protected searchTerm = signal('');
   
-  // Modal para responder comentarios
   protected showResponseModal = signal(false);
   protected selectedComentario = signal<Comentario | null>(null);
   protected responseText = signal('');
   protected submittingResponse = signal(false);
-
-  // Simulamos datos mientras no tenemos el servicio real
-  private mockComentarios: Comentario[] = [
-    {
-      id: 1,
-      nombreUsuario: 'Juan Pérez',
-      producto: 'Sistema de Riego Inteligente Pro',
-      calificacion: 5,
-      contenido: 'Excelente producto, muy fácil de instalar y usar. Ha mejorado significativamente la eficiencia de mi riego.',
-      fechaComentario: new Date('2024-01-15'),
-      aprobado: true,
-      activo: true,
-      respuestaAdmin: 'Gracias por tu comentario Juan. Nos alegra saber que el sistema está funcionando perfectamente.',
-      fechaRespuesta: new Date('2024-01-16')
-    },
-    {
-      id: 2,
-      nombreUsuario: 'María García',
-      producto: 'Sensor de Humedad IoT',
-      calificacion: 4,
-      contenido: 'Buen producto, aunque la app podría ser más intuitiva. El sensor funciona correctamente.',
-      fechaComentario: new Date('2024-01-20'),
-      aprobado: false,
-      activo: true
-    },
-    {
-      id: 3,
-      nombreUsuario: 'Carlos López',
-      producto: 'Sistema de Riego Inteligente Pro',
-      calificacion: 5,
-      contenido: 'Increíble ahorro de agua, mi factura se redujo en un 40%. Totalmente recomendado.',
-      fechaComentario: new Date('2024-01-22'),
-      aprobado: true,
-      activo: true
-    },
-    {
-      id: 4,
-      nombreUsuario: 'Ana Martínez',
-      producto: 'Kit de Sensores Básico',
-      calificacion: 2,
-      contenido: 'No estoy satisfecha con la duración de la batería. Se agota muy rápido.',
-      fechaComentario: new Date('2024-01-25'),
-      aprobado: false,
-      activo: true
-    }
-  ];
 
   protected filterOptions = [
     { value: 'todos', label: 'Todos los comentarios' },
@@ -93,19 +46,47 @@ export class Comentarios implements OnInit {
     { value: 'sin-responder', label: 'Sin responder' }
   ];
 
+  constructor(private comentarioService: ComentarioService) {}
+
   ngOnInit(): void {
     this.loadComentarios();
   }
 
   private loadComentarios(): void {
     this.loading.set(true);
+    this.error.set(null);
     
-    // Simulamos carga async
-    setTimeout(() => {
-      this.comentarios.set(this.mockComentarios);
-      this.applyFilters();
-      this.loading.set(false);
-    }, 1000);
+    this.comentarioService.obtenerComentarios().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          const comentarios = response.data.map((c: any) => ({
+            id: c.id,
+            nombreUsuario: c.nombreUsuario || 'Usuario',
+            emailUsuario: c.emailUsuario || '',
+            producto: c.nombreProducto || 'Producto',
+            productoId: c.productoId,
+            calificacion: c.calificacion,
+            contenido: c.contenido,
+            fechaComentario: new Date(c.fechaCreacion),
+            aprobado: c.aprobado,
+            activo: c.activo,
+            respuestaAdmin: c.respuestaAdmin,
+            fechaRespuesta: c.fechaRespuesta ? new Date(c.fechaRespuesta) : undefined
+          }));
+          
+          this.comentarios.set(comentarios);
+          this.applyFilters();
+        } else {
+          this.error.set('Error al cargar comentarios');
+        }
+        this.loading.set(false);
+      },
+      error: (error) => {
+        console.error('Error cargando comentarios:', error);
+        this.error.set('Error al cargar comentarios');
+        this.loading.set(false);
+      }
+    });
   }
 
   protected onFilterChange(filter: string): void {
@@ -122,7 +103,6 @@ export class Comentarios implements OnInit {
   private applyFilters(): void {
     let filtered = this.comentarios();
     
-    // Filtro por estado
     const filter = this.selectedFilter();
     switch (filter) {
       case 'pendientes':
@@ -139,7 +119,6 @@ export class Comentarios implements OnInit {
         break;
     }
     
-    // Filtro por búsqueda
     const search = this.searchTerm().toLowerCase();
     if (search) {
       filtered = filtered.filter(c => 
@@ -153,15 +132,37 @@ export class Comentarios implements OnInit {
   }
 
   protected aprobarComentario(comentario: Comentario): void {
-    comentario.aprobado = true;
-    this.applyFilters();
-    // Aquí llamarías al servicio real
+    this.comentarioService.aprobarComentario(comentario.id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          comentario.aprobado = true;
+          this.applyFilters();
+        } else {
+          this.error.set('Error al aprobar comentario');
+        }
+      },
+      error: (error) => {
+        console.error('Error aprobando comentario:', error);
+        this.error.set('Error al aprobar comentario');
+      }
+    });
   }
 
   protected rechazarComentario(comentario: Comentario): void {
-    comentario.activo = false;
-    this.applyFilters();
-    // Aquí llamarías al servicio real
+    this.comentarioService.rechazarComentario(comentario.id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          comentario.activo = false;
+          this.applyFilters();
+        } else {
+          this.error.set('Error al rechazar comentario');
+        }
+      },
+      error: (error) => {
+        console.error('Error rechazando comentario:', error);
+        this.error.set('Error al rechazar comentario');
+      }
+    });
   }
 
   protected openResponseModal(comentario: Comentario): void {
@@ -182,14 +183,24 @@ export class Comentarios implements OnInit {
     
     this.submittingResponse.set(true);
     
-    // Simulamos envío
-    setTimeout(() => {
-      comentario.respuestaAdmin = this.responseText();
-      comentario.fechaRespuesta = new Date();
-      this.submittingResponse.set(false);
-      this.closeResponseModal();
-      this.applyFilters();
-    }, 1000);
+    this.comentarioService.responderComentario(comentario.id, this.responseText().trim()).subscribe({
+      next: (response) => {
+        if (response.success) {
+          comentario.respuestaAdmin = this.responseText();
+          comentario.fechaRespuesta = new Date();
+          this.applyFilters();
+          this.closeResponseModal();
+        } else {
+          this.error.set('Error al enviar respuesta');
+        }
+        this.submittingResponse.set(false);
+      },
+      error: (error) => {
+        console.error('Error enviando respuesta:', error);
+        this.error.set('Error al enviar respuesta');
+        this.submittingResponse.set(false);
+      }
+    });
   }
 
   protected getStarsArray(rating: number): boolean[] {
@@ -205,13 +216,14 @@ export class Comentarios implements OnInit {
       minute: '2-digit'
     });
   }
-  protected contarPendientes(): number {
-  return this.comentarios().filter(c => !c.aprobado && c.activo).length;
-}
 
-protected contarAprobados(): number {
-  return this.comentarios().filter(c => c.aprobado).length;
-}
+  protected contarPendientes(): number {
+    return this.comentarios().filter(c => !c.aprobado && c.activo).length;
+  }
+
+  protected contarAprobados(): number {
+    return this.comentarios().filter(c => c.aprobado).length;
+  }
 
   protected getStatusColor(comentario: Comentario): string {
     if (!comentario.activo) return 'danger';
@@ -219,15 +231,15 @@ protected contarAprobados(): number {
     if (comentario.respuestaAdmin) return 'success';
     return 'info';
   }
-  protected getIniciales(nombre: string): string {
-  if (!nombre) return '';
-  return nombre
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase();
-}
 
+  protected getIniciales(nombre: string): string {
+    if (!nombre) return '';
+    return nombre
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  }
 
   protected getStatusLabel(comentario: Comentario): string {
     if (!comentario.activo) return 'Rechazado';

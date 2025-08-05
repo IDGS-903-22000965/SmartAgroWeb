@@ -1,12 +1,9 @@
-// src/app/components/cliente/perfil/perfil.scss
 .perfil {
   padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
   background: #f8f9fa;
   min-height: 100vh;
-
-  // Page Header
   .page-header {
     margin-bottom: 30px;
     text-align: center;
@@ -24,8 +21,6 @@
       font-size: 1.1rem;
     }
   }
-
-  // Loading State
   .loading-container {
     display: flex;
     flex-direction: column;
@@ -48,8 +43,6 @@
       font-size: 1.1rem;
     }
   }
-
-  // Error State
   .error-container {
     display: flex;
     justify-content: center;
@@ -75,8 +68,6 @@
       }
     }
   }
-
-  // Success Messages
   .success-message {
     background: #d4edda;
     border: 1px solid #c3e6cb;
@@ -93,8 +84,6 @@
       font-weight: 600;
     }
   }
-
-  // Profile Content
   .profile-content {
     .profile-card {
       background: white;
@@ -186,8 +175,6 @@
           }
         }
       }
-
-      // Edit Form
       .edit-form,
       .password-form {
         padding: 30px;
@@ -279,8 +266,6 @@
           }
         }
       }
-
-      // Profile Details
       .profile-details {
         padding: 30px;
         border-top: 1px solid #e9ecef;
@@ -336,8 +321,6 @@
         }
       }
     }
-
-    // Security Section
     .security-section {
       background: white;
       border-radius: 15px;
@@ -394,8 +377,6 @@
         }
       }
     }
-
-    // Account Actions
     .account-actions {
       background: white;
       border-radius: 15px;
@@ -477,8 +458,6 @@
       }
     }
   }
-
-  // Buttons
   .btn {
     padding: 10px 20px;
     border: none;
@@ -532,8 +511,6 @@
       }
     }
   }
-
-  // Animations
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -549,8 +526,6 @@
       transform: translateY(0);
     }
   }
-
-  // Responsive Design
   @media (max-width: 768px) {
     padding: 15px;
 

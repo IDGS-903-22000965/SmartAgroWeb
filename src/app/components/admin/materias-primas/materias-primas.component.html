@@ -1,6 +1,4 @@
-<!-- src/app/components/admin/materias-primas/materias-primas.component.html -->
 <div class="materias-primas-page">
-  <!-- Header -->
   <div class="page-header">
     <div class="header-content">
       <h1><i class="fas fa-boxes"></i> Administración de Materias Primas</h1>
@@ -14,8 +12,6 @@
       Nueva Materia Prima
     </button>
   </div>
-
-  <!-- Estadísticas -->
   <div class="stats-grid">
     <div class="stat-card total">
       <div class="stat-icon">
@@ -57,8 +53,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Filtros -->
   <div class="filtros-section">
     <div class="filtros-grid">
       <div class="filtro-item">
@@ -115,16 +109,12 @@
       </div>
     </div>
   </div>
-
-  <!-- Loading -->
   @if (loading()) {
     <div class="loading-container">
       <div class="spinner"></div>
       <p>Cargando materias primas...</p>
     </div>
   }
-
-  <!-- Error -->
   @if (error()) {
     <div class="alert alert-error">
       <i class="fas fa-exclamation-circle"></i>
@@ -138,8 +128,6 @@
       </button>
     </div>
   }
-
-  <!-- Tabla -->
   @if (!loading() && !error()) {
     <div class="table-container">
       <div class="table-header">
@@ -250,8 +238,6 @@
           </tbody>
         </table>
       </div>
-
-      <!-- Paginación -->
       @if (totalPages() > 1) {
         <div class="pagination">
           <button 
@@ -281,8 +267,6 @@
     </div>
   }
 </div>
-
-<!-- Modal Crear -->
 @if (showCreateModal()) {
   <div class="modal-overlay" (click)="closeCreateModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
@@ -420,8 +404,6 @@
     </div>
   </div>
 }
-
-<!-- Modal Editar -->
 @if (showEditModal()) {
   <div class="modal-overlay" (click)="closeEditModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
@@ -561,8 +543,6 @@
     </div>
   </div>
 }
-
-<!-- Modal Ajustar Stock -->
 @if (showStockModal()) {
   <div class="modal-overlay" (click)="closeStockModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
@@ -663,8 +643,6 @@
     </div>
   </div>
 }
-
-<!-- Modal Costeo -->
 @if (showCosteoModal()) {
   <div class="modal-overlay" (click)="closeCosteoModal()">
     <div class="modal-container modal-large" (click)="$event.stopPropagation()">
@@ -758,8 +736,6 @@
     </div>
   </div>
 }
-
-<!-- Modal Detalles -->
 @if (showDetailsModal()) {
   <div class="modal-overlay" (click)="closeDetailsModal()">
     <div class="modal-container modal-large" (click)="$event.stopPropagation()">

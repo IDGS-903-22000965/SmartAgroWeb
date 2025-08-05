@@ -1,4 +1,4 @@
-// src/app/components/admin/materias-primas/materias-primas.component.ts
+
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -54,7 +54,7 @@ export class MateriasPrimas implements OnInit {
   private proveedorService = inject(ProveedoresService);
   private fb = inject(FormBuilder);
 
-  // Signals
+
   materiasPrimas = signal<MateriaPrima[]>([]);
   proveedores = signal<Proveedor[]>([]);
   movimientosStock = signal<MovimientoStock[]>([]);
@@ -62,7 +62,7 @@ export class MateriasPrimas implements OnInit {
   submitting = signal(false);
   error = signal<string | null>(null);
 
-  // Modal signals
+
   showCreateModal = signal(false);
   showEditModal = signal(false);
   showStockModal = signal(false);
@@ -70,7 +70,7 @@ export class MateriasPrimas implements OnInit {
   showDetailsModal = signal(false);
   selectedMateriaPrima = signal<MateriaPrima | null>(null);
 
-  // Filtros
+
   filtros = {
     busqueda: '',
     proveedor: '',
@@ -78,20 +78,20 @@ export class MateriasPrimas implements OnInit {
     bajoStock: false
   };
 
-  // Paginación
+
   currentPage = 1;
   itemsPerPage = 10;
 
-  // Forms
+
   createForm: FormGroup;
   editForm: FormGroup;
   stockForm: FormGroup;
 
-  // Computed properties
+
   materiasPrimasFiltradas = computed(() => {
     let resultado = this.materiasPrimas();
 
-    // Filtro de búsqueda
+
     if (this.filtros.busqueda) {
       const termino = this.filtros.busqueda.toLowerCase();
       resultado = resultado.filter(mp => 
@@ -100,18 +100,18 @@ export class MateriasPrimas implements OnInit {
       );
     }
 
-    // Filtro por proveedor
+
     if (this.filtros.proveedor) {
       resultado = resultado.filter(mp => mp.proveedorId.toString() === this.filtros.proveedor);
     }
 
-    // Filtro por estado
+
     if (this.filtros.estado !== '') {
       const activo = this.filtros.estado === 'true';
       resultado = resultado.filter(mp => mp.activo === activo);
     }
 
-    // Filtro bajo stock
+
     if (this.filtros.bajoStock) {
       resultado = resultado.filter(mp => mp.stock <= mp.stockMinimo);
     }
@@ -177,30 +177,65 @@ export class MateriasPrimas implements OnInit {
   }
 
   async cargarDatos() {
-    this.loading.set(true);
-    this.error.set(null);
+  this.loading.set(true);
+  this.error.set(null);
 
-    try {
-      const [materiasResponse, proveedoresResponse] = await Promise.all([
-        this.materiaPrimaService.obtenerMateriasPrimas().toPromise(),
-        this.proveedorService.obtenerProveedores().toPromise()
-      ]);
+  try {
+    console.log('🔍 Iniciando carga de datos...');
+    
+    const [materiasResponse, proveedoresResponse] = await Promise.all([
+      this.materiaPrimaService.obtenerMateriasPrimas().toPromise(),
+      this.proveedorService.obtenerProveedores().toPromise()
+    ]);
 
-      if (materiasResponse?.success) {
-        this.materiasPrimas.set(materiasResponse.data || []);
-      }
+    console.log('📦 Respuesta materias primas:', materiasResponse);
+    console.log('🏢 Respuesta proveedores:', proveedoresResponse);
 
-      if (proveedoresResponse?.success) {
-        this.proveedores.set(proveedoresResponse.data || []);
-      }
-    } catch (error: any) {
-      this.error.set(error.message || 'Error al cargar los datos');
-    } finally {
-      this.loading.set(false);
+    if (materiasResponse?.success) {
+  const mapeadas = materiasResponse.data.map((item: any) => ({
+  id: item.id,
+  nombre: item.nombre,
+  descripcion: item.descripcion,
+  unidadMedida: item.unidadMedida,
+  costoUnitario: item.costoUnitario,
+  stock: item.stock,
+  stockMinimo: item.stockMinimo,
+  proveedorId: item.proveedorId,
+  proveedorNombre: item.proveedorNombre,
+  activo: item.activo,
+  valorInventario: item.valorInventario
+}));
+  this.materiasPrimas.set(mapeadas);
+} else {
+  this.materiasPrimas.set([]);
+}
+
+    if (proveedoresResponse?.success) {
+      console.log('✅ Datos de proveedores:', proveedoresResponse.data);
+      console.log('✅ Cantidad de proveedores:', proveedoresResponse.data?.length || 0);
+      this.proveedores.set(proveedoresResponse.data || []);
+    } else {
+      console.log('❌ No hay éxito en respuesta de proveedores:', proveedoresResponse);
     }
-  }
 
-  // Modales
+
+    console.log('📊 Estado final de signals:');
+    console.log('   - Materias primas:', this.materiasPrimas());
+    console.log('   - Proveedores:', this.proveedores());
+    console.log('   - Estadísticas:', this.estadisticas());
+    
+  } catch (error: any) {
+    console.error('❌ Error completo:', error);
+    console.error('❌ Error status:', error.status);
+    console.error('❌ Error message:', error.message);
+    this.error.set(error.message || 'Error al cargar los datos');
+  } finally {
+    this.loading.set(false);
+    console.log('🏁 Carga de datos finalizada');
+  }
+}
+
+
   openCreateModal() {
     this.createForm.reset();
     this.showCreateModal.set(true);
@@ -271,7 +306,7 @@ export class MateriasPrimas implements OnInit {
     this.selectedMateriaPrima.set(null);
   }
 
-  // CRUD Operations
+
   async submitCreate() {
     if (this.createForm.valid) {
       this.submitting.set(true);
@@ -381,7 +416,7 @@ export class MateriasPrimas implements OnInit {
     }
   }
 
-  // Filtros y paginación
+
   aplicarFiltros() {
     this.currentPage = 1;
   }
@@ -417,7 +452,7 @@ export class MateriasPrimas implements OnInit {
     return paginas;
   }
 
-  // Utilidades
+
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -436,18 +471,18 @@ export class MateriasPrimas implements OnInit {
   }
 
   calcularCostoPromedio(materiaPrima: MateriaPrima): number {
-    // Implementar lógica de costo promedio
-    // Por ahora retorna el costo unitario actual
+
+
     return materiaPrima.costoUnitario;
   }
 
   calcularCostoUltimo(materiaPrima: MateriaPrima): number {
-    // Implementar lógica de último costo
-    // Por ahora retorna el costo unitario actual
+
+
     return materiaPrima.costoUnitario;
   }
 
-  // Validación de formularios
+
   isFieldInvalid(fieldName: string, form: FormGroup): boolean {
     const field = form.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
@@ -469,7 +504,7 @@ export class MateriasPrimas implements OnInit {
   }
 
   private mostrarMensaje(mensaje: string, tipo: 'success' | 'error') {
-    // Implementar sistema de notificaciones
+
     console.log(`${tipo}: ${mensaje}`);
   }
 }

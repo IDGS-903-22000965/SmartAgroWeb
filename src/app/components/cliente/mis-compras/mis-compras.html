@@ -1,17 +1,12 @@
 <div class="mis-compras">
-  <!-- Header -->
   <div class="page-header">
     <h1>📦 Mis Compras</h1>
     <p>Revisa el historial de tus compras y productos adquiridos</p>
   </div>
-
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando información de compras...</p>
   </div>
-
-  <!-- Error State -->
   <div *ngIf="error && !loading" class="error-container">
     <div class="error-message">
       <h3>⚠️ Error</h3>
@@ -21,10 +16,7 @@
       </button>
     </div>
   </div>
-
-  <!-- Main Content -->
   <div *ngIf="!loading && !error" class="content">
-    <!-- Tabs Navigation -->
     <div class="tabs-navigation">
       <button 
         class="tab-button"
@@ -48,10 +40,7 @@
         📊 Estadísticas
       </button>
     </div>
-
-    <!-- Tab: Historial de Compras -->
     <div *ngIf="activeTab === 'compras'" class="tab-content">
-      <!-- Filtros -->
       <div class="filters-section">
         <div class="filters-grid">
           <div class="filter-group">
@@ -88,8 +77,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Lista de Compras -->
       <div class="purchases-list">
         <div *ngIf="filteredPurchases.length === 0" class="no-data">
           <div class="no-data-content">
@@ -157,8 +144,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tab: Mis Productos -->
     <div *ngIf="activeTab === 'productos'" class="tab-content">
       <div class="products-grid">
         <div *ngIf="ownedProducts.length === 0" class="no-data">
@@ -243,8 +228,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tab: Estadísticas -->
     <div *ngIf="activeTab === 'estadisticas'" class="tab-content">
       <div *ngIf="stats" class="stats-container">
         <div class="stats-grid">
@@ -299,8 +282,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal para Comentarios -->
   <div *ngIf="showCommentModal" class="modal-overlay" (click)="closeCommentModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">

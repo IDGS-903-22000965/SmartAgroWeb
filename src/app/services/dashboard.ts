@@ -1,4 +1,3 @@
-// src/app/services/dashboard.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
@@ -29,11 +28,6 @@ export class DashboardService {
         console.log('✅ Raw response from backend:', response);
       }),
       map(backendData => {
-        // El backend devuelve directamente las métricas, no un ApiResponse wrapper
-        // Necesitamos transformarlo al formato que espera el frontend
-        
-        // Crear datos de ejemplo para ventasPorMes y cotizacionesPorEstado
-        // ya que tu backend actual no los devuelve en /metricas
         const ventasPorMes: VentasPorMes[] = [
           { mes: 'Ene', total: backendData.ventas?.esteMes || 0, cantidad: 10 },
           { mes: 'Feb', total: backendData.ventas?.mesAnterior || 0, cantidad: 8 },
@@ -41,7 +35,6 @@ export class DashboardService {
         ];
 
         const cotizacionesPorEstado: CotizacionesPorEstado[] = [
-// ✅ CORRECTO
 {
   estado: 'Pendiente',
   cantidad: backendData.cotizaciones?.pendientes || 0
@@ -129,10 +122,8 @@ export class DashboardService {
     let errorMessage = 'Error desconocido';
     
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
       errorMessage = `Error de cliente: ${error.error.message}`;
     } else {
-      // Error del lado del servidor
       switch (error.status) {
         case 0:
           errorMessage = 'No se puede conectar con el servidor. Verifica CORS y que la API esté ejecutándose en http://localhost:5194';

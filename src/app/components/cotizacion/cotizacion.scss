@@ -1,4 +1,3 @@
-/* src/app/components/cotizacion/cotizacion.scss */
 .cotizacion-page {
   min-height: 100vh;
   background: #f8f9fa;
@@ -9,8 +8,6 @@
     padding: 0 1rem;
   }
 }
-
-// Success State
 .success-container {
   min-height: 100vh;
   display: flex;
@@ -74,8 +71,6 @@
     }
   }
 }
-
-// Form State
 .cotizacion-container {
   .cotizacion-header {
     background: linear-gradient(135deg, #2d5016, #4a7c23);
@@ -489,8 +484,6 @@
     }
   }
 }
-
-// Button Styles
 .btn {
   display: inline-flex;
   align-items: center;
@@ -561,8 +554,6 @@
     100% { transform: rotate(360deg); }
   }
 }
-
-// Responsive Design
 @media (max-width: 968px) {
   .cotizacion-page .container {
     max-width: 100%;

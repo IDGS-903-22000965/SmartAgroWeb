@@ -1,6 +1,4 @@
-<!-- src/app/components/faq/faq.html -->
 <div class="faq-page">
-  <!-- Hero Section -->
   <section class="faq-hero">
     <div class="container">
       <div class="hero-content">
@@ -9,8 +7,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Search Section -->
   <section class="search-section">
     <div class="container">
       <div class="search-container">
@@ -27,8 +23,6 @@
           }
         </div>
       </div>
-      
-      <!-- Category Filters -->
       <div class="category-filters">
         <button (click)="filteredFaqs.set(faqs)" class="category-btn active">
           Todas
@@ -41,8 +35,6 @@
       </div>
     </div>
   </section>
-
-  <!-- FAQ Content -->
   <section class="faq-content">
     <div class="container">
       @if (filteredFaqs().length === 0) {
@@ -74,8 +66,6 @@
       }
     </div>
   </section>
-
-  <!-- Contact CTA -->
   <section class="faq-cta">
     <div class="container">
       <div class="cta-content">

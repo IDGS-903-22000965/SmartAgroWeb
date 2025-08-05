@@ -1,7 +1,5 @@
-<!-- src/app/components/cotizacion/cotizacion.html -->
 <div class="cotizacion-page">
   @if (success()) {
-    <!-- Success State -->
     <div class="success-container">
       <div class="success-content">
         <div class="success-icon">✅</div>
@@ -37,15 +35,11 @@
       </div>
     </div>
   } @else {
-    <!-- Form State -->
     <div class="cotizacion-container">
-      <!-- Header -->
       <div class="cotizacion-header">
         <div class="container">
           <h1>Solicitar Cotización</h1>
           <p>Completa el formulario y recibe una propuesta personalizada para tu proyecto</p>
-          
-          <!-- Progress Bar -->
           <div class="progress-container">
             <div class="progress-bar">
               @for (step of [1,2,3,4]; track step) {
@@ -69,8 +63,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Form Content -->
       <div class="cotizacion-content">
         <div class="container">
           <form [formGroup]="cotizacionForm" class="cotizacion-form">
@@ -80,8 +72,6 @@
                 {{ error() }}
               </div>
             }
-
-            <!-- Step 1: Información Personal -->
             @if (currentStep() === 1) {
               <div class="form-step">
                 <div class="step-header">
@@ -134,8 +124,6 @@
                 </div>
               </div>
             }
-
-            <!-- Step 2: Información del Proyecto -->
             @if (currentStep() === 2) {
               <div class="form-step">
                 <div class="step-header">
@@ -210,8 +198,6 @@
                 </div>
               </div>
             }
-
-            <!-- Step 3: Recursos Disponibles -->
             @if (currentStep() === 3) {
               <div class="form-step">
                 <div class="step-header">
@@ -265,8 +251,6 @@
                 </div>
               </div>
             }
-
-            <!-- Step 4: Requerimientos Especiales y Finalizar -->
             @if (currentStep() === 4) {
               <div class="form-step">
                 <div class="step-header">
@@ -285,8 +269,6 @@
                     placeholder="Describe cualquier requerimiento especial, características adicionales que necesites, o información relevante para tu proyecto..."
                     rows="4"></textarea>
                 </div>
-
-                <!-- Cost Estimation -->
                 <div class="cost-estimation">
                   <h3>Estimación de Costo</h3>
                   <p>Calcula una estimación preliminar basada en la información proporcionada</p>
@@ -322,8 +304,6 @@
                 </div>
               </div>
             }
-
-            <!-- Navigation Buttons -->
             <div class="form-navigation">
               @if (currentStep() > 1) {
                 <button 
