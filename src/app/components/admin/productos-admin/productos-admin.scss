@@ -1003,8 +1003,7 @@
       }
     }
   }
-  // ✅ AGREGA ESTO AL FINAL DE tu productos-admin.scss
-// CSS CON MAYOR ESPECIFICIDAD PARA FORZAR LOS ESTILOS
+
 
 app-productos-admin .productos-admin-page .modal-overlay {
   position: fixed !important;
@@ -1311,7 +1310,6 @@ app-productos-admin .productos-admin-page .modal-overlay {
   }
 }
 
-// Modal tabs con especificidad
 app-productos-admin .productos-admin-page .modal-tabs {
   display: flex !important;
   border-bottom: 1px solid #e2e8f0 !important;
