@@ -1,374 +1,421 @@
-<div class="perfil">
-  <div class="page-header">
-    <h1>👤 Mi Perfil</h1>
-    <p>Administra tu información personal y configuración de cuenta</p>
-  </div>
-  <div *ngIf="loadingProfile" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando perfil...</p>
-  </div>
-  <div *ngIf="error && !loadingProfile" class="error-container">
-    <div class="error-message">
-      <h3>⚠️ Error</h3>
-      <p>{{ error }}</p>
-      <button class="btn btn-primary" (click)="loadProfile()">
+<!-- Mi Perfil con diseño Tailwind manteniendo funcionalidad Angular completa -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-6xl mx-auto perfil">
+    
+    <!-- Header de la página -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8 page-header">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">
+            👤 Mi Perfil
+          </h1>
+          <p class="text-gray-600">Administra tu información personal y configuración de cuenta</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estados de carga/error -->
+    <div *ngIf="loadingProfile" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center loading-container">
+      <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4 spinner"></div>
+      <p class="text-gray-600 font-medium">Cargando perfil...</p>
+    </div>
+
+    <div *ngIf="error && !loadingProfile" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center error-container">
+      <div class="text-6xl mb-4">⚠️</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Error</h3>
+      <p class="text-gray-600 mb-4">{{ error }}</p>
+      <button 
+        class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+        (click)="loadProfile()">
         Reintentar
       </button>
     </div>
-  </div>
-  <div *ngIf="!loadingProfile && !error && currentUser" class="profile-content">
-    <div *ngIf="success" class="success-message">
-      <h4>✅ ¡Perfil actualizado exitosamente!</h4>
-    </div>
 
-    <div *ngIf="passwordSuccess" class="success-message">
-      <h4>✅ ¡Contraseña cambiada exitosamente!</h4>
-    </div>
-    <div class="profile-card">
-      <div class="profile-header">
-        <div class="profile-avatar">
-          <span class="avatar-text">{{ currentUser.nombre.charAt(0) }}{{ currentUser.apellidos.charAt(0) }}</span>
-        </div>
-        <div class="profile-basic-info">
-          <h2>{{ currentUser.nombreCompleto }}</h2>
-          <p class="user-email">{{ currentUser.email }}</p>
-          <div class="user-meta">
-            <span class="meta-item">
-              📅 Miembro desde {{ formatDate(currentUser.fechaRegistro) }}
-            </span>
-            <span class="meta-item" [ngClass]="currentUser.activo ? 'status-active' : 'status-inactive'">
-              {{ currentUser.activo ? '🟢 Activo' : '🔴 Inactivo' }}
-            </span>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button 
-            *ngIf="!editMode && !changePasswordMode" 
-            class="btn btn-primary" 
-            (click)="toggleEditMode()"
-          >
-            ✏️ Editar Perfil
-          </button>
-          <button 
-            *ngIf="!editMode && !changePasswordMode" 
-            class="btn btn-secondary" 
-            (click)="toggleChangePasswordMode()"
-          >
-            🔒 Cambiar Contraseña
-          </button>
-          <button 
-            class="btn btn-outline logout-btn" 
-            (click)="logout()"
-          >
-            🚪 Cerrar Sesión
-          </button>
-        </div>
-      </div>
-      <div *ngIf="editMode" class="edit-form">
-        <h3>✏️ Editar Información Personal</h3>
-        
-        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="nombre">Nombre *</label>
-              <input 
-                id="nombre"
-                type="text" 
-                formControlName="nombre"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('nombre')"
-                placeholder="Ingresa tu nombre"
-              >
-              <div *ngIf="getFieldError('nombre')" class="field-error">
-                {{ getFieldError('nombre') }}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="apellidos">Apellidos *</label>
-              <input 
-                id="apellidos"
-                type="text" 
-                formControlName="apellidos"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('apellidos')"
-                placeholder="Ingresa tus apellidos"
-              >
-              <div *ngIf="getFieldError('apellidos')" class="field-error">
-                {{ getFieldError('apellidos') }}
-              </div>
-            </div>
-
-            <div class="form-group full-width">
-              <label for="email">Email *</label>
-              <input 
-                id="email"
-                type="email" 
-                formControlName="email"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('email')"
-                placeholder="tu@email.com"
-              >
-              <div *ngIf="getFieldError('email')" class="field-error">
-                {{ getFieldError('email') }}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="telefono">Teléfono</label>
-              <input 
-                id="telefono"
-                type="tel" 
-                formControlName="telefono"
-                class="form-input"
-                [class.invalid]="isFieldInvalid('telefono')"
-                placeholder="1234567890"
-                maxlength="10"
-              >
-              <div *ngIf="getFieldError('telefono')" class="field-error">
-                {{ getFieldError('telefono') }}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="direccion">Dirección</label>
-              <input 
-                id="direccion"
-                type="text" 
-                formControlName="direccion"
-                class="form-input"
-                placeholder="Tu dirección completa"
-              >
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              (click)="toggleEditMode()"
-              [disabled]="loading"
-            >
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!profileForm.valid || loading"
-            >
-              <span *ngIf="loading">Guardando...</span>
-              <span *ngIf="!loading">💾 Guardar Cambios</span>
-            </button>
-          </div>
-        </form>
-      </div>
-      <div *ngIf="changePasswordMode" class="password-form">
-        <h3>🔒 Cambiar Contraseña</h3>
-        
-        <div *ngIf="passwordError" class="password-error">
-          <p>{{ passwordError }}</p>
-        </div>
-
-        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-          <div class="form-group">
-            <label for="currentPassword">Contraseña Actual *</label>
-            <input 
-              id="currentPassword"
-              type="password" 
-              formControlName="currentPassword"
-              class="form-input"
-              [class.invalid]="isFieldInvalid('currentPassword', passwordForm)"
-              placeholder="Tu contraseña actual"
-            >
-            <div *ngIf="getFieldError('currentPassword', passwordForm)" class="field-error">
-              {{ getFieldError('currentPassword', passwordForm) }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="newPassword">Nueva Contraseña *</label>
-            <input 
-              id="newPassword"
-              type="password" 
-              formControlName="newPassword"
-              class="form-input"
-              [class.invalid]="isFieldInvalid('newPassword', passwordForm)"
-              placeholder="Tu nueva contraseña (mínimo 6 caracteres)"
-            >
-            <div *ngIf="getFieldError('newPassword', passwordForm)" class="field-error">
-              {{ getFieldError('newPassword', passwordForm) }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
-            <input 
-              id="confirmPassword"
-              type="password" 
-              formControlName="confirmPassword"
-              class="form-input"
-              [class.invalid]="isFieldInvalid('confirmPassword', passwordForm) || getPasswordFormError()"
-              placeholder="Confirma tu nueva contraseña"
-            >
-            <div *ngIf="getFieldError('confirmPassword', passwordForm)" class="field-error">
-              {{ getFieldError('confirmPassword', passwordForm) }}
-            </div>
-            <div *ngIf="getPasswordFormError()" class="field-error">
-              {{ getPasswordFormError() }}
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              (click)="toggleChangePasswordMode()"
-              [disabled]="loadingPassword"
-            >
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!passwordForm.valid || loadingPassword"
-            >
-              <span *ngIf="loadingPassword">Cambiando...</span>
-              <span *ngIf="!loadingPassword">🔐 Cambiar Contraseña</span>
-            </button>
-          </div>
-        </form>
-      </div>
-      <div *ngIf="!editMode && !changePasswordMode" class="profile-details">
-        <h3>📋 Información Personal</h3>
-        
-        <div class="details-grid">
-          <div class="detail-item">
-            <strong>Nombre Completo:</strong>
-            <span>{{ currentUser.nombreCompleto }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <strong>Email:</strong>
-            <span>{{ currentUser.email }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <strong>Teléfono:</strong>
-            <span>{{ currentUser.telefono || 'No especificado' }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <strong>Dirección:</strong>
-            <span>{{ currentUser.direccion || 'No especificada' }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <strong>Fecha de Registro:</strong>
-            <span>{{ formatDate(currentUser.fechaRegistro) }}</span>
-          </div>
-          
-          <div class="detail-item">
-            <strong>Roles:</strong>
-            <div class="roles-list">
-              <span 
-                *ngFor="let role of currentUser.roles" 
-                class="role-badge"
-              >
-                {{ role }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div *ngIf="!editMode && !changePasswordMode" class="security-section">
-      <h3>🛡️ Seguridad de la Cuenta</h3>
+    <!-- Contenido del perfil -->
+    <div *ngIf="!loadingProfile && !error && currentUser" class="profile-content space-y-8">
       
-      <div class="security-items">
-        <div class="security-item">
-          <div class="security-icon">🔐</div>
-          <div class="security-content">
-            <h4>Contraseña</h4>
-            <p>Última actualización hace tiempo</p>
+      <!-- Mensajes de éxito -->
+      <div *ngIf="success" class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 success-message">
+        <h4 class="text-green-800 font-semibold flex items-center gap-2">
+          <i class="fas fa-check-circle"></i> ¡Perfil actualizado exitosamente!
+        </h4>
+      </div>
+
+      <div *ngIf="passwordSuccess" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 success-message">
+        <h4 class="text-blue-800 font-semibold flex items-center gap-2">
+          <i class="fas fa-check-circle"></i> ¡Contraseña cambiada exitosamente!
+        </h4>
+      </div>
+
+      <!-- Tarjeta principal del perfil -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 profile-card">
+        
+        <!-- Header del perfil -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 rounded-2xl p-6 lg:p-8 mb-6 profile-header">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            
+            <!-- Avatar y info básica -->
+            <div class="flex items-center gap-6 profile-basic-info">
+              <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg profile-avatar">
+                <span class="avatar-text">{{ currentUser.nombre.charAt(0) }}{{ currentUser.apellidos.charAt(0) }}</span>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-gray-900">{{ currentUser.nombreCompleto }}</h2>
+                <p class="text-blue-700 font-medium user-email">{{ currentUser.email }}</p>
+                <div class="flex flex-wrap gap-4 mt-2 user-meta">
+                  <span class="flex items-center gap-1 text-sm text-gray-600 meta-item">
+                    <i class="fas fa-calendar-alt"></i> Miembro desde {{ formatDate(currentUser.fechaRegistro) }}
+                  </span>
+                  <span class="flex items-center gap-1 text-sm font-medium meta-item" [ngClass]="currentUser.activo ? 'text-green-700' : 'text-red-700'">
+                    {{ currentUser.activo ? '🟢 Activo' : '🔴 Inactivo' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones del perfil -->
+            <div class="flex flex-col sm:flex-row gap-3 profile-actions">
+              <button 
+                *ngIf="!editMode && !changePasswordMode" 
+                class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+                (click)="toggleEditMode()">
+                <i class="fas fa-edit"></i> Editar Perfil
+              </button>
+              <button 
+                *ngIf="!editMode && !changePasswordMode" 
+                class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+                (click)="toggleChangePasswordMode()">
+                <i class="fas fa-lock"></i> Cambiar Contraseña
+              </button>
+              <button 
+                class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium logout-btn" 
+                (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+              </button>
+            </div>
           </div>
-          <button class="btn btn-outline" (click)="toggleChangePasswordMode()">
-            Cambiar
-          </button>
         </div>
 
-        <div class="security-item">
-          <div class="security-icon">📧</div>
-          <div class="security-content">
-            <h4>Email de Contacto</h4>
-            <p>{{ currentUser.email }}</p>
-          </div>
-          <button class="btn btn-outline" (click)="toggleEditMode()">
-            Editar
-          </button>
+        <!-- Formulario de edición -->
+        <div *ngIf="editMode" class="p-6 lg:p-8 edit-form">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-edit text-blue-600"></i> Editar Información Personal
+          </h3>
+          
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 form-grid">
+              
+              <!-- Nombre -->
+              <div class="form-group">
+                <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+                <input 
+                  id="nombre"
+                  type="text" 
+                  formControlName="nombre"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('nombre') ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="Ingresa tu nombre">
+                <div *ngIf="getFieldError('nombre')" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('nombre') }}
+                </div>
+              </div>
+
+              <!-- Apellidos -->
+              <div class="form-group">
+                <label for="apellidos" class="block text-sm font-semibold text-gray-700 mb-2">Apellidos *</label>
+                <input 
+                  id="apellidos"
+                  type="text" 
+                  formControlName="apellidos"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('apellidos') ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="Ingresa tus apellidos">
+                <div *ngIf="getFieldError('apellidos')" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('apellidos') }}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="lg:col-span-2 form-group full-width">
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                <input 
+                  id="email"
+                  type="email" 
+                  formControlName="email"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('email') ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="tu@email.com">
+                <div *ngIf="getFieldError('email')" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('email') }}
+                </div>
+              </div>
+
+              <!-- Teléfono -->
+              <div class="form-group">
+                <label for="telefono" class="block text-sm font-semibold text-gray-700 mb-2">Teléfono</label>
+                <input 
+                  id="telefono"
+                  type="tel" 
+                  formControlName="telefono"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('telefono') ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="1234567890"
+                  maxlength="10">
+                <div *ngIf="getFieldError('telefono')" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('telefono') }}
+                </div>
+              </div>
+
+              <!-- Dirección -->
+              <div class="form-group">
+                <label for="direccion" class="block text-sm font-semibold text-gray-700 mb-2">Dirección</label>
+                <input 
+                  id="direccion"
+                  type="text" 
+                  formControlName="direccion"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  placeholder="Tu dirección completa">
+              </div>
+            </div>
+
+            <!-- Acciones del formulario -->
+            <div class="flex gap-3 mt-8 form-actions">
+              <button 
+                type="button" 
+                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium" 
+                (click)="toggleEditMode()"
+                [disabled]="loading">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!profileForm.valid || loading">
+                <span *ngIf="loading">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Guardando...
+                  </div>
+                </span>
+                <span *ngIf="!loading">
+                  <i class="fas fa-save"></i> Guardar Cambios
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div class="security-item">
-          <div class="security-icon">📱</div>
-          <div class="security-content">
-            <h4>Teléfono de Contacto</h4>
-            <p>{{ currentUser.telefono || 'No configurado' }}</p>
+        <!-- Formulario de cambio de contraseña -->
+        <div *ngIf="changePasswordMode" class="p-6 lg:p-8 password-form">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-lock text-purple-600"></i> Cambiar Contraseña
+          </h3>
+          
+          <!-- Error de contraseña -->
+          <div *ngIf="passwordError" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 password-error">
+            <p class="text-red-700">{{ passwordError }}</p>
           </div>
-          <button class="btn btn-outline" (click)="toggleEditMode()">
-            {{ currentUser.telefono ? 'Editar' : 'Configurar' }}
-          </button>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="space-y-6">
+              
+              <!-- Contraseña actual -->
+              <div class="form-group">
+                <label for="currentPassword" class="block text-sm font-semibold text-gray-700 mb-2">Contraseña Actual *</label>
+                <input 
+                  id="currentPassword"
+                  type="password" 
+                  formControlName="currentPassword"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('currentPassword', passwordForm) ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="Tu contraseña actual">
+                <div *ngIf="getFieldError('currentPassword', passwordForm)" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('currentPassword', passwordForm) }}
+                </div>
+              </div>
+
+              <!-- Nueva contraseña -->
+              <div class="form-group">
+                <label for="newPassword" class="block text-sm font-semibold text-gray-700 mb-2">Nueva Contraseña *</label>
+                <input 
+                  id="newPassword"
+                  type="password" 
+                  formControlName="newPassword"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="isFieldInvalid('newPassword', passwordForm) ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="Tu nueva contraseña (mínimo 6 caracteres)">
+                <div *ngIf="getFieldError('newPassword', passwordForm)" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('newPassword', passwordForm) }}
+                </div>
+              </div>
+
+              <!-- Confirmar contraseña -->
+              <div class="form-group">
+                <label for="confirmPassword" class="block text-sm font-semibold text-gray-700 mb-2">Confirmar Nueva Contraseña *</label>
+                <input 
+                  id="confirmPassword"
+                  type="password" 
+                  formControlName="confirmPassword"
+                  class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm form-input"
+                  [class]="(isFieldInvalid('confirmPassword', passwordForm) || getPasswordFormError()) ? 'border-red-500' : 'border-gray-300'"
+                  placeholder="Confirma tu nueva contraseña">
+                <div *ngIf="getFieldError('confirmPassword', passwordForm)" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getFieldError('confirmPassword', passwordForm) }}
+                </div>
+                <div *ngIf="getPasswordFormError()" class="mt-1 text-sm text-red-600 field-error">
+                  {{ getPasswordFormError() }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones del formulario -->
+            <div class="flex gap-3 mt-8 form-actions">
+              <button 
+                type="button" 
+                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium" 
+                (click)="toggleChangePasswordMode()"
+                [disabled]="loadingPassword">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!passwordForm.valid || loadingPassword">
+                <span *ngIf="loadingPassword">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Cambiando...
+                  </div>
+                </span>
+                <span *ngIf="!loadingPassword">
+                  <i class="fas fa-key"></i> Cambiar Contraseña
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Detalles del perfil (vista normal) -->
+        <div *ngIf="!editMode && !changePasswordMode" class="p-6 lg:p-8 profile-details">
+          <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-user text-green-600"></i> Información Personal
+          </h3>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 details-grid">
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-user text-blue-600"></i> Nombre Completo:
+              </div>
+              <span class="text-gray-900 font-medium">{{ currentUser.nombreCompleto }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-envelope text-red-600"></i> Email:
+              </div>
+              <span class="text-gray-900 font-medium">{{ currentUser.email }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-phone text-green-600"></i> Teléfono:
+              </div>
+              <span class="text-gray-900 font-medium">{{ currentUser.telefono || 'No especificado' }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-map-marker-alt text-purple-600"></i> Dirección:
+              </div>
+              <span class="text-gray-900 font-medium">{{ currentUser.direccion || 'No especificada' }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-calendar-alt text-orange-600"></i> Fecha de Registro:
+              </div>
+              <span class="text-gray-900 font-medium">{{ formatDate(currentUser.fechaRegistro) }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <div class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                <i class="fas fa-tags text-indigo-600"></i> Roles:
+              </div>
+              <div class="flex flex-wrap gap-2 roles-list">
+                <span 
+                  *ngFor="let role of currentUser.roles" 
+                  class="px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-full text-xs font-medium border border-indigo-200 role-badge">
+                  {{ role }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de seguridad -->
+      <div *ngIf="!editMode && !changePasswordMode" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 security-section">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-shield-alt text-blue-600"></i> Seguridad de la Cuenta
+        </h3>
+        
+        <div class="space-y-4 security-items">
+          
+          <!-- Contraseña -->
+          <div class="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-sm rounded-xl security-item">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg security-icon">
+                🔐
+              </div>
+              <div class="security-content">
+                <h4 class="font-semibold text-gray-900">Contraseña</h4>
+                <p class="text-gray-600 text-sm">Última actualización hace tiempo</p>
+              </div>
+            </div>
+            <button 
+              class="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-all duration-200 font-medium" 
+              (click)="toggleChangePasswordMode()">
+              Cambiar
+            </button>
+          </div>
+
+          <!-- Email -->
+          <div class="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-sm rounded-xl security-item">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg security-icon">
+                📧
+              </div>
+              <div class="security-content">
+                <h4 class="font-semibold text-gray-900">Email de Contacto</h4>
+                <p class="text-gray-600 text-sm">{{ currentUser.email }}</p>
+              </div>
+            </div>
+            <button 
+              class="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-all duration-200 font-medium" 
+              (click)="toggleEditMode()">
+              Editar
+            </button>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-sm rounded-xl security-item">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg security-icon">
+                📱
+              </div>
+              <div class="security-content">
+                <h4 class="font-semibold text-gray-900">Teléfono de Contacto</h4>
+                <p class="text-gray-600 text-sm">{{ currentUser.telefono || 'No configurado' }}</p>
+              </div>
+            </div>
+            <button 
+              class="px-4 py-2 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-all duration-200 font-medium" 
+              (click)="toggleEditMode()">
+              {{ currentUser.telefono ? 'Editar' : 'Configurar' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- <div *ngIf="!editMode && !changePasswordMode" class="account-actions">
-      <h3>⚙️ Acciones de Cuenta</h3>
-      
-      <div class="actions-grid">
-        <div class="action-item">
-          <div class="action-icon">📊</div>
-          <div class="action-content">
-            <h4>Ver Dashboard</h4>
-            <p>Accede a tu panel de control principal</p>
-          </div>
-          <a routerLink="/cliente/dashboard" class="action-button">
-            Ir al Dashboard
-          </a>
-        </div>
-
-        <div class="action-item">
-          <div class="action-icon">🛒</div>
-          <div class="action-content">
-            <h4>Mis Compras</h4>
-            <p>Revisa tu historial de compras y productos</p>
-          </div>
-          <a routerLink="/cliente/mis-compras" class="action-button">
-            Ver Compras
-          </a>
-        </div>
-
-        <div class="action-item">
-          <div class="action-icon">💬</div>
-          <div class="action-content">
-            <h4>Mis Comentarios</h4>
-            <p>Gestiona tus comentarios y calificaciones</p>
-          </div>
-          <a routerLink="/cliente/comentarios" class="action-button">
-            Ver Comentarios
-          </a>
-        </div>
-
-        <div class="action-item">
-          <div class="action-icon">📚</div>
-          <div class="action-content">
-            <h4>Recursos</h4>
-            <p>Accede a manuales y documentación</p>
-          </div>
-          <a routerLink="/cliente/documentacion" class="action-button">
-            Ver Recursos
-          </a>
-        </div>
-      </div>
-    </div> -->
-
   </div>
 </div>

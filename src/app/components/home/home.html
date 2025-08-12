@@ -1,163 +1,209 @@
-<div class="home">
-  <section class="hero">
-    <div class="hero-background">
-      <div class="hero-overlay"></div>
-    </div>
-    <div class="container">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          Revoluciona tu <span class="highlight">Agricultura</span> 
-          con Tecnología IoT
-        </h1>
-        <p class="hero-subtitle">
-          Sistemas inteligentes de riego automatizado que optimizan el uso del agua, 
-          mejoran la salud de tus cultivos y aumentan tu productividad.
-        </p>
-        <div class="hero-actions">
-          <a routerLink="/cotizacion" class="btn btn-primary">
-            Solicitar Cotización
-          </a>
-          <button (click)="scrollToSection('productos')" class="btn btn-outline">
-            Ver Productos
-          </button>
-        </div>
-      </div>
-      <div class="hero-image">
-        <div class="demo-card">
-          <div class="card-header">
-            <span class="status-indicator online"></span>
-            <span>Sistema Activo</span>
+<!-- Página de Inicio con el MISMO estilo exacto de register/login -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600">
+  
+  <!-- Hero Section -->
+  <section class="relative pt-8 pb-16 lg:pb-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        
+        <!-- Contenido Hero -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12">
+          <h1 class="text-4xl lg:text-6xl font-bold text-green-800 mb-6 leading-tight">
+            Revoluciona tu <span class="bg-gradient-to-r from-lime-500 to-green-600 bg-clip-text text-transparent">Agricultura</span> 
+            con Tecnología IoT
+          </h1>
+          <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+            Sistemas inteligentes de riego automatizado que optimizan el uso del agua, 
+            mejoran la salud de tus cultivos y aumentan tu productividad.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a routerLink="/cotizacion" class="px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center">
+              Solicitar Cotización
+            </a>
+            <button (click)="scrollToSection('productos')" class="px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200">
+              Ver Productos
+            </button>
           </div>
-          <div class="metrics">
-            <div class="metric">
-              <span class="metric-label">Humedad</span>
-              <span class="metric-value">78%</span>
+        </div>
+
+        <!-- Demo Card -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+          <div class="mb-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg"></div>
+              <span class="text-green-700 font-semibold">Sistema Activo</span>
             </div>
-            <div class="metric">
-              <span class="metric-label">Temperatura</span>
-              <span class="metric-value">24°C</span>
+            <h3 class="text-xl font-bold text-green-800">Panel de Control IoT</h3>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center border border-blue-200/50">
+              <div class="text-2xl font-bold text-blue-700">78%</div>
+              <div class="text-sm text-blue-600">Humedad</div>
             </div>
-            <div class="metric">
-              <span class="metric-label">pH Suelo</span>
-              <span class="metric-value">6.8</span>
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center border border-orange-200/50">
+              <div class="text-2xl font-bold text-orange-700">24°C</div>
+              <div class="text-sm text-orange-600">Temperatura</div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center border border-purple-200/50">
+              <div class="text-2xl font-bold text-purple-700">6.8</div>
+              <div class="text-sm text-purple-600">pH Suelo</div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
-  <section class="features" id="features">
-    <div class="container">
-      <div class="section-header">
-        <h2>¿Por qué elegir SmartAgro?</h2>
-        <p>Tecnología de vanguardia para la agricultura del futuro</p>
+
+  <!-- Features Section -->
+  <section class="pb-16" id="features">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12">
+        
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h2 class="text-3xl lg:text-4xl font-bold text-green-800 mb-4">¿Por qué elegir SmartAgro?</h2>
+          <p class="text-xl text-gray-600">Tecnología de vanguardia para la agricultura del futuro</p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          @for (feature of features; track feature.title) {
+            <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-100/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group text-center">
+              <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-lime-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                {{ feature.icon }}
+              </div>
+              <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-700 transition-colors duration-200">{{ feature.title }}</h3>
+              <p class="text-gray-600 leading-relaxed">{{ feature.description }}</p>
+            </div>
+          }
+        </div>
       </div>
-      <div class="features-grid">
-        @for (feature of features; track feature.title) {
-          <div class="feature-card">
-            <div class="feature-icon">{{ feature.icon }}</div>
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.description }}</p>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          
+          <!-- Texto Benefits -->
+          <div>
+            <h2 class="text-3xl lg:text-4xl font-bold text-green-800 mb-6">Resultados que Transforman tu Negocio</h2>
+            <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+              Nuestros sistemas de riego inteligente han demostrado resultados 
+              excepcionales en miles de implementaciones alrededor del mundo.
+            </p>
+            
+            <div class="space-y-6">
+              @for (benefit of benefits; track benefit.stat) {
+                <div class="flex items-start gap-4">
+                  <div class="bg-gradient-to-br from-green-600 to-lime-500 rounded-xl p-3 text-white font-bold text-xl shadow-lg min-w-[80px] text-center">
+                    {{ benefit.stat }}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-900 mb-1">{{ benefit.label }}</h4>
+                    <p class="text-gray-600">{{ benefit.description }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Imagen Benefits -->
+          <div class="bg-gradient-to-br from-green-50 to-lime-50 rounded-xl p-12 text-center border border-green-200/50">
+            <div class="text-8xl mb-4">🌱</div>
+            <p class="text-green-700 font-semibold text-lg">Cultivos más saludables y productivos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Preview Section -->
+  <section class="pb-16" id="productos">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12">
+        
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h2 class="text-3xl lg:text-4xl font-bold text-green-800 mb-4">Nuestros Productos</h2>
+          <p class="text-xl text-gray-600">Soluciones completas para cada necesidad</p>
+        </div>
+        
+        @if (loading()) {
+          <!-- Estado de carga -->
+          <div class="text-center py-12">
+            <div class="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-600 font-medium">Cargando productos...</p>
+          </div>
+        } @else if (error()) {
+          <!-- Estado de error -->
+          <div class="text-center py-12">
+            <div class="text-6xl mb-4">⚠️</div>
+            <p class="text-red-600 mb-6">{{ error() }}</p>
+            <button (click)="loadProductos()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+              Reintentar
+            </button>
+          </div>
+        } @else {
+          <!-- Grid de productos -->
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            @for (producto of productos(); track producto.id) {
+              <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100/50 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+                
+                <!-- Imagen del producto -->
+                <div class="h-48 bg-gradient-to-br from-green-100 to-lime-100 flex items-center justify-center">
+                  @if (producto.imagenPrincipal) {
+                    <img [src]="producto.imagenPrincipal" [alt]="producto.nombre" class="w-full h-full object-cover">
+                  } @else {
+                    <div class="text-6xl">🌿</div>
+                  }
+                </div>
+                
+                <!-- Contenido del producto -->
+                <div class="p-6">
+                  <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-700 transition-colors duration-200">{{ producto.nombre }}</h3>
+                  <p class="text-gray-600 mb-4 leading-relaxed">{{ producto.descripcion }}</p>
+                  <div class="flex items-center justify-between">
+                    <div class="text-2xl font-bold text-green-700">
+                      ${{ producto.precioVenta | number:'1.2-2' }}
+                    </div>
+                    <a [routerLink]="['/producto', producto.id]" class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                      Ver Detalles
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          
+          <!-- Footer de productos -->
+          <div class="text-center">
+            <a routerLink="/productos" class="px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 inline-block">
+              Ver Todos los Productos
+            </a>
           </div>
         }
       </div>
     </div>
   </section>
-  <section class="benefits">
-    <div class="container">
-      <div class="benefits-content">
-        <div class="benefits-text">
-          <h2>Resultados que Transforman tu Negocio</h2>
-          <p>
-            Nuestros sistemas de riego inteligente han demostrado resultados 
-            excepcionales en miles de implementaciones alrededor del mundo.
-          </p>
-          <div class="benefits-stats">
-            @for (benefit of benefits; track benefit.stat) {
-              <div class="stat-item">
-                <div class="stat-number">{{ benefit.stat }}</div>
-                <div class="stat-content">
-                  <h4>{{ benefit.label }}</h4>
-                  <p>{{ benefit.description }}</p>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-        <div class="benefits-image">
-          <div class="image-placeholder">
-            <span class="placeholder-icon">🌱</span>
-            <p>Cultivos más saludables y productivos</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="products-preview" id="productos">
-    <div class="container">
-      <div class="section-header">
-        <h2>Nuestros Productos</h2>
-        <p>Soluciones completas para cada necesidad</p>
-      </div>
-      
-      @if (loading()) {
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Cargando productos...</p>
-        </div>
-      } @else if (error()) {
-        <div class="error">
-          <p>{{ error() }}</p>
-          <button (click)="loadProductos()" class="btn btn-primary">Reintentar</button>
-        </div>
-      } @else {
-        <div class="products-grid">
-          @for (producto of productos(); track producto.id) {
-            <div class="product-card">
-              <div class="product-image">
-                @if (producto.imagenPrincipal) {
-                  <img [src]="producto.imagenPrincipal" [alt]="producto.nombre">
-                } @else {
-                  <div class="image-placeholder">
-                    <span>🌿</span>
-                  </div>
-                }
-              </div>
-              <div class="product-content">
-                <h3>{{ producto.nombre }}</h3>
-                <p>{{ producto.descripcion }}</p>
-                <div class="product-price">
-                  ${{ producto.precioVenta | number:'1.2-2' }}
-                </div>
-                <a [routerLink]="['/producto', producto.id]" class="btn btn-outline">
-                  Ver Detalles
-                </a>
-              </div>
-            </div>
-          }
-        </div>
-        
-        <div class="products-footer">
-          <a routerLink="/productos" class="btn btn-primary">
-            Ver Todos los Productos
-          </a>
-        </div>
-      }
-    </div>
-  </section>
-  <section class="cta">
-    <div class="container">
-      <div class="cta-content">
-        <h2>¿Listo para Modernizar tu Agricultura?</h2>
-        <p>
+
+  <!-- CTA Section -->
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 text-center">
+        <h2 class="text-3xl lg:text-4xl font-bold text-green-800 mb-6">¿Listo para Modernizar tu Agricultura?</h2>
+        <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
           Únete a miles de agricultores que ya transformaron sus cultivos 
           con nuestros sistemas inteligentes.
         </p>
-        <div class="cta-actions">
-          <a routerLink="/cotizacion" class="btn btn-primary">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a routerLink="/cotizacion" class="px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             Solicitar Cotización Gratuita
           </a>
-          <a routerLink="/contacto" class="btn btn-outline">
+          <a routerLink="/contacto" class="px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200">
             Hablar con un Experto
           </a>
         </div>

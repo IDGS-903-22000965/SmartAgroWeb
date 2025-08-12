@@ -1,10 +1,9 @@
-import { Component, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductoService } from '../../../services/producto';
 import { Producto } from '../../../models/models';
 import { ProductDocumentsAdminComponent } from '../product-documents/product-documents-admin.component';
-
 
 @Component({
   selector: 'app-productos-admin',
@@ -16,11 +15,12 @@ import { ProductDocumentsAdminComponent } from '../product-documents/product-doc
 export class ProductosAdminComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  protected loading = signal(false);
-  protected loadingModal = signal(false);
-  protected error = signal<string | null>(null);
-  protected showModal = signal(false);
-  protected showDetailsModal = signal(false);
+  // Variables normales en lugar de señales
+  protected loading = false;
+  protected loadingModal = false;
+  protected error: string | null = null;
+  protected showModal = false;
+  protected showDetailsModal = false;
 
   protected modoEdicion = false;
   protected productoEditando: Producto | null = null;
@@ -40,22 +40,22 @@ export class ProductosAdminComponent implements OnInit {
   protected totalPaginas = 0;
 
   protected productoForm: FormGroup;
- protected activeTab = 'general'; 
+  protected activeTab = 'general';
 
-constructor(
-  private fb: FormBuilder,
-  private productoService: ProductoService
-) {
-  this.productoForm = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    descripcion: [''],
-    descripcionDetallada: [''],
-    precioBase: ['', [Validators.required, Validators.min(0.01)]],
-    porcentajeGanancia: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-    activo: [true] 
-  });
-
-
+  constructor(
+    private fb: FormBuilder,
+    private productoService: ProductoService
+  ) {
+    // ✅ CORREGIDO: Usar porcentajeGanancia consistentemente
+    this.productoForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      descripcion: [''],
+      descripcionDetallada: [''],
+      precioBase: ['', [Validators.required, Validators.min(0.01)]],
+      porcentajeGanancia: ['30', [Validators.required, Validators.min(0), Validators.max(500)]], // ✅ Cambiado
+      precioVenta: [{value: '', disabled: true}],
+      activo: [true]
+    });
   }
 
   ngOnInit(): void {
@@ -63,29 +63,31 @@ constructor(
   }
 
   protected cargarProductos(): void {
-    this.loading.set(true);
+    this.loading = true;
     this.productoService.obtenerProductos().subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.productos = res.data;
           this.aplicarFiltros();
         }
-        this.loading.set(false);
+        this.loading = false;
       },
       error: (err) => {
         console.error(err);
-        this.error.set('Error al cargar productos');
-        this.loading.set(false);
+        this.error = 'Error al cargar productos';
+        this.loading = false;
       }
     });
   }
-protected setActiveTab(tab: string): void {
+
+  protected setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
 
   protected canShowDocumentsTab(): boolean {
-  return this.modoEdicion && this.productoEditando !== null && this.productoEditando.id > 0;
-}
+    return this.modoEdicion && this.productoEditando !== null && this.productoEditando.id > 0;
+  }
+
   protected aplicarFiltros(): void {
     let filtrados = [...this.productos];
     if (this.filtros.busqueda.trim()) {
@@ -109,177 +111,224 @@ protected setActiveTab(tab: string): void {
     this.filtros = { busqueda: '', estado: '' };
     this.aplicarFiltros();
   }
-
- protected abrirModalCrear(): void {
+protected debugModal(): void {
+  console.log('🔍 ESTADO DEL MODAL:');
+  console.log('showModal:', this.showModal);
+  console.log('modoEdicion:', this.modoEdicion);
+  console.log('productoEditando:', this.productoEditando);
+  console.log('activeTab:', this.activeTab);
+  console.log('error:', this.error);
+  console.log('loading:', this.loading);
+  console.log('loadingModal:', this.loadingModal);
+  
+  // Verificar DOM
+  const modalElement = document.querySelector('.modal-overlay');
+  console.log('🔍 ELEMENTO MODAL EN DOM:', modalElement);
+  
+  if (modalElement) {
+    const styles = window.getComputedStyle(modalElement);
+    console.log('🎨 ESTILOS CALCULADOS:');
+    console.log('display:', styles.display);
+    console.log('visibility:', styles.visibility);
+    console.log('opacity:', styles.opacity);
+    console.log('z-index:', styles.zIndex);
+    console.log('position:', styles.position);
+    console.log('top:', styles.top);
+    console.log('left:', styles.left);
+    console.log('width:', styles.width);
+    console.log('height:', styles.height);
+  }
+}
+  protected abrirModalCrear(): void {
+  console.log('🔄 Abriendo modal crear...');
   this.modoEdicion = false;
   this.productoEditando = null;
+  
   this.productoForm.reset({ 
     activo: true, 
     porcentajeGanancia: 30 
   }); 
+  
   this.imagenPreview = null;
   this.imagenFile = null;
-  this.error.set(null);
+  this.error = null;
   this.activeTab = 'general'; 
-  this.showModal.set(true);
+  this.showModal = true;
+  
+  console.log('✅ Modal configurado, showModal:', this.showModal);
+  
+  // Debug después de un pequeño delay para que Angular renderice
+  setTimeout(() => {
+    this.debugModal();
+  }, 100);
 }
 
- protected editarProducto(producto: Producto, openDocuments = false): void {
-  this.modoEdicion = true;
-  this.productoEditando = producto;
-  this.productoForm.patchValue({
-    nombre: producto.nombre,
-    descripcion: producto.descripcion,
-    descripcionDetallada: producto.descripcionDetallada,
-    precioBase: producto.precioBase,
-    porcentajeGanancia: producto.porcentajeGanancia,
-    activo: producto.activo
-  });
-  this.imagenPreview = producto.imagenPrincipal || null;
-  this.imagenFile = null;
-  this.error.set(null);
-  this.activeTab = openDocuments ? 'documentos' : 'general';
-  this.showModal.set(true);
-}
+  protected editarProducto(producto: Producto, openDocuments = false): void {
+    console.log('🔄 Editando producto:', producto);
+    this.modoEdicion = true;
+    this.productoEditando = producto;
+    
+    // ✅ CORREGIDO: Usar porcentajeGanancia
+    this.productoForm.patchValue({
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      descripcionDetallada: producto.descripcionDetallada,
+      precioBase: producto.precioBase,
+      porcentajeGanancia: producto.porcentajeGanancia, // ✅ Cambiado
+      activo: producto.activo
+    });
+    
+    this.imagenPreview = producto.imagenPrincipal || null;
+    this.imagenFile = null;
+    this.error = null;
+    this.activeTab = openDocuments ? 'documentos' : 'general';
+    this.showModal = true;
+    console.log('✅ Modal editado abierto');
+  }
 
   protected cerrarModal(): void {
-  this.showModal.set(false);
-  this.productoForm.reset();
-  this.error.set(null);
-  this.modoEdicion = false;
-  this.productoEditando = null;
-  this.imagenPreview = null;
-  this.imagenFile = null;
-  this.activeTab = 'general'; 
-}
+    this.showModal = false;
+    this.productoForm.reset();
+    this.error = null;
+    this.modoEdicion = false;
+    this.productoEditando = null;
+    this.imagenPreview = null;
+    this.imagenFile = null;
+    this.activeTab = 'general'; 
+  }
 
   protected verDetalles(producto: Producto): void {
     this.productoDetalles = producto;
-    this.showDetailsModal.set(true);
+    this.showDetailsModal = true;
   }
 
   protected cerrarModalDetalles(): void {
-    this.showDetailsModal.set(false);
+    this.showDetailsModal = false;
     this.productoDetalles = null;
   }
-private async convertirArchivoABase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      reject(new Error('El archivo es demasiado grande. Máximo 5MB permitido.'));
+
+  private async convertirArchivoABase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (file.size > 5 * 1024 * 1024) {
+        reject(new Error('El archivo es demasiado grande. Máximo 5MB permitido.'));
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        const maxWidth = 800;
+        const maxHeight = 600;
+        
+        let { width, height } = img;
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx!.imageSmoothingEnabled = true;
+        ctx!.imageSmoothingQuality = 'high';
+        ctx!.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        
+        if (base64.length > 100000) {
+          const base64Reducido = canvas.toDataURL('image/jpeg', 0.5);
+          resolve(base64Reducido);
+        } else {
+          resolve(base64);
+        }
+      };
+
+      img.onerror = () => reject(new Error('Error al cargar la imagen'));
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  protected async guardarProducto(): Promise<void> {
+    console.log('💾 Guardando producto...');
+    
+    if (!this.productoForm.valid) {
+      console.log('❌ Formulario inválido:', this.productoForm.errors);
+      this.markFormGroupTouched();
       return;
     }
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
+    this.loadingModal = true;
+    this.error = null;
 
-    img.onload = () => {
-      const maxWidth = 800;
-      const maxHeight = 600;
+    try {
+      const formData = this.productoForm.value;
+      console.log('📋 Form data:', formData);
       
-      let { width, height } = img;
-      if (width > height) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
+      let imagenBase64: string | undefined = undefined;
+      
+      if (this.imagenFile) {
+        try {
+          imagenBase64 = await this.convertirArchivoABase64(this.imagenFile);
+        } catch (imageError: any) {
+          this.error = `Error al procesar imagen: ${imageError.message}`;
+          this.loadingModal = false;
+          return;
         }
       }
-      
-      canvas.width = width;
-      canvas.height = height;
-      ctx!.imageSmoothingEnabled = true;
-      ctx!.imageSmoothingQuality = 'high';
-      ctx!.drawImage(img, 0, 0, width, height);
-      const base64 = canvas.toDataURL('image/jpeg', 0.8);
-      
-      console.log(`✅ Imagen procesada: ${file.size} bytes -> ${base64.length} caracteres`);
-      if (base64.length > 100000) { // Límite conservador
-        console.warn('⚠️ Imagen aún muy grande, reduciendo calidad...');
-        const base64Reducido = canvas.toDataURL('image/jpeg', 0.5);
-        resolve(base64Reducido);
-      } else {
-        resolve(base64);
-      }
-    };
 
-    img.onerror = () => reject(new Error('Error al cargar la imagen'));
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-protected async guardarProducto(): Promise<void> {
-  if (!this.productoForm.valid) {
-    this.markFormGroupTouched();
-    return;
-  }
-
-  this.loadingModal.set(true);
-  this.error.set(null);
-
-  try {
-    const formData = this.productoForm.value;
-    
-    let imagenBase64: string | undefined = undefined;
-    
-    if (this.imagenFile) {
-      try {
-        imagenBase64 = await this.convertirArchivoABase64(this.imagenFile);
-      } catch (imageError: any) {
-        this.error.set(`Error al procesar imagen: ${imageError.message}`);
-        this.loadingModal.set(false);
-        return;
-      }
-    }
-
-    const basePayload = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
-      descripcionDetallada: formData.descripcionDetallada,
-      precioBase: Number(formData.precioBase),
-      porcentajeGanancia: Number(formData.porcentajeGanancia),
-      imagenPrincipal: imagenBase64, 
-      imagenesSecundarias: [],
-      caracteristicas: [],
-      beneficios: []
-    };
-
-    console.log('Payload que se está enviando:', basePayload);
-
-    if (this.modoEdicion && this.productoEditando) {
-      const updatePayload = {
-        ...basePayload,
-        activo: formData.activo
+      // ✅ CORREGIDO: Usar porcentajeGanancia en el payload
+      const basePayload = {
+        nombre: formData.nombre,
+        descripcion: formData.descripcion,
+        descripcionDetallada: formData.descripcionDetallada,
+        precioBase: Number(formData.precioBase),
+        porcentajeGanancia: Number(formData.porcentajeGanancia), // ✅ Cambiado
+        imagenPrincipal: imagenBase64,
+        imagenesSecundarias: [],
+        caracteristicas: [],
+        beneficios: []
       };
-      await this.productoService
-        .actualizarProducto(this.productoEditando.id, updatePayload)
-        .toPromise();
-    } else {
-      await this.productoService
-        .crearProducto(basePayload)
-        .toPromise();
-    }
 
-    this.cargarProductos();
-    this.cerrarModal();
-  } catch (err: any) {
-    console.error('Error completo:', err);
-    
-    if (err.status === 400) {
-      this.error.set('Datos inválidos: ' + (err.error?.message || 'Verifique los campos'));
-    } else if (err.status === 413) {
-      this.error.set('El archivo de imagen es demasiado grande');
-    } else {
-      this.error.set(err.error?.message || 'Error al guardar el producto');
+      console.log('📤 Payload a enviar:', basePayload);
+
+      if (this.modoEdicion && this.productoEditando) {
+        const updatePayload = {
+          ...basePayload,
+          activo: formData.activo
+        };
+        await this.productoService
+          .actualizarProducto(this.productoEditando.id, updatePayload)
+          .toPromise();
+      } else {
+        await this.productoService
+          .crearProducto(basePayload)
+          .toPromise();
+      }
+
+      this.cargarProductos();
+      this.cerrarModal();
+      console.log('✅ Producto guardado exitosamente');
+    } catch (err: any) {
+      console.error('❌ Error completo:', err);
+      
+      if (err.status === 400) {
+        this.error = 'Datos inválidos: ' + (err.error?.message || 'Verifique los campos');
+      } else if (err.status === 413) {
+        this.error = 'El archivo de imagen es demasiado grande';
+      } else {
+        this.error = err.error?.message || 'Error al guardar el producto';
+      }
+    } finally {
+      this.loadingModal = false;
     }
-  } finally {
-    this.loadingModal.set(false);
   }
-}
 
   protected toggleEstado(producto: Producto): void {
     const index = this.productos.findIndex(p => p.id === producto.id);
@@ -297,16 +346,17 @@ protected async guardarProducto(): Promise<void> {
         },
         error: (err) => {
           console.error(err);
-          this.error.set('Error al eliminar el producto');
+          this.error = 'Error al eliminar el producto';
         }
       });
     }
   }
 
+  // ✅ CORREGIDO: Usar porcentajeGanancia
   protected calcularPrecioVenta(): number {
     const precioBase = this.productoForm.get('precioBase')?.value || 0;
-    const porcentaje = this.productoForm.get('porcentajeGanancia')?.value || 0;
-    return precioBase * (1 + porcentaje / 100);
+    const porcentajeGanancia = this.productoForm.get('porcentajeGanancia')?.value || 0; // ✅ Cambiado
+    return precioBase * (1 + porcentajeGanancia / 100);
   }
 
   protected cambiarPagina(page: number): void {
@@ -340,11 +390,12 @@ protected async guardarProducto(): Promise<void> {
     return null;
   }
 
+  // ✅ CORREGIDO: Actualizar labels
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       nombre: 'El nombre',
       precioBase: 'El precio base',
-      porcentajeGanancia: 'El porcentaje de ganancia'
+      porcentajeGanancia: 'El porcentaje de ganancia' // ✅ Cambiado
     };
     return labels[fieldName] || fieldName;
   }
@@ -379,15 +430,15 @@ protected async guardarProducto(): Promise<void> {
 
   private procesarArchivo(file: File): void {
     if (!file.type.startsWith('image/')) {
-      this.error.set('Selecciona solo imágenes (JPG, PNG, GIF)');
+      this.error = 'Selecciona solo imágenes (JPG, PNG, GIF)';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.error.set('La imagen no puede pesar más de 5MB');
+      this.error = 'La imagen no puede pesar más de 5MB';
       return;
     }
     this.imagenFile = file;
-    this.error.set(null);
+    this.error = null;
     const reader = new FileReader();
     reader.onload = e => this.imagenPreview = e.target?.result as string;
     reader.readAsDataURL(file);
@@ -402,8 +453,6 @@ protected async guardarProducto(): Promise<void> {
   protected triggerFileInput(): void {
     this.fileInput.nativeElement.click();
   }
-
-  
 
   protected Math = Math;
 }

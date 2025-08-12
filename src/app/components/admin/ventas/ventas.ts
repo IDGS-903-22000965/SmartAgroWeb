@@ -226,6 +226,19 @@ if (response) {
       alert('Error al exportar el reporte');
     }
   }
+mostrarModalDetalles = false;
+ventaSeleccionada: Venta | null = null;
+
+abrirModalDetalles(venta: Venta) {
+  this.ventaSeleccionada = venta;
+  this.mostrarModalDetalles = true;
+  this.verDetalles(venta.id);
+}
+
+cerrarModalDetalles() {
+  this.mostrarModalDetalles = false;
+  this.ventaSeleccionada = null;
+}
   exportarCSVAlternativo() {
     try {
       const params = new URLSearchParams();

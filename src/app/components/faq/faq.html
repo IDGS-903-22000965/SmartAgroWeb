@@ -1,81 +1,129 @@
-<div class="faq-page">
-  <section class="faq-hero">
-    <div class="container">
-      <div class="hero-content">
-        <h1>Preguntas Frecuentes</h1>
-        <p>Encuentra respuestas rápidas a las consultas más comunes sobre nuestros sistemas de riego inteligente</p>
+<!-- Página de FAQ con el MISMO estilo exacto de register/login -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600">
+  
+  <!-- Hero Section -->
+  <section class="pt-8 pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 text-center">
+        <h1 class="text-4xl lg:text-6xl font-bold text-green-800 mb-4">Preguntas Frecuentes</h1>
+        <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+          Encuentra respuestas rápidas a las consultas más comunes sobre nuestros sistemas de riego inteligente
+        </p>
       </div>
     </div>
   </section>
-  <section class="search-section">
-    <div class="container">
-      <div class="search-container">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Buscar en preguntas frecuentes..."
-            [value]="searchTerm()"
-            (input)="onSearchChange($event)"
-            class="search-input">
-          @if (searchTerm()) {
-            <button (click)="clearSearch()" class="clear-search">✕</button>
+
+  <!-- Sección de Búsqueda -->
+  <section class="pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+        
+        <!-- Buscador -->
+        <div class="mb-6">
+          <div class="relative max-w-2xl mx-auto">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar en preguntas frecuentes..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($event)"
+              class="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-lg bg-white/90 backdrop-blur-sm">
+            @if (searchTerm()) {
+              <button (click)="clearSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
+                ✕
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Filtros de categoría -->
+        <div class="flex flex-wrap justify-center gap-3">
+          <button (click)="filteredFaqs.set(faqs)" class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg">
+            Todas
+          </button>
+          @for (categoria of getUniqueCategories(); track categoria) {
+            <button (click)="filterByCategory(categoria)" class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 hover:border-green-300 hover:shadow-md hover:-translate-y-0.5">
+              {{ categoria }}
+            </button>
           }
         </div>
       </div>
-      <div class="category-filters">
-        <button (click)="filteredFaqs.set(faqs)" class="category-btn active">
-          Todas
-        </button>
-        @for (categoria of getUniqueCategories(); track categoria) {
-          <button (click)="filterByCategory(categoria)" class="category-btn">
-            {{ categoria }}
-          </button>
-        }
-      </div>
     </div>
   </section>
-  <section class="faq-content">
-    <div class="container">
+
+  <!-- Contenido FAQ -->
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       @if (filteredFaqs().length === 0) {
-        <div class="no-results">
-          <div class="no-results-icon">🔍</div>
-          <h3>No se encontraron resultados</h3>
-          <p>Intenta con otros términos de búsqueda o explora todas las categorías</p>
-          <button (click)="clearSearch()" class="btn btn-primary">Ver todas las preguntas</button>
+        <!-- Estado sin resultados -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+          <div class="text-8xl mb-6">🔍</div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">No se encontraron resultados</h3>
+          <p class="text-gray-600 mb-8">Intenta con otros términos de búsqueda o explora todas las categorías</p>
+          <button (click)="clearSearch()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            Ver todas las preguntas
+          </button>
         </div>
       } @else {
-        <div class="faq-grid">
+        <!-- Grid de FAQ -->
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           @for (faq of filteredFaqs(); track faq.id) {
-            <div class="faq-card">
-              <div class="faq-header">
-                <span class="faq-category">{{ faq.categoria }}</span>
-                <h3 class="faq-question">{{ faq.pregunta }}</h3>
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              
+              <!-- Header de la FAQ -->
+              <div class="mb-4">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3"
+                      [ngClass]="{
+                        'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800': faq.categoria === 'Instalación',
+                        'bg-gradient-to-r from-green-100 to-green-200 text-green-800': faq.categoria === 'Funcionamiento',
+                        'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800': faq.categoria === 'Mantenimiento',
+                        'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800': faq.categoria === 'Garantía',
+                        'bg-gradient-to-r from-red-100 to-red-200 text-red-800': faq.categoria === 'Costos',
+                        'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800': !['Instalación', 'Funcionamiento', 'Mantenimiento', 'Garantía', 'Costos'].includes(faq.categoria)
+                      }">
+                  {{ faq.categoria }}
+                </span>
+                <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-200">
+                  {{ faq.pregunta }}
+                </h3>
               </div>
-              <div class="faq-answer">
-                <p>{{ faq.respuesta }}</p>
+
+              <!-- Respuesta -->
+              <div class="mb-4">
+                <p class="text-gray-700 leading-relaxed">{{ faq.respuesta }}</p>
               </div>
-              <div class="faq-tags">
-                @for (tag of faq.tags; track tag) {
-                  <span class="faq-tag">{{ tag }}</span>
-                }
-              </div>
+
+              <!-- Tags -->
+              @if (faq.tags && faq.tags.length > 0) {
+                <div class="flex flex-wrap gap-2">
+                  @for (tag of faq.tags; track tag) {
+                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md hover:bg-gray-200 transition-colors duration-200">
+                      {{ tag }}
+                    </span>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
       }
     </div>
   </section>
-  <section class="faq-cta">
-    <div class="container">
-      <div class="cta-content">
-        <h2>¿No encontraste lo que buscabas?</h2>
-        <p>Nuestro equipo de expertos está listo para responder todas tus preguntas específicas</p>
-        <div class="cta-actions">
-          <a routerLink="/contacto" class="btn btn-primary">
+
+  <!-- CTA Section -->
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 text-center">
+        <h2 class="text-3xl font-bold text-green-800 mb-4">¿No encontraste lo que buscabas?</h2>
+        <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          Nuestro equipo de expertos está listo para responder todas tus preguntas específicas
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a routerLink="/contacto" class="px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 inline-block">
             Contactar Soporte
           </a>
-          <a routerLink="/cotizacion" class="btn btn-outline">
+          <a routerLink="/cotizacion" class="px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 inline-block">
             Solicitar Cotización
           </a>
         </div>

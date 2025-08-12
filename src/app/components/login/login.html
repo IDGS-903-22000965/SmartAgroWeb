@@ -1,84 +1,92 @@
-<div class="login-page">
-  <div class="login-container">
-    <div class="login-background">
-      <div class="background-overlay"></div>
-    </div>
-    
-    <div class="login-content">
-      <div class="login-form-container">
-        <div class="login-header">
-          <div class="logo">
-            <span class="logo-icon">🌱</span>
-            <span class="logo-text">SmartAgro</span>
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 flex items-center justify-center p-4">
+  <div class="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden">
+    <div class="grid lg:grid-cols-2 min-h-[700px]">
+      
+      <!-- Formulario de Login -->
+      <div class="flex flex-col justify-center p-6 lg:p-12">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <!-- Reemplaza con tu logo: <img src="assets/logo.png" alt="SmartAgro Logo" class="w-10 h-10" /> -->
+            <div class="w-10 h-10 bg-gradient-to-br from-green-600 to-lime-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
+              SA
+            </div>
+            <span class="text-2xl font-bold text-green-800">SmartAgro</span>
           </div>
-          <h1>Iniciar Sesión</h1>
-          <p>Accede a tu cuenta para gestionar tus sistemas de riego</p>
+          <h1 class="text-2xl font-bold text-green-800">Iniciar Sesión</h1>
+          <p class="text-gray-600 mt-1">Accede a tu cuenta para gestionar tus sistemas de riego</p>
         </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Formulario Angular Original -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
           @if (error()) {
-            <div class="alert alert-error">
-              <span class="alert-icon">⚠️</span>
+            <div class="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <span>⚠️</span>
               {{ error() }}
             </div>
           }
 
-          <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <div class="input-container">
-              <span class="input-icon">📧</span>
+          <!-- Email -->
+          <div>
+            <label for="email" class="block mb-1 text-sm font-semibold text-green-800">Email</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">📧</span>
               <input
                 type="email"
                 id="email"
                 formControlName="email"
-                class="form-input"
-                [class.error]="isFieldInvalid('email')"
+                class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                [class.border-red-500]="isFieldInvalid('email')"
                 placeholder="tu@email.com"
                 autocomplete="email">
             </div>
             @if (getFieldError('email')) {
-              <span class="field-error">{{ getFieldError('email') }}</span>
+              <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('email') }}</span>
             }
           </div>
 
-          <div class="form-group">
-            <label for="password" class="form-label">Contraseña</label>
-            <div class="input-container">
-              <span class="input-icon">🔒</span>
+          <!-- Password -->
+          <div>
+            <label for="password" class="block mb-1 text-sm font-semibold text-green-800">Contraseña</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔒</span>
               <input
                 [type]="showPassword() ? 'text' : 'password'"
                 id="password"
                 formControlName="password"
-                class="form-input"
-                [class.error]="isFieldInvalid('password')"
+                class="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                [class.border-red-500]="isFieldInvalid('password')"
                 placeholder="Tu contraseña"
                 autocomplete="current-password">
               <button
                 type="button"
-                class="toggle-password"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                 (click)="togglePasswordVisibility()">
                 <span>{{ showPassword() ? '🙈' : '👁️' }}</span>
               </button>
             </div>
             @if (getFieldError('password')) {
-              <span class="field-error">{{ getFieldError('password') }}</span>
+              <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('password') }}</span>
             }
           </div>
 
-          <div class="form-group">
-            <label class="checkbox-container">
-              <input type="checkbox" formControlName="rememberMe" class="checkbox-input">
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-label">Recordarme</span>
+          <!-- Remember Me -->
+          <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" formControlName="rememberMe" 
+                     class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2">
+              <span class="text-sm text-gray-700">Recordarme</span>
             </label>
           </div>
 
+          <!-- Submit Button -->
           <button
             type="submit"
-            class="btn btn-primary btn-full"
+            class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-600 to-lime-500 px-4 py-3 text-white font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-75 disabled:cursor-not-allowed"
             [disabled]="loading()">
             @if (loading()) {
-              <span class="btn-spinner"></span>
+              <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               Iniciando sesión...
             } @else {
               Iniciar Sesión
@@ -86,71 +94,75 @@
           </button>
         </form>
 
-        <div class="login-footer">
-          <div class="help-section">
-            <h4>¿Necesitas una cuenta?</h4>
-            <p class="help-text">
-              <a routerLink="/register" class="link">Solicita tu cuenta aquí</a> - 
+        <!-- Footer -->
+        <div class="mt-8 space-y-4 text-center text-sm">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="font-semibold text-blue-800 mb-1">¿Necesitas una cuenta?</h4>
+            <p class="text-blue-700">
+              <a routerLink="/register" class="font-semibold text-blue-600 hover:underline">Solicita tu cuenta aquí</a> - 
               Nuestros administradores crearán tu cuenta y te enviarán las credenciales por email.
             </p>
           </div>
           
-          <div class="contact-info">
+          <div class="text-xs text-gray-500 space-y-1">
             <p><strong>📞 Teléfono:</strong> +52 (477) 123-4567</p>
-            <p><strong>📧 Email:</strong> soportesmartagro.com</p>
+            <p><strong>📧 Email:</strong> soporte@smartagro.com</p>
           </div>
           
-          <a href="#" class="link">¿Olvidaste tu contraseña?</a>
+          <a href="#" class="text-green-600 hover:underline font-semibold">¿Olvidaste tu contraseña?</a>
         </div>
       </div>
       
-      <div class="login-info">
-        <div class="info-content">
-          <h2>Bienvenido de vuelta</h2>
-          <p>
+      <!-- Panel Informativo -->
+      <div class="hidden lg:flex flex-col justify-center bg-gradient-to-br from-green-800 to-lime-600 text-white p-8">
+        <div class="max-w-sm mx-auto">
+          <h2 class="text-2xl font-bold mb-3">Bienvenido de vuelta</h2>
+          <p class="text-sm opacity-90 mb-6">
             Accede a tu panel de control para monitorear y gestionar 
             todos tus sistemas de riego inteligente desde un solo lugar.
           </p>
           
-          <div class="features-list">
-            <div class="feature-item">
-              <span class="feature-icon">📱</span>
-              <div class="feature-text">
-                <h4>Control Remoto</h4>
-                <p>Gestiona tus sistemas desde cualquier lugar</p>
+          <div class="space-y-4 mb-6">
+            <div class="flex items-start gap-3">
+              <span class="text-xl">📱</span>
+              <div>
+                <h4 class="font-semibold">Control Remoto</h4>
+                <p class="text-xs opacity-80">Gestiona tus sistemas desde cualquier lugar</p>
               </div>
             </div>
             
-            <div class="feature-item">
-              <span class="feature-icon">📊</span>
-              <div class="feature-text">
-                <h4>Reportes Detallados</h4>
-                <p>Analiza el rendimiento de tus cultivos</p>
+            <div class="flex items-start gap-3">
+              <span class="text-xl">📊</span>
+              <div>
+                <h4 class="font-semibold">Reportes Detallados</h4>
+                <p class="text-xs opacity-80">Analiza el rendimiento de tus cultivos</p>
               </div>
             </div>
             
-            <div class="feature-item">
-              <span class="feature-icon">🔔</span>
-              <div class="feature-text">
-                <h4>Alertas en Tiempo Real</h4>
-                <p>Recibe notificaciones instantáneas</p>
+            <div class="flex items-start gap-3">
+              <span class="text-xl">🔔</span>
+              <div>
+                <h4 class="font-semibold">Alertas en Tiempo Real</h4>
+                <p class="text-xs opacity-80">Recibe notificaciones instantáneas</p>
               </div>
             </div>
             
-            <div class="feature-item">
-              <span class="feature-icon">📋</span>
-              <div class="feature-text">
-                <h4>Historial de Compras</h4>
-                <p>Consulta todas tus adquisiciones</p>
+            <div class="flex items-start gap-3">
+              <span class="text-xl">📋</span>
+              <div>
+                <h4 class="font-semibold">Historial de Compras</h4>
+                <p class="text-xs opacity-80">Consulta todas tus adquisiciones</p>
               </div>
             </div>
           </div>
           
-          <div class="admin-note">
-            <div class="note-icon">👨‍💼</div>
-            <div class="note-content">
-              <h4>¿Eres administrador?</h4>
-              <p>Inicia sesión con tus credenciales de administrador para acceder al panel de gestión completo.</p>
+          <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+            <div class="flex items-start gap-3">
+              <div class="text-xl">👨‍💼</div>
+              <div>
+                <h4 class="font-semibold">¿Eres administrador?</h4>
+                <p class="text-xs opacity-80">Inicia sesión con tus credenciales de administrador para acceder al panel de gestión completo.</p>
+              </div>
             </div>
           </div>
         </div>

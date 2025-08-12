@@ -1,97 +1,259 @@
-<header class="header">
-  <nav class="navbar">
-    <div class="container">
-      <div class="navbar-brand">
-        <a routerLink="/" class="brand-link" (click)="closeMenu()">
-          <div class="logo">
-            <span class="logo-icon">🌱</span>
-            <span class="logo-text">SmartAgro</span>
+<!-- Header con el MISMO estilo exacto de register/login - Funcionalidad Angular completa -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600">
+  <header class="relative">
+    <!-- Card translúcida para el header -->
+    <div class="bg-white/95 backdrop-blur-md shadow-2xl border-b border-white/20 sticky top-0 z-50">
+      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          
+          <!-- Logo/Brand -->
+          <div class="flex-shrink-0">
+            <a routerLink="/" class="flex items-center gap-3 group" (click)="closeMenu()">
+              <!-- Reemplaza con tu logo: <img src="assets/logo.png" alt="SmartAgro Logo" class="w-8 h-8" /> -->
+              <div class="w-8 h-8 bg-gradient-to-br from-green-600 to-lime-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:shadow-lg transition-shadow duration-200">
+                SA
+              </div>
+              <span class="text-xl font-bold text-green-800 group-hover:text-green-600 transition-colors duration-200">
+                SmartAgro
+              </span>
+            </a>
           </div>
-        </a>
-      </div>
-      <button 
-        class="mobile-menu-toggle"
-        (click)="toggleMenu()"
-        [class.active]="isMenuOpen()">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <div class="navbar-menu" [class.active]="isMenuOpen()">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" 
-               class="nav-link" (click)="closeMenu()">
+
+          <!-- Desktop Navigation -->
+          <div class="hidden md:block">
+            <div class="ml-10 flex items-baseline space-x-1">
+              <a routerLink="/" 
+                 routerLinkActive="bg-green-100 text-green-800" 
+                 [routerLinkActiveOptions]="{exact: true}"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                Inicio
+              </a>
+              <a routerLink="/productos" 
+                 routerLinkActive="bg-green-100 text-green-800"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                Productos
+              </a>
+              <a routerLink="/cotizacion" 
+                 routerLinkActive="bg-green-100 text-green-800"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                Cotización
+              </a>
+              <a routerLink="/testimonios" 
+                 routerLinkActive="bg-green-100 text-green-800"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                Testimonios
+              </a>
+              <a routerLink="/contacto" 
+                 routerLinkActive="bg-green-100 text-green-800"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                Contacto
+              </a>
+              <a routerLink="/faq" 
+                 routerLinkActive="bg-green-100 text-green-800"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                 (click)="closeMenu()">
+                FAQ
+              </a>
+            </div>
+          </div>
+
+          <!-- Desktop User Menu -->
+          <div class="hidden md:block">
+            @if (isAuthenticated()) {
+              <div class="relative group">
+                <!-- User Avatar/Trigger -->
+                <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {{ getUserInitials() }}
+                  </div>
+                  <div class="text-left hidden lg:block">
+                    <div class="text-sm font-medium text-gray-700">
+                      {{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ currentUser()?.email }}</div>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+
+                <!-- Dropdown Menu con estilo glassmorphism -->
+                <div class="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div class="p-3 border-b border-gray-100">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ currentUser()?.email }}</div>
+                  </div>
+                  
+                  <div class="py-2">
+                    @if (isAdmin()) {
+                      <a routerLink="/admin" 
+                         class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                         (click)="closeMenu()">
+                        <span>⚙️</span>
+                        Panel Admin
+                      </a>
+                    }
+                    @if (isCliente()) {
+                      <a routerLink="/cliente" 
+                         class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                         (click)="closeMenu()">
+                        <span>👤</span>
+                        Mi Cuenta
+                      </a>
+                    }
+                    <button 
+                      (click)="logout()"
+                      class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full text-left">
+                      <span>🚪</span>
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="flex items-center gap-3">
+                <a routerLink="/login" 
+                   class="px-4 py-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors duration-200"
+                   (click)="closeMenu()">
+                  Iniciar Sesión
+                </a>
+                <a routerLink="/register" 
+                   class="px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white text-sm font-medium rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                   (click)="closeMenu()">
+                  Registrarse
+                </a>
+              </div>
+            }
+          </div>
+
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button 
+              (click)="toggleMenu()"
+              class="relative inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-gray-50 transition-colors duration-200"
+              [class.text-green-600]="isMenuOpen()">
+              <span class="sr-only">Abrir menú principal</span>
+              <!-- Hamburger icon -->
+              <div class="w-6 h-6 relative">
+                <span class="absolute left-0 top-1 w-6 h-0.5 bg-current transform transition-all duration-200"
+                      [class.rotate-45]="isMenuOpen()" 
+                      [class.translate-y-1.5]="isMenuOpen()"></span>
+                <span class="absolute left-0 top-3 w-6 h-0.5 bg-current transform transition-all duration-200"
+                      [class.opacity-0]="isMenuOpen()"></span>
+                <span class="absolute left-0 top-5 w-6 h-0.5 bg-current transform transition-all duration-200"
+                      [class.-rotate-45]="isMenuOpen()" 
+                      [class.-translate-y-1.5]="isMenuOpen()"></span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile menu con estilo glassmorphism -->
+        <div class="md:hidden" [class.block]="isMenuOpen()" [class.hidden]="!isMenuOpen()">
+          <div class="px-2 pt-2 pb-3 space-y-1 bg-white/95 backdrop-blur-md border-t border-white/20 rounded-b-2xl shadow-2xl">
+            <a routerLink="/" 
+               routerLinkActive="bg-green-100 text-green-800" 
+               [routerLinkActiveOptions]="{exact: true}"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               Inicio
             </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/productos" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <a routerLink="/productos" 
+               routerLinkActive="bg-green-100 text-green-800"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               Productos
             </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/cotizacion" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <a routerLink="/cotizacion" 
+               routerLinkActive="bg-green-100 text-green-800"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               Cotización
             </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/testimonios" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <a routerLink="/testimonios" 
+               routerLinkActive="bg-green-100 text-green-800"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               Testimonios
             </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/contacto" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <a routerLink="/contacto" 
+               routerLinkActive="bg-green-100 text-green-800"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               Contacto
             </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/faq" routerLinkActive="active" class="nav-link" (click)="closeMenu()">
+            <a routerLink="/faq" 
+               routerLinkActive="bg-green-100 text-green-800"
+               class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+               (click)="closeMenu()">
               FAQ
             </a>
-          </li>
-        </ul>
-        <div class="navbar-user">
-          @if (isAuthenticated()) {
-            <div class="user-menu">
-              <div class="user-avatar">{{ getUserInitials() }}</div>
-              <div class="user-dropdown">
-                <div class="user-info">
-                  <span class="user-name">{{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}</span>
-                  <span class="user-email">{{ currentUser()?.email }}</span>
+
+            <!-- Mobile User Section -->
+            @if (isAuthenticated()) {
+              <div class="border-t border-gray-200 pt-4 pb-3">
+                <div class="flex items-center px-3 mb-3">
+                  <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-medium">
+                    {{ getUserInitials() }}
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-base font-medium text-gray-800">
+                      {{ currentUser()?.nombre }} {{ currentUser()?.apellidos }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ currentUser()?.email }}</div>
+                  </div>
                 </div>
-                <div class="user-actions">
+                <div class="space-y-1">
                   @if (isAdmin()) {
-                    <a routerLink="/admin" class="dropdown-link" (click)="closeMenu()">
-                      <span class="icon">⚙️</span>
+                    <a routerLink="/admin" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                       (click)="closeMenu()">
+                      <span>⚙️</span>
                       Panel Admin
                     </a>
                   }
                   @if (isCliente()) {
-                    <a routerLink="/cliente" class="dropdown-link" (click)="closeMenu()">
-                      <span class="icon">👤</span>
+                    <a routerLink="/cliente" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+                       (click)="closeMenu()">
+                      <span>👤</span>
                       Mi Cuenta
                     </a>
                   }
-                  <button class="dropdown-link logout-btn" (click)="logout()">
-                    <span class="icon">🚪</span>
+                  <button 
+                    (click)="logout()"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 w-full text-left">
+                    <span>🚪</span>
                     Cerrar Sesión
                   </button>
                 </div>
               </div>
-            </div>
-          } @else {
-            <div class="auth-buttons">
-              <a routerLink="/login" class="btn btn-outline" (click)="closeMenu()">
-                Iniciar Sesión
-              </a>
-              <a routerLink="/register" class="btn btn-primary" (click)="closeMenu()">
-                Registrarse
-              </a>
-            </div>
-          }
+            } @else {
+              <div class="border-t border-gray-200 pt-4 pb-3 space-y-2">
+                <a routerLink="/login" 
+                   class="block px-3 py-2 rounded-lg text-base font-medium text-green-600 hover:bg-green-50 transition-all duration-200"
+                   (click)="closeMenu()">
+                  Iniciar Sesión
+                </a>
+                <a routerLink="/register" 
+                   class="block px-3 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white text-base font-medium rounded-lg transition-all duration-200"
+                   (click)="closeMenu()">
+                  Registrarse
+                </a>
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      </nav>
     </div>
-  </nav>
-</header>
+
+ 
+  </header>
+</div>

@@ -1,345 +1,399 @@
-<div class="cotizacion-page">
+<!-- Página de Cotización con el MISMO estilo exacto de register/login -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  
   @if (success()) {
-    <div class="success-container">
-      <div class="success-content">
-        <div class="success-icon">✅</div>
-        <h1>¡Cotización Enviada Exitosamente!</h1>
-        <p>
+    <!-- Estado de Éxito -->
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 max-w-2xl text-center">
+        <div class="text-8xl mb-6">✅</div>
+        <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-4">¡Cotización Enviada Exitosamente!</h1>
+        <p class="text-gray-600 text-lg mb-8 leading-relaxed">
           Hemos recibido tu solicitud de cotización. Nuestro equipo de expertos 
           la revisará y se pondrá en contacto contigo en las próximas 24 horas.
         </p>
         
-        <div class="success-details">
-          <div class="detail-item">
-            <span class="detail-icon">📧</span>
-            <span>Recibirás un email de confirmación</span>
+        <!-- Detalles del proceso -->
+        <div class="grid gap-4 mb-8">
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200/50">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+              📧
+            </div>
+            <span class="text-blue-800 font-medium">Recibirás un email de confirmación</span>
           </div>
-          <div class="detail-item">
-            <span class="detail-icon">📞</span>
-            <span>Te contactaremos en menos de 24 horas</span>
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200/50">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+              📞
+            </div>
+            <span class="text-green-800 font-medium">Te contactaremos en menos de 24 horas</span>
           </div>
-          <div class="detail-item">
-            <span class="detail-icon">💡</span>
-            <span>Propuesta personalizada para tu proyecto</span>
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200/50">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+              💡
+            </div>
+            <span class="text-purple-800 font-medium">Propuesta personalizada para tu proyecto</span>
           </div>
         </div>
 
-        <div class="success-actions">
-          <button (click)="goHome()" class="btn btn-primary">
+        <!-- Acciones -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button (click)="goHome()" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
             Volver al Inicio
           </button>
-          <button (click)="resetForm()" class="btn btn-outline">
+          <button (click)="resetForm()" class="flex-1 px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-semibold">
             Nueva Cotización
           </button>
         </div>
       </div>
     </div>
   } @else {
-    <div class="cotizacion-container">
-      <div class="cotizacion-header">
-        <div class="container">
-          <h1>Solicitar Cotización</h1>
-          <p>Completa el formulario y recibe una propuesta personalizada para tu proyecto</p>
-          <div class="progress-container">
-            <div class="progress-bar">
-              @for (step of [1,2,3,4]; track step) {
-                <div 
-                  class="progress-step"
-                  [class.active]="currentStep() === step"
-                  [class.completed]="currentStep() > step"
-                  (click)="goToStep(step)">
-                  <div class="step-number">{{ step }}</div>
-                  <div class="step-label">
-                    @switch (step) {
-                      @case (1) { Información Personal }
-                      @case (2) { Proyecto }
-                      @case (3) { Recursos }
-                      @case (4) { Finalizar }
-                    }
-                  </div>
-                </div>
-              }
+    <div class="max-w-5xl mx-auto">
+      
+      <!-- Header -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">Solicitar Cotización</h1>
+          <p class="text-gray-600">Completa el formulario y recibe una propuesta personalizada para tu proyecto</p>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="flex justify-between items-center">
+          @for (step of [1,2,3,4]; track step) {
+            <div class="flex flex-col items-center cursor-pointer" (click)="goToStep(step)">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg border-2 transition-all duration-300"
+                   [class]="currentStep() === step ? 
+                     'bg-gradient-to-br from-green-600 to-lime-500 text-white border-green-500 shadow-lg scale-110' : 
+                     currentStep() > step ? 
+                       'bg-green-100 text-green-700 border-green-300' : 
+                       'bg-gray-100 text-gray-500 border-gray-300'">
+                {{ step }}
+              </div>
+              <span class="text-xs mt-2 font-medium text-center"
+                    [class]="currentStep() >= step ? 'text-green-700' : 'text-gray-500'">
+                @switch (step) {
+                  @case (1) { Personal }
+                  @case (2) { Proyecto }
+                  @case (3) { Recursos }
+                  @case (4) { Finalizar }
+                }
+              </span>
             </div>
-          </div>
+            @if (step < 4) {
+              <div class="flex-1 h-0.5 mx-4"
+                   [class]="currentStep() > step ? 'bg-green-300' : 'bg-gray-200'">
+              </div>
+            }
+          }
         </div>
       </div>
-      <div class="cotizacion-content">
-        <div class="container">
-          <form [formGroup]="cotizacionForm" class="cotizacion-form">
-            @if (error()) {
-              <div class="alert alert-error">
-                <span class="alert-icon">⚠️</span>
-                {{ error() }}
+
+      <!-- Formulario -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+        <form [formGroup]="cotizacionForm" class="space-y-6">
+          
+          @if (error()) {
+            <div class="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <span>⚠️</span>
+              {{ error() }}
+            </div>
+          }
+
+          <!-- Paso 1: Información Personal -->
+          @if (currentStep() === 1) {
+            <div>
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Información Personal</h2>
+                <p class="text-gray-600">Cuéntanos sobre ti y tu proyecto</p>
               </div>
-            }
-            @if (currentStep() === 1) {
-              <div class="form-step">
-                <div class="step-header">
-                  <h2>Información Personal</h2>
-                  <p>Cuéntanos sobre ti y tu proyecto</p>
+
+              <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label for="nombreCliente" class="block mb-1 text-sm font-semibold text-green-800">Nombre Completo *</label>
+                  <input
+                    type="text"
+                    id="nombreCliente"
+                    formControlName="nombreCliente"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    [class.border-red-500]="isFieldInvalid('nombreCliente')"
+                    placeholder="Tu nombre completo">
+                  @if (getFieldError('nombreCliente')) {
+                    <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('nombreCliente') }}</span>
+                  }
                 </div>
 
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label for="nombreCliente" class="form-label">Nombre Completo *</label>
-                    <input
-                      type="text"
-                      id="nombreCliente"
-                      formControlName="nombreCliente"
-                      class="form-input"
-                      [class.error]="isFieldInvalid('nombreCliente')"
-                      placeholder="Tu nombre completo">
-                    @if (getFieldError('nombreCliente')) {
-                      <span class="field-error">{{ getFieldError('nombreCliente') }}</span>
-                    }
-                  </div>
+                <div>
+                  <label for="emailCliente" class="block mb-1 text-sm font-semibold text-green-800">Email *</label>
+                  <input
+                    type="email"
+                    id="emailCliente"
+                    formControlName="emailCliente"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    [class.border-red-500]="isFieldInvalid('emailCliente')"
+                    placeholder="tu@email.com">
+                  @if (getFieldError('emailCliente')) {
+                    <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('emailCliente') }}</span>
+                  }
+                </div>
 
-                  <div class="form-group">
-                    <label for="emailCliente" class="form-label">Email *</label>
-                    <input
-                      type="email"
-                      id="emailCliente"
-                      formControlName="emailCliente"
-                      class="form-input"
-                      [class.error]="isFieldInvalid('emailCliente')"
-                      placeholder="tu@email.com">
-                    @if (getFieldError('emailCliente')) {
-                      <span class="field-error">{{ getFieldError('emailCliente') }}</span>
-                    }
-                  </div>
-
-                  <div class="form-group">
-                    <label for="telefonoCliente" class="form-label">Teléfono</label>
-                    <input
-                      type="tel"
-                      id="telefonoCliente"
-                      formControlName="telefonoCliente"
-                      class="form-input"
-                      [class.error]="isFieldInvalid('telefonoCliente')"
-                      placeholder="1234567890">
-                    @if (getFieldError('telefonoCliente')) {
-                      <span class="field-error">{{ getFieldError('telefonoCliente') }}</span>
-                    }
-                  </div>
+                <div>
+                  <label for="telefonoCliente" class="block mb-1 text-sm font-semibold text-green-800">Teléfono</label>
+                  <input
+                    type="tel"
+                    id="telefonoCliente"
+                    formControlName="telefonoCliente"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    [class.border-red-500]="isFieldInvalid('telefonoCliente')"
+                    placeholder="1234567890">
+                  @if (getFieldError('telefonoCliente')) {
+                    <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('telefonoCliente') }}</span>
+                  }
                 </div>
               </div>
-            }
-            @if (currentStep() === 2) {
-              <div class="form-step">
-                <div class="step-header">
-                  <h2>Información del Proyecto</h2>
-                  <p>Detalles sobre tu cultivo y ubicación</p>
+            </div>
+          }
+
+          <!-- Paso 2: Información del Proyecto -->
+          @if (currentStep() === 2) {
+            <div>
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Información del Proyecto</h2>
+                <p class="text-gray-600">Detalles sobre tu cultivo y ubicación</p>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="direccionInstalacion" class="block mb-1 text-sm font-semibold text-green-800">Dirección de Instalación *</label>
+                  <input
+                    type="text"
+                    id="direccionInstalacion"
+                    formControlName="direccionInstalacion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    [class.border-red-500]="isFieldInvalid('direccionInstalacion')"
+                    placeholder="Dirección completa donde se instalará el sistema">
+                  @if (getFieldError('direccionInstalacion')) {
+                    <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('direccionInstalacion') }}</span>
+                  }
                 </div>
 
-                <div class="form-grid">
-                  <div class="form-group full-width">
-                    <label for="direccionInstalacion" class="form-label">Dirección de Instalación *</label>
-                    <input
-                      type="text"
-                      id="direccionInstalacion"
-                      formControlName="direccionInstalacion"
-                      class="form-input"
-                      [class.error]="isFieldInvalid('direccionInstalacion')"
-                      placeholder="Dirección completa donde se instalará el sistema">
-                    @if (getFieldError('direccionInstalacion')) {
-                      <span class="field-error">{{ getFieldError('direccionInstalacion') }}</span>
-                    }
-                  </div>
-
-                  <div class="form-group">
-                    <label for="areaCultivo" class="form-label">Área de Cultivo (m²) *</label>
+                <div class="grid sm:grid-cols-3 gap-4">
+                  <div>
+                    <label for="areaCultivo" class="block mb-1 text-sm font-semibold text-green-800">Área de Cultivo (m²) *</label>
                     <input
                       type="number"
                       id="areaCultivo"
                       formControlName="areaCultivo"
-                      class="form-input"
-                      [class.error]="isFieldInvalid('areaCultivo')"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                      [class.border-red-500]="isFieldInvalid('areaCultivo')"
                       placeholder="100"
                       min="1"
                       max="10000">
                     @if (getFieldError('areaCultivo')) {
-                      <span class="field-error">{{ getFieldError('areaCultivo') }}</span>
+                      <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('areaCultivo') }}</span>
                     }
                   </div>
 
-                  <div class="form-group">
-                    <label for="tipoCultivo" class="form-label">Tipo de Cultivo *</label>
+                  <div>
+                    <label for="tipoCultivo" class="block mb-1 text-sm font-semibold text-green-800">Tipo de Cultivo *</label>
                     <select
                       id="tipoCultivo"
                       formControlName="tipoCultivo"
-                      class="form-select"
-                      [class.error]="isFieldInvalid('tipoCultivo')">
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                      [class.border-red-500]="isFieldInvalid('tipoCultivo')">
                       <option value="">Selecciona el tipo de cultivo</option>
                       @for (tipo of tiposCultivo; track tipo) {
                         <option [value]="tipo">{{ tipo }}</option>
                       }
                     </select>
                     @if (getFieldError('tipoCultivo')) {
-                      <span class="field-error">{{ getFieldError('tipoCultivo') }}</span>
+                      <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('tipoCultivo') }}</span>
                     }
                   </div>
 
-                  <div class="form-group">
-                    <label for="tipoSuelo" class="form-label">Tipo de Suelo *</label>
+                  <div>
+                    <label for="tipoSuelo" class="block mb-1 text-sm font-semibold text-green-800">Tipo de Suelo *</label>
                     <select
                       id="tipoSuelo"
                       formControlName="tipoSuelo"
-                      class="form-select"
-                      [class.error]="isFieldInvalid('tipoSuelo')">
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                      [class.border-red-500]="isFieldInvalid('tipoSuelo')">
                       <option value="">Selecciona el tipo de suelo</option>
                       @for (tipo of tiposSuelo; track tipo) {
                         <option [value]="tipo">{{ tipo }}</option>
                       }
                     </select>
                     @if (getFieldError('tipoSuelo')) {
-                      <span class="field-error">{{ getFieldError('tipoSuelo') }}</span>
+                      <span class="text-xs text-red-600 mt-1 block">{{ getFieldError('tipoSuelo') }}</span>
                     }
                   </div>
                 </div>
               </div>
-            }
-            @if (currentStep() === 3) {
-              <div class="form-step">
-                <div class="step-header">
-                  <h2>Recursos Disponibles</h2>
-                  <p>Información sobre agua y energía en tu ubicación</p>
-                </div>
+            </div>
+          }
 
-                <div class="resources-grid">
-                  <div class="resource-card">
-                    <div class="resource-icon">💧</div>
-                    <div class="resource-content">
-                      <h3>Fuente de Agua</h3>
-                      <p>¿Tienes acceso directo a fuente de agua en el área de cultivo?</p>
-                      <label class="checkbox-container">
+          <!-- Paso 3: Recursos Disponibles -->
+          @if (currentStep() === 3) {
+            <div>
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Recursos Disponibles</h2>
+                <p class="text-gray-600">Información sobre agua y energía en tu ubicación</p>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <!-- Fuente de Agua -->
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200/50">
+                  <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-3xl shadow-lg">
+                      💧
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="font-bold text-blue-800 mb-2">Fuente de Agua</h3>
+                      <p class="text-blue-700 text-sm mb-4">¿Tienes acceso directo a fuente de agua en el área de cultivo?</p>
+                      <label class="flex items-center gap-3 cursor-pointer">
                         <input 
                           type="checkbox" 
                           formControlName="fuenteAguaDisponible"
-                          class="checkbox-input">
-                        <span class="checkbox-custom"></span>
-                        <span class="checkbox-label">Sí, tengo acceso a fuente de agua</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div class="resource-card">
-                    <div class="resource-icon">⚡</div>
-                    <div class="resource-content">
-                      <h3>Energía Eléctrica</h3>
-                      <p>¿Hay suministro eléctrico disponible en el área de instalación?</p>
-                      <label class="checkbox-container">
-                        <input 
-                          type="checkbox" 
-                          formControlName="energiaElectricaDisponible"
-                          class="checkbox-input">
-                        <span class="checkbox-custom"></span>
-                        <span class="checkbox-label">Sí, hay energía eléctrica disponible</span>
+                          class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <span class="text-blue-800 font-medium">Sí, tengo acceso a fuente de agua</span>
                       </label>
                     </div>
                   </div>
                 </div>
 
-                <div class="info-note">
-                  <div class="note-icon">💡</div>
-                  <div class="note-content">
-                    <h4>Nota Importante</h4>
-                    <p>
+                <!-- Energía Eléctrica -->
+                <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-6 border border-yellow-200/50">
+                  <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center text-3xl shadow-lg">
+                      ⚡
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="font-bold text-yellow-800 mb-2">Energía Eléctrica</h3>
+                      <p class="text-yellow-700 text-sm mb-4">¿Hay suministro eléctrico disponible en el área de instalación?</p>
+                      <label class="flex items-center gap-3 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          formControlName="energiaElectricaDisponible"
+                          class="w-5 h-5 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2">
+                        <span class="text-yellow-800 font-medium">Sí, hay energía eléctrica disponible</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nota informativa -->
+              <div class="bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-6 border border-green-200/50">
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-lime-500 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+                    💡
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-green-800 mb-2">Nota Importante</h4>
+                    <p class="text-green-700 text-sm">
                       Si no cuentas con alguno de estos recursos, nuestro equipo incluirá 
                       las soluciones necesarias en tu cotización (bomba de agua, sistema solar, etc.).
                     </p>
                   </div>
                 </div>
               </div>
-            }
-            @if (currentStep() === 4) {
-              <div class="form-step">
-                <div class="step-header">
-                  <h2>Requerimientos Especiales</h2>
-                  <p>Detalles adicionales sobre tu proyecto</p>
-                </div>
-
-                <div class="form-group">
-                  <label for="requierimientosEspeciales" class="form-label">
-                    Requerimientos Especiales (Opcional)
-                  </label>
-                  <textarea
-                    id="requierimientosEspeciales"
-                    formControlName="requierimientosEspeciales"
-                    class="form-textarea"
-                    placeholder="Describe cualquier requerimiento especial, características adicionales que necesites, o información relevante para tu proyecto..."
-                    rows="4"></textarea>
-                </div>
-                <div class="cost-estimation">
-                  <h3>Estimación de Costo</h3>
-                  <p>Calcula una estimación preliminar basada en la información proporcionada</p>
-                  
-                  <button 
-                    type="button"
-                    (click)="calculateCost()"
-                    class="btn btn-outline"
-                    [disabled]="calculating()">
-                    @if (calculating()) {
-                      <span class="btn-spinner"></span>
-                      Calculando...
-                    } @else {
-                      Calcular Estimación
-                    }
-                  </button>
-
-                  @if (estimatedCost()) {
-                    <div class="cost-result">
-                      <div class="cost-item">
-                        <span class="cost-label">Costo estimado:</span>
-                        <span class="cost-value">${{ estimatedCost() | number:'1.2-2' }}</span>
-                      </div>
-                      <div class="cost-item">
-                        <span class="cost-label">Con IVA (16%):</span>
-                        <span class="cost-value total">${{ estimatedCostWithTax() | number:'1.2-2' }}</span>
-                      </div>
-                      <div class="cost-note">
-                        <small>*Esta es una estimación preliminar. El costo final puede variar según los requerimientos específicos.</small>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-            <div class="form-navigation">
-              @if (currentStep() > 1) {
-                <button 
-                  type="button" 
-                  (click)="prevStep()" 
-                  class="btn btn-outline">
-                  ← Anterior
-                </button>
-              }
-
-              <div class="nav-spacer"></div>
-
-              @if (currentStep() < totalSteps) {
-                <button 
-                  type="button" 
-                  (click)="nextStep()" 
-                  class="btn btn-primary">
-                  Siguiente →
-                </button>
-              } @else {
-                <button 
-                  type="button" 
-                  (click)="submitCotizacion()" 
-                  class="btn btn-primary"
-                  [disabled]="loading()">
-                  @if (loading()) {
-                    <span class="btn-spinner"></span>
-                    Enviando...
-                  } @else {
-                    Enviar Cotización
-                  }
-                </button>
-              }
             </div>
-          </form>
-        </div>
+          }
+
+          <!-- Paso 4: Finalizar -->
+          @if (currentStep() === 4) {
+            <div>
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Requerimientos Especiales</h2>
+                <p class="text-gray-600">Detalles adicionales sobre tu proyecto</p>
+              </div>
+
+              <div class="mb-8">
+                <label for="requierimientosEspeciales" class="block mb-1 text-sm font-semibold text-green-800">
+                  Requerimientos Especiales (Opcional)
+                </label>
+                <textarea
+                  id="requierimientosEspeciales"
+                  formControlName="requierimientosEspeciales"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 resize-none"
+                  placeholder="Describe cualquier requerimiento especial, características adicionales que necesites, o información relevante para tu proyecto..."
+                  rows="4"></textarea>
+              </div>
+
+              <!-- Estimación de Costo -->
+              <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50">
+                <h3 class="text-xl font-bold text-green-800 mb-2">Estimación de Costo</h3>
+                <p class="text-gray-600 mb-4">Calcula una estimación preliminar basada en la información proporcionada</p>
+                
+                <button 
+                  type="button"
+                  (click)="calculateCost()"
+                  class="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-medium mb-4"
+                  [disabled]="calculating()">
+                  @if (calculating()) {
+                    <div class="flex items-center gap-2">
+                      <div class="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                      Calculando...
+                    </div>
+                  } @else {
+                    Calcular Estimación
+                  }
+                </button>
+
+                @if (estimatedCost()) {
+                  <div class="bg-gradient-to-r from-green-50 to-lime-50 rounded-lg p-4 border border-green-200/50">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-green-700 font-medium">Costo estimado:</span>
+                      <span class="text-2xl font-bold text-green-800">${{ estimatedCost() | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-3">
+                      <span class="text-green-700 font-medium">Con IVA (16%):</span>
+                      <span class="text-3xl font-bold text-green-900">${{ estimatedCostWithTax() | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="text-xs text-green-600">
+                      *Esta es una estimación preliminar. El costo final puede variar según los requerimientos específicos.
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Navegación -->
+          <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            @if (currentStep() > 1) {
+              <button 
+                type="button" 
+                (click)="prevStep()" 
+                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                ← Anterior
+              </button>
+            } @else {
+              <div></div>
+            }
+
+            @if (currentStep() < totalSteps) {
+              <button 
+                type="button" 
+                (click)="nextStep()" 
+                class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-semibold">
+                Siguiente →
+              </button>
+            } @else {
+              <button 
+                type="button" 
+                (click)="submitCotizacion()" 
+                class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-semibold disabled:opacity-75 disabled:cursor-not-allowed"
+                [disabled]="loading()">
+                @if (loading()) {
+                  <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Enviando...
+                  </div>
+                } @else {
+                  Enviar Cotización
+                }
+              </button>
+            }
+          </div>
+        </form>
       </div>
     </div>
   }

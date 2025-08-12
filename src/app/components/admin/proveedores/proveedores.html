@@ -1,488 +1,528 @@
-<div class="proveedores-admin">
-  <div class="page-header">
-    <div class="header-content">
-      <h1>Gestión de Proveedores</h1>
-      <p>Administrar proveedores y proveedurías</p>
-    </div>
-    <div class="header-actions">
-      <button (click)="openCreateModal()" class="btn btn-primary">
-        ➕ Nuevo Proveedor
-      </button>
-    </div>
-  </div>
-  <div class="stats-grid">
-    <div class="stat-card total">
-      <div class="stat-icon">🏢</div>
-      <div class="stat-content">
-        <h3>Total Proveedores</h3>
-        <div class="stat-value">{{ proveedores().length }}</div>
-      </div>
-    </div>
-<div class="stat-card active">
-  <div class="stat-icon">✅</div>
-  <div class="stat-content">
-    <h3>Activos</h3>
-    <div class="stat-value">{{ contarActivos() }}</div>
-  </div>
-</div>
-
-<div class="stat-card inactive">
-  <div class="stat-icon">❌</div>
-  <div class="stat-content">
-    <h3>Inactivos</h3>
-    <div class="stat-value">{{ contarInactivos() }}</div>
-  </div>
-</div>
-
-<div class="stat-card new">
-  <div class="stat-icon">📅</div>
-  <div class="stat-content">
-    <h3>Nuevos (30 días)</h3>
-    <div class="stat-value">{{ contarNuevos30Dias() }}</div>
-  </div>
-</div>
-
-  </div>
-  <div class="filters-section">
-    <div class="filters-container">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          placeholder="Buscar por nombre, razón social, RFC o contacto..."
-          [value]="searchTerm()"
-          (input)="onSearchChange($event)"
-          class="search-input">
-      </div>
-      
-      <div class="filter-selects">
-        <select 
-  [value]="selectedEstado()" 
-  (change)="onEstadoChange($event)" 
-  class="filter-select">
-  @for (option of estadoOptions; track option.value) {
-  <option [value]="option.value">{{ option.label }}</option>
-}
-</select>
-
-      </div>
-    </div>
-  </div>
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Cargando proveedores...</p>
-    </div>
-  } @else if (error()) {
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h3>Error al cargar proveedores</h3>
-      <p>{{ error() }}</p>
-      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
-    </div>
-  } @else if (filteredProveedores().length === 0) {
-    <div class="empty-container">
-      <div class="empty-icon">🏢</div>
-      <h3>No hay proveedores</h3>
-      <p>No se encontraron proveedores que coincidan con los filtros aplicados</p>
-      <button (click)="openCreateModal()" class="btn btn-primary">Crear Primer Proveedor</button>
-    </div>
-  } @else {
-    <div class="proveedores-table">
-      <div class="table-header">
-        <div class="col">Proveedor</div>
-        <div class="col">Contacto</div>
-        <div class="col">RFC</div>
-        <div class="col">Estado</div>
-        <div class="col">Registro</div>
-        <div class="col">Acciones</div>
-      </div>
-      
-      @for (proveedor of filteredProveedores(); track proveedor.id) {
-        <div class="table-row" [class.inactive]="!proveedor.activo">
-          <div class="col proveedor-info">
-            <div class="proveedor-data">
-              <strong>{{ proveedor.nombre }}</strong>
-              <span class="razon-social">{{ proveedor.razonSocial }}</span>
-              @if (proveedor.direccion) {
-                <small class="direccion">📍 {{ proveedor.direccion }}</small>
-              }
-            </div>
-          </div>
-          
-          <div class="col contacto-info">
-            @if (proveedor.contactoPrincipal) {
-              <div class="contacto-principal">👤 {{ proveedor.contactoPrincipal }}</div>
-            }
-            @if (proveedor.telefono) {
-              <div class="telefono">📞 {{ proveedor.telefono }}</div>
-            }
-            @if (proveedor.email) {
-              <div class="email">📧 {{ proveedor.email }}</div>
-            }
-          </div>
-          
-          <div class="col rfc">
-            @if (proveedor.rfc) {
-              <span class="rfc-badge">{{ proveedor.rfc }}</span>
-            } @else {
-              <span class="no-rfc">Sin RFC</span>
-            }
-          </div>
-          
-          <div class="col estado">
-            <span class="status-badge" [class]="getEstadoBadgeClass(proveedor.activo)">
-              {{ proveedor.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </div>
-          
-          <div class="col fecha">
-            {{ formatDate(proveedor.fechaRegistro) }}
-          </div>
-          
-          <div class="col acciones">
-            <button 
-              (click)="openDetailsModal(proveedor)"
-              class="btn btn-sm btn-outline"
-              title="Ver detalles">
-              👁️
-            </button>
-            <button 
-              (click)="openEditModal(proveedor)"
-              class="btn btn-sm btn-primary"
-              title="Editar">
-              ✏️
-            </button>
-            <button 
-              (click)="toggleProveedorEstado(proveedor)"
-              class="btn btn-sm"
-              [class]="proveedor.activo ? 'btn-warning' : 'btn-success'"
-              [title]="proveedor.activo ? 'Desactivar' : 'Activar'">
-              {{ proveedor.activo ? '⏸️' : '▶️' }}
-            </button>
-            <button 
-              (click)="deleteProveedor(proveedor)"
-              class="btn btn-sm btn-danger"
-              title="Eliminar">
-              🗑️
-            </button>
-          </div>
-        </div>
-      }
-    </div>
-  }
-  @if (showCreateModal()) {
-    <div class="modal-overlay" (click)="closeCreateModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Crear Nuevo Proveedor</h2>
-          <button (click)="closeCreateModal()" class="close-btn">✕</button>
+<!-- Gestión de Proveedores con el MISMO estilo exacto de gestión de comentarios -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header de la página -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">Gestión de Proveedores</h1>
+          <p class="text-gray-600">Administrar proveedores y proveedurías</p>
         </div>
         
-        <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
-          <div class="modal-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="nombre">Nombre Comercial *</label>
-                <input
-                  id="nombre"
-                  type="text"
-                  formControlName="nombre"
-                  class="form-control"
-                  placeholder="Ej: TechAgro Solutions">
-                @if (createForm.get('nombre')?.errors && createForm.get('nombre')?.touched) {
-                  <div class="error-message">El nombre es requerido</div>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="razonSocial">Razón Social *</label>
-                <input
-                  id="razonSocial"
-                  type="text"
-                  formControlName="razonSocial"
-                  class="form-control"
-                  placeholder="Ej: TechAgro Solutions S.A. de C.V.">
-                @if (createForm.get('razonSocial')?.errors && createForm.get('razonSocial')?.touched) {
-                  <div class="error-message">La razón social es requerida</div>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="rfc">RFC</label>
-                <input
-                  id="rfc"
-                  type="text"
-                  formControlName="rfc"
-                  class="form-control"
-                  placeholder="Ej: TAS123456789"
-                  maxlength="13"
-                  style="text-transform: uppercase;">
-              </div>
-
-              <div class="form-group">
-                <label for="contactoPrincipal">Contacto Principal</label>
-                <input
-                  id="contactoPrincipal"
-                  type="text"
-                  formControlName="contactoPrincipal"
-                  class="form-control"
-                  placeholder="Ej: Juan Pérez">
-              </div>
-
-              <div class="form-group">
-                <label for="telefono">Teléfono</label>
-                <input
-                  id="telefono"
-                  type="tel"
-                  formControlName="telefono"
-                  class="form-control"
-                  placeholder="Ej: +52 477 123 4567">
-              </div>
-
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  formControlName="email"
-                  class="form-control"
-                  placeholder="Ej: contacto@proveedor.com">
-                @if (createForm.get('email')?.errors?.['email'] && createForm.get('email')?.touched) {
-                  <div class="error-message">Email inválido</div>
-                }
-              </div>
-
-              <div class="form-group full-width">
-                <label for="direccion">Dirección</label>
-                <textarea
-                  id="direccion"
-                  formControlName="direccion"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Dirección completa del proveedor"></textarea>
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" (click)="closeCreateModal()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!createForm.valid || submitting()">
-              @if (submitting()) {
-                <span class="spinner-sm"></span>
-              }
-              Crear Proveedor
-            </button>
-          </div>
-        </form>
+        <div class="flex gap-4">
+          <button (click)="openCreateModal()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            ➕ Nuevo Proveedor
+          </button>
+        </div>
       </div>
     </div>
-  }
-  @if (showEditModal() && selectedProveedor()) {
-    <div class="modal-overlay" (click)="closeEditModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Editar Proveedor</h2>
-          <button (click)="closeEditModal()" class="close-btn">✕</button>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl p-4 text-center shadow-lg border border-blue-200/50">
+        <span class="block text-2xl font-bold text-blue-700">{{ proveedores().length }}</span>
+        <span class="text-sm text-blue-600 font-medium">Total Proveedores</span>
+      </div>
+      <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-xl p-4 text-center shadow-lg border border-green-200/50">
+        <span class="block text-2xl font-bold text-green-700">{{ contarActivos() }}</span>
+        <span class="text-sm text-green-600 font-medium">Activos</span>
+      </div>
+      <div class="bg-gradient-to-br from-red-100 to-red-200 rounded-xl p-4 text-center shadow-lg border border-red-200/50">
+        <span class="block text-2xl font-bold text-red-700">{{ contarInactivos() }}</span>
+        <span class="text-sm text-red-600 font-medium">Inactivos</span>
+      </div>
+      <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-4 text-center shadow-lg border border-purple-200/50">
+        <span class="block text-2xl font-bold text-purple-700">{{ contarNuevos30Dias() }}</span>
+        <span class="text-sm text-purple-600 font-medium">Nuevos (30 días)</span>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Buscador -->
+        <div class="flex-1">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar por nombre, razón social, RFC o contacto..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($event)"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+          </div>
         </div>
         
-        <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
-          <div class="modal-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="editNombre">Nombre Comercial *</label>
-                <input
-                  id="editNombre"
-                  type="text"
-                  formControlName="nombre"
-                  class="form-control">
-              </div>
+        <!-- Filtros -->
+        <div class="flex gap-2 overflow-x-auto">
+          <select 
+            [value]="selectedEstado()" 
+            (change)="onEstadoChange($event)" 
+            class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 focus:ring-2 focus:ring-green-500">
+            @for (option of estadoOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
 
-              <div class="form-group">
-                <label for="editRazonSocial">Razón Social *</label>
-                <input
-                  id="editRazonSocial"
-                  type="text"
-                  formControlName="razonSocial"
-                  class="form-control">
+    <!-- Estados de carga/error/vacío -->
+    @if (loading()) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Cargando proveedores...</p>
+      </div>
+    } @else if (error()) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">⚠️</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Error al cargar proveedores</h3>
+        <p class="text-gray-600 mb-4">{{ error() }}</p>
+        <button (click)="retry()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          Reintentar
+        </button>
+      </div>
+    } @else if (filteredProveedores().length === 0) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">🏢</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay proveedores</h3>
+        <p class="text-gray-600 mb-4">No se encontraron proveedores que coincidan con los filtros aplicados</p>
+        <button (click)="openCreateModal()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          Crear Primer Proveedor
+        </button>
+      </div>
+    } @else {
+      <!-- Lista de proveedores -->
+      <div class="space-y-6">
+        @for (proveedor of filteredProveedores(); track proveedor.id) {
+          <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300" [class]="{'opacity-75': !proveedor.activo}">
+            
+            <!-- Header del proveedor -->
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4">
+              <div class="flex items-start gap-4 mb-4 lg:mb-0">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                  🏢
+                </div>
+                <div>
+                  <h3 class="font-bold text-gray-900">{{ proveedor.nombre }}</h3>
+                  <p class="text-green-700 font-medium">{{ proveedor.razonSocial }}</p>
+                  <span class="text-sm text-gray-500">Registrado: {{ formatDate(proveedor.fechaRegistro) }}</span>
+                  @if (proveedor.direccion) {
+                    <p class="text-sm text-gray-600 mt-1">📍 {{ proveedor.direccion }}</p>
+                  }
+                </div>
               </div>
-
-              <div class="form-group">
-                <label for="editRfc">RFC</label>
-                <input
-                  id="editRfc"
-                  type="text"
-                  formControlName="rfc"
-                  class="form-control"
-                  maxlength="13"
-                  style="text-transform: uppercase;">
+              
+              <div class="flex flex-col items-end gap-2">
+                @if (proveedor.rfc) {
+                  <div class="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+                    {{ proveedor.rfc }}
+                  </div>
+                } @else {
+                  <div class="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-full text-sm font-medium border border-gray-200">
+                    Sin RFC
+                  </div>
+                }
+                <div class="px-3 py-1 rounded-full text-sm font-medium" [class]="proveedor.activo ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700 border border-green-200' : 'bg-gradient-to-r from-red-100 to-red-200 text-red-700 border border-red-200'">
+                  {{ proveedor.activo ? 'Activo' : 'Inactivo' }}
+                </div>
               </div>
+            </div>
 
-              <div class="form-group">
-                <label for="editContactoPrincipal">Contacto Principal</label>
-                <input
-                  id="editContactoPrincipal"
-                  type="text"
-                  formControlName="contactoPrincipal"
-                  class="form-control">
+            <!-- Información de contacto -->
+            <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl p-4 mb-4">
+              <h4 class="font-semibold text-gray-800 mb-2">Información de Contacto:</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                @if (proveedor.contactoPrincipal) {
+                  <div class="text-sm">
+                    <span class="font-medium text-gray-600">👤 Contacto:</span>
+                    <p class="text-gray-800">{{ proveedor.contactoPrincipal }}</p>
+                  </div>
+                }
+                @if (proveedor.telefono) {
+                  <div class="text-sm">
+                    <span class="font-medium text-gray-600">📞 Teléfono:</span>
+                    <p class="text-gray-800">{{ proveedor.telefono }}</p>
+                  </div>
+                }
+                @if (proveedor.email) {
+                  <div class="text-sm">
+                    <span class="font-medium text-gray-600">📧 Email:</span>
+                    <p class="text-gray-800">{{ proveedor.email }}</p>
+                  </div>
+                }
               </div>
+            </div>
 
-              <div class="form-group">
-                <label for="editTelefono">Teléfono</label>
-                <input
-                  id="editTelefono"
-                  type="tel"
-                  formControlName="telefono"
-                  class="form-control">
-              </div>
+            <!-- Acciones -->
+            <div class="flex gap-3 flex-wrap">
+              <button 
+                (click)="openDetailsModal(proveedor)"
+                class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                👁️ Ver Detalles
+              </button>
+              
+              <button 
+                (click)="openEditModal(proveedor)"
+                class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                ✏️ Editar
+              </button>
+              
+              <button 
+                (click)="toggleProveedorEstado(proveedor)"
+                class="px-4 py-2 bg-gradient-to-r text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium"
+                [class]="proveedor.activo ? 'from-red-600 to-red-500' : 'from-green-600 to-green-500'">
+                {{ proveedor.activo ? '⏸️ Desactivar' : '▶️ Activar' }}
+              </button>
+              
+              <button 
+                (click)="deleteProveedor(proveedor)"
+                class="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                🗑️ Eliminar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
 
-              <div class="form-group">
-                <label for="editEmail">Email</label>
-                <input
-                  id="editEmail"
-                  type="email"
-                  formControlName="email"
-                  class="form-control">
-              </div>
-
-              <div class="form-group full-width">
-                <label for="editDireccion">Dirección</label>
-                <textarea
-                  id="editDireccion"
-                  formControlName="direccion"
-                  class="form-control"
-                  rows="3"></textarea>
-              </div>
-
-              <div class="form-group full-width">
-                <label class="checkbox-label">
+    <!-- Modal de crear proveedor -->
+    @if (showCreateModal()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeCreateModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Crear Nuevo Proveedor</h2>
+            <button (click)="closeCreateModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
+          </div>
+          
+          <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              
+              <!-- Información básica -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Nombre Comercial *</label>
                   <input
-                    type="checkbox"
-                    formControlName="activo"
-                    class="checkbox">
-                  <span class="checkmark"></span>
-                  Proveedor activo
-                </label>
+                    type="text"
+                    formControlName="nombre"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Ej: TechAgro Solutions">
+                  @if (createForm.get('nombre')?.errors && createForm.get('nombre')?.touched) {
+                    <div class="text-red-500 text-sm mt-1">El nombre es requerido</div>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Razón Social *</label>
+                  <input
+                    type="text"
+                    formControlName="razonSocial"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Ej: TechAgro Solutions S.A. de C.V.">
+                  @if (createForm.get('razonSocial')?.errors && createForm.get('razonSocial')?.touched) {
+                    <div class="text-red-500 text-sm mt-1">La razón social es requerida</div>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">RFC</label>
+                  <input
+                    type="text"
+                    formControlName="rfc"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm uppercase"
+                    placeholder="Ej: TAS123456789"
+                    maxlength="13">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Contacto Principal</label>
+                  <input
+                    type="text"
+                    formControlName="contactoPrincipal"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Ej: Juan Pérez">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    formControlName="telefono"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Ej: +52 477 123 4567">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Email</label>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Ej: contacto@proveedor.com">
+                  @if (createForm.get('email')?.errors?.['email'] && createForm.get('email')?.touched) {
+                    <div class="text-red-500 text-sm mt-1">Email inválido</div>
+                  }
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Dirección</label>
+                  <textarea
+                    formControlName="direccion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm resize-vertical"
+                    rows="3"
+                    placeholder="Dirección completa del proveedor"></textarea>
+                </div>
+              </div>
+
+              <!-- Tips -->
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50">
+                <h4 class="font-semibold text-blue-800 mb-2">💡 Consejos para crear el proveedor:</h4>
+                <ul class="text-sm text-blue-700 space-y-1">
+                  <li>• Asegúrate de que la información de contacto esté actualizada</li>
+                  <li>• El RFC es opcional pero recomendado para proveedores formales</li>
+                  <li>• Verifica que la razón social coincida con los documentos oficiales</li>
+                  <li>• El contacto principal te ayudará a comunicarte directamente</li>
+                </ul>
               </div>
             </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="closeCreateModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!createForm.valid || submitting()">
+                @if (submitting()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creando...
+                  </div>
+                } @else {
+                  Crear Proveedor
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal de editar proveedor -->
+    @if (showEditModal() && selectedProveedor()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeEditModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Editar Proveedor</h2>
+            <button (click)="closeEditModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
           </div>
           
-          <div class="modal-footer">
-            <button type="button" (click)="closeEditModal()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!editForm.valid || submitting()">
-              @if (submitting()) {
-                <span class="spinner-sm"></span>
-              }
-              Guardar Cambios
+          <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              
+              <!-- Información básica -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Nombre Comercial *</label>
+                  <input
+                    type="text"
+                    formControlName="nombre"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Razón Social *</label>
+                  <input
+                    type="text"
+                    formControlName="razonSocial"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">RFC</label>
+                  <input
+                    type="text"
+                    formControlName="rfc"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm uppercase"
+                    maxlength="13">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Contacto Principal</label>
+                  <input
+                    type="text"
+                    formControlName="contactoPrincipal"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    formControlName="telefono"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Email</label>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Dirección</label>
+                  <textarea
+                    formControlName="direccion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm resize-vertical"
+                    rows="3"></textarea>
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="flex items-center text-sm font-semibold text-green-800">
+                    <input 
+                      type="checkbox" 
+                      formControlName="activo" 
+                      class="mr-2 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+                    Proveedor activo
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="closeEditModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!editForm.valid || submitting()">
+                @if (submitting()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Guardando...
+                  </div>
+                } @else {
+                  Guardar Cambios
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal de detalles -->
+    @if (showDetailsModal() && selectedProveedor()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeDetailsModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">{{ selectedProveedor()!.nombre }}</h2>
+            <button (click)="closeDetailsModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
             </button>
           </div>
-        </form>
-      </div>
-    </div>
-  }
-  @if (showDetailsModal() && selectedProveedor()) {
-    <div class="modal-overlay" (click)="closeDetailsModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>{{ selectedProveedor()!.nombre }}</h2>
-          <button (click)="closeDetailsModal()" class="close-btn">✕</button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="proveedor-details">
-            <div class="details-section">
-              <h3>Información General</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <label>Nombre Comercial:</label>
-                  <span>{{ selectedProveedor()!.nombre }}</span>
+          
+          <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+            
+            <!-- Información general -->
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 mb-6 border border-gray-200/50">
+              <h3 class="text-lg font-bold text-gray-900 mb-4">Información General</h3>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <span class="text-sm font-medium text-gray-600">RFC:</span>
+                  <p class="font-bold text-gray-900">{{ selectedProveedor()!.rfc || 'No proporcionado' }}</p>
                 </div>
-                <div class="detail-item">
-                  <label>Razón Social:</label>
-                  <span>{{ selectedProveedor()!.razonSocial }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>RFC:</label>
-                  <span>{{ selectedProveedor()!.rfc || 'No proporcionado' }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>Estado:</label>
-                  <span class="status-badge" [class]="getEstadoBadgeClass(selectedProveedor()!.activo)">
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Estado:</span>
+                  <span class="inline-block px-3 py-1 rounded-full text-sm font-medium" [class]="selectedProveedor()!.activo ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700 border border-green-200' : 'bg-gradient-to-r from-red-100 to-red-200 text-red-700 border border-red-200'">
                     {{ selectedProveedor()!.activo ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
-                <div class="detail-item">
-                  <label>Fecha de Registro:</label>
-                  <span>{{ formatDate(selectedProveedor()!.fechaRegistro) }}</span>
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Fecha de Registro:</span>
+                  <p class="font-bold text-gray-900">{{ formatDate(selectedProveedor()!.fechaRegistro) }}</p>
                 </div>
                 @if (selectedProveedor()!.direccion) {
-                  <div class="detail-item full-width">
-                    <label>Dirección:</label>
-                    <span>{{ selectedProveedor()!.direccion }}</span>
+                  <div class="lg:col-span-2">
+                    <span class="text-sm font-medium text-gray-600">Dirección:</span>
+                    <p class="text-gray-900">{{ selectedProveedor()!.direccion }}</p>
                   </div>
                 }
               </div>
             </div>
 
-            <div class="details-section">
-              <h3>Información de Contacto</h3>
-              <div class="details-grid">
+            <!-- Información de contacto -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 border border-blue-200/50">
+              <h3 class="text-lg font-bold text-blue-900 mb-4">Información de Contacto</h3>
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 @if (selectedProveedor()!.contactoPrincipal) {
-                  <div class="detail-item">
-                    <label>Contacto Principal:</label>
-                    <span>{{ selectedProveedor()!.contactoPrincipal }}</span>
+                  <div>
+                    <span class="text-sm font-medium text-blue-600">Contacto Principal:</span>
+                    <p class="font-bold text-blue-900">{{ selectedProveedor()!.contactoPrincipal }}</p>
                   </div>
                 }
                 @if (selectedProveedor()!.telefono) {
-                  <div class="detail-item">
-                    <label>Teléfono:</label>
-                    <span>{{ selectedProveedor()!.telefono }}</span>
+                  <div>
+                    <span class="text-sm font-medium text-blue-600">Teléfono:</span>
+                    <p class="font-bold text-blue-900">{{ selectedProveedor()!.telefono }}</p>
                   </div>
                 }
                 @if (selectedProveedor()!.email) {
-                  <div class="detail-item">
-                    <label>Email:</label>
-                    <span>{{ selectedProveedor()!.email }}</span>
+                  <div>
+                    <span class="text-sm font-medium text-blue-600">Email:</span>
+                    <p class="font-bold text-blue-900">{{ selectedProveedor()!.email }}</p>
                   </div>
                 }
               </div>
             </div>
 
-            <div class="details-section">
-              <h3>Estadísticas</h3>
-              <div class="stats-row">
-                <div class="stat-box">
-                  <div class="stat-number">{{ selectedProveedor()!.materiasPrimas?.length || 0 }}</div>
-                  <div class="stat-label">Materias Primas</div>
+            <!-- Estadísticas -->
+            <div class="bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-6 border border-green-200/50">
+              <h3 class="text-lg font-bold text-green-900 mb-4">Estadísticas</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center">
+                  <div class="text-2xl font-bold text-green-800">{{ selectedProveedor()!.materiasPrimas?.length || 0 }}</div>
+                  <div class="text-sm text-green-600">Materias Primas</div>
                 </div>
-                <div class="stat-box">
-                  <div class="stat-number">{{ selectedProveedor()!.compras?.length || 0 }}</div>
-                  <div class="stat-label">Compras Realizadas</div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center">
+                  <div class="text-2xl font-bold text-green-800">{{ selectedProveedor()!.compras?.length || 0 }}</div>
+                  <div class="text-sm text-green-600">Compras Realizadas</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button (click)="openEditModal(selectedProveedor()!)" class="btn btn-primary">
-            ✏️ Editar Proveedor
-          </button>
-          <button (click)="closeDetailsModal()" class="btn btn-outline">
-            Cerrar
-          </button>
+          
+          <!-- Footer del modal -->
+          <div class="flex gap-3 p-6 border-t border-gray-200/50">
+            <button 
+              (click)="openEditModal(selectedProveedor()!)" 
+              class="px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+              ✏️ Editar Proveedor
+            </button>
+            <button 
+              (click)="closeDetailsModal()" 
+              class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  }
-</div>
+    }
+

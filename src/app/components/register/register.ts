@@ -38,13 +38,10 @@ export class Register {
     private router: Router
   ) {
     this.requestForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      apellidos: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.pattern(/^\d{10}$/)]],
-      empresa: [''],
-      mensaje: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
-    });
+  nombre: ['', [Validators.required, Validators.minLength(2)]],
+  apellidos: ['', [Validators.required, Validators.minLength(2)]],
+  email: ['', [Validators.required, Validators.email]]
+});
   }
 
   protected onSubmit(): void {

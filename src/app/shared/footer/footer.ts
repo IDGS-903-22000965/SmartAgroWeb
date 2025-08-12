@@ -6,330 +6,212 @@ import { RouterLink } from '@angular/router';
   selector: 'app-footer',
   imports: [CommonModule, RouterLink],
   template: `
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <div class="footer-logo">
-              <span class="logo-icon">🌱</span>
-              <span class="logo-text">SmartAgro</span>
-            </div>
-            <p class="company-description">
-              Revolucionando la agricultura con tecnología IoT. 
-              Sistemas inteligentes de riego para cultivos más eficientes y sustentables.
-            </p>
-            <div class="social-links">
-              <a href="#" class="social-link">📘</a>
-              <a href="#" class="social-link">📷</a>
-              <a href="#" class="social-link">🐦</a>
-              <a href="#" class="social-link">📺</a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h3>Enlaces Rápidos</h3>
-            <ul class="footer-links">
-              <li><a routerLink="/">Inicio</a></li>
-              <li><a routerLink="/productos">Productos</a></li>
-              <li><a routerLink="/testimonios">Testimonios</a></li>
-              <li><a routerLink="/cotizacion">Cotización</a></li>
-              <li><a routerLink="/contacto">Contacto</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h3>Servicios</h3>
-            <ul class="footer-links">
-              <li><a href="#">Sistemas de Riego</a></li>
-              <li><a href="#">Sensores IoT</a></li>
-              <li><a href="#">Monitoreo 24/7</a></li>
-              <li><a href="#">Instalación</a></li>
-              <li><a href="#">Soporte Técnico</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h3>Contacto</h3>
-            <div class="contact-info">
-              <div class="contact-item">
-                <span class="contact-icon">📍</span>
-                <span>León, Guanajuato, México</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-icon">📞</span>
-                <span>+52 477 123 4567</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-icon">✉️</span>
-                <span>info.mx</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-icon">🕒</span>
-                <span>Lun - Vie: 8:00 - 18:00</span>
-              </div>
-            </div>
-          </div>
+
+<!-- Footer con el MISMO diseño elegante de los otros componentes -->
+<div class="bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Contenido principal del footer en tarjetas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 footer-content">
+      
+      <!-- Información de la empresa -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 footer-section">
+        <div class="flex items-center gap-3 mb-4 footer-logo">
+          <span class="text-3xl logo-icon">🌱</span>
+          <span class="text-xl font-bold text-green-800 logo-text">SmartAgro</span>
         </div>
-        <div class="newsletter-section">
-          <div class="newsletter-content">
-            <h3>Mantente Actualizado</h3>
-            <p>Recibe las últimas noticias sobre tecnología agrícola y ofertas especiales.</p>
-          </div>
-          <div class="newsletter-form">
-            <input 
-              type="email" 
-              placeholder="Tu correo electrónico"
-              class="newsletter-input">
-            <button class="newsletter-btn">Suscribirse</button>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <div class="bottom-content">
-            <p class="copyright">
-              © {{ currentYear }} SmartAgro IoT Solutions. Todos los derechos reservados.
-            </p>
-            <div class="legal-links">
-              <a href="#">Política de Privacidad</a>
-              <a href="#">Términos de Servicio</a>
-              <a href="#">Cookies</a>
+        
+        <p class="text-gray-600 text-sm mb-6 leading-relaxed company-description">
+          Revolucionando la agricultura con tecnología IoT. 
+          Sistemas inteligentes de riego para cultivos más eficientes y sustentables.
+        </p>
+        
+        <div class="space-y-3 contact-info">
+          <div class="flex items-center gap-3 text-sm contact-item">
+            <div class="w-8 h-8 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center shadow-lg">
+              <span class="text-white text-xs contact-icon">📍</span>
             </div>
+            <span class="text-gray-700">León, Guanajuato, México</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm contact-item">
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+              <span class="text-white text-xs contact-icon">📞</span>
+            </div>
+            <a href="tel:+524771234567" 
+               class="text-gray-700 hover:text-green-600 transition-colors duration-200">
+              +52 477 123 4567
+            </a>
+          </div>
+          <div class="flex items-center gap-3 text-sm contact-item">
+            <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+              <span class="text-white text-xs contact-icon">✉️</span>
+            </div>
+            <a href="mailto:info@smartagro.mx" 
+               class="text-gray-700 hover:text-green-600 transition-colors duration-200">
+              info@smartagro.mx
+            </a>
+          </div>
+          <div class="flex items-center gap-3 text-sm contact-item">
+            <div class="w-8 h-8 bg-gradient-to-br from-orange-600 to-yellow-500 rounded-full flex items-center justify-center shadow-lg">
+              <span class="text-white text-xs contact-icon">🕒</span>
+            </div>
+            <span class="text-gray-700">Lun - Vie: 8:00 - 18:00</span>
           </div>
         </div>
       </div>
-    </footer>
-  `,
-  styles: [`
-    .footer {
-      background: linear-gradient(135deg, #2d5016, #1a2e0b);
-      color: white;
-      margin-top: auto;
-    }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
+      <!-- Enlaces Rápidos -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 footer-section">
+        <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-link text-green-600"></i>
+          Enlaces Rápidos
+        </h3>
+        <ul class="space-y-3 footer-links">
+          <li>
+            <a routerLink="/" 
+               class="flex items-center gap-2 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 py-2 px-3 rounded-lg">
+              <i class="fas fa-home text-green-600"></i>
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a routerLink="/productos" 
+               class="flex items-center gap-2 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 py-2 px-3 rounded-lg">
+              <i class="fas fa-seedling text-green-600"></i>
+              Productos
+            </a>
+          </li>
+          <li>
+            <a routerLink="/testimonios" 
+               class="flex items-center gap-2 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 py-2 px-3 rounded-lg">
+              <i class="fas fa-star text-yellow-500"></i>
+              Testimonios
+            </a>
+          </li>
+          <li>
+            <a routerLink="/cotizacion" 
+               class="flex items-center gap-2 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 py-2 px-3 rounded-lg">
+              <i class="fas fa-calculator text-blue-600"></i>
+              Cotización
+            </a>
+          </li>
+          <li>
+            <a routerLink="/contacto" 
+               class="flex items-center gap-2 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 py-2 px-3 rounded-lg">
+              <i class="fas fa-envelope text-purple-600"></i>
+              Contacto
+            </a>
+          </li>
+        </ul>
+      </div>
 
-    .footer-content {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1.5fr;
-      gap: 3rem;
-      padding: 4rem 0 2rem;
+      <!-- Servicios -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 footer-section">
+        <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-tools text-blue-600"></i>
+          Servicios
+        </h3>
+        <ul class="space-y-3 footer-links">
+          <li>
+            <div class="flex items-center gap-2 text-gray-700 py-2 px-3 bg-gray-50 rounded-lg">
+              <i class="fas fa-tint text-blue-500"></i>
+              Sistemas de Riego
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center gap-2 text-gray-700 py-2 px-3 bg-gray-50 rounded-lg">
+              <i class="fas fa-microchip text-green-500"></i>
+              Sensores IoT
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center gap-2 text-gray-700 py-2 px-3 bg-gray-50 rounded-lg">
+              <i class="fas fa-chart-line text-purple-500"></i>
+              Monitoreo 24/7
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center gap-2 text-gray-700 py-2 px-3 bg-gray-50 rounded-lg">
+              <i class="fas fa-wrench text-orange-500"></i>
+              Instalación
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center gap-2 text-gray-700 py-2 px-3 bg-gray-50 rounded-lg">
+              <i class="fas fa-headset text-indigo-500"></i>
+              Soporte Técnico
+            </div>
+          </li>
+        </ul>
+      </div>
 
-      @media (max-width: 968px) {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-      }
+      <!-- Newsletter y Redes Sociales -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 footer-section">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-bell text-yellow-600"></i>
+          Mantente Conectado
+        </h3>
+        <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+          Suscríbete para recibir noticias sobre nuevos productos y tecnologías.
+        </p>
 
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-        padding: 3rem 0 2rem;
-      }
-    }
+        <!-- Newsletter Form -->
+        <div class="mb-6 newsletter-section">
+          <div class="space-y-3 newsletter-form">
+            <input 
+              type="email" 
+              placeholder="Tu email aquí..." 
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm newsletter-input">
+            <button class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium newsletter-btn">
+              <i class="fas fa-paper-plane mr-2"></i>Suscribirse
+            </button>
+          </div>
+        </div>
 
-    .footer-section {
-      h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        color: #90ee90;
-      }
-    }
+       
+      </div>
+    </div>
 
-    .footer-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
+    <!-- Footer bottom -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 footer-bottom">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-4 bottom-content">
+        
+        <!-- Copyright -->
+        <div class="text-center lg:text-left">
+          <p class="text-gray-600 text-sm copyright">
+            © {{ currentYear }} SmartAgro IoT Solutions. Todos los derechos reservados.
+          </p>
+        </div>
 
-      .logo-icon {
-        font-size: 2rem;
-      }
+        <!-- Enlaces legales -->
+        <div class="flex flex-wrap items-center gap-6 text-sm legal-links">
+          <a href="#" class="text-gray-600 hover:text-green-600 transition-colors duration-200 flex items-center gap-1">
+            <i class="fas fa-shield-alt"></i>
+            Política de Privacidad
+          </a>
+          <a href="#" class="text-gray-600 hover:text-green-600 transition-colors duration-200 flex items-center gap-1">
+            <i class="fas fa-file-contract"></i>
+            Términos de Servicio
+          </a>
+          <a href="#" class="text-gray-600 hover:text-green-600 transition-colors duration-200 flex items-center gap-1">
+            <i class="fas fa-cookie-bite"></i>
+            Cookies
+          </a>
+        </div>
 
-      .logo-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #90ee90;
-      }
-    }
-
-    .company-description {
-      line-height: 1.6;
-      margin-bottom: 2rem;
-      opacity: 0.9;
-    }
-
-    .social-links {
-      display: flex;
-      gap: 1rem;
-
-      .social-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        text-decoration: none;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-        }
-      }
-    }
-
-    .footer-links {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-
-      li {
-        margin-bottom: 0.75rem;
-
-        a {
-          color: rgba(255, 255, 255, 0.8);
-          text-decoration: none;
-          transition: color 0.3s ease;
-
-          &:hover {
-            color: #90ee90;
-          }
-        }
-      }
-    }
-
-    .contact-info {
-      .contact-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-        color: rgba(255, 255, 255, 0.9);
-
-        .contact-icon {
-          font-size: 1.1rem;
-          width: 20px;
-        }
-      }
-    }
-
-    .newsletter-section {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 2rem;
-      margin: 2rem 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 2rem;
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .newsletter-content {
-        h3 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
-          color: #90ee90;
-        }
-
-        p {
-          opacity: 0.9;
-          margin: 0;
-        }
-      }
-
-      .newsletter-form {
-        display: flex;
-        gap: 0.75rem;
-        min-width: 300px;
-
-        @media (max-width: 768px) {
-          width: 100%;
-          min-width: unset;
-        }
-
-        .newsletter-input {
-          flex: 1;
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 6px;
-          font-size: 1rem;
-
-          &:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px #90ee90;
-          }
-        }
-
-        .newsletter-btn {
-          padding: 0.75rem 1.5rem;
-          background: linear-gradient(45deg, #90ee90, #32cd32);
-          color: #2d5016;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(144, 238, 144, 0.4);
-          }
-        }
-      }
-    }
-
-    .footer-bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 2rem 0;
-
-      .bottom-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          text-align: center;
-        }
-
-        .copyright {
-          margin: 0;
-          opacity: 0.8;
-        }
-
-        .legal-links {
-          display: flex;
-          gap: 2rem;
-
-          @media (max-width: 768px) {
-            gap: 1rem;
-          }
-
-          a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-
-            &:hover {
-              color: #90ee90;
-            }
-          }
-        }
-      }
-    }
-  `]
+     
+      </div>
+    </div>
+  </div>
+</div>  `
 })
 export class Footer {
   protected currentYear = new Date().getFullYear();
+
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 }

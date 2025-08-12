@@ -1,252 +1,306 @@
-<div class="producto-detalle-page">
+<!-- Página de Detalle de Producto con el MISMO estilo exacto de register/login -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600">
+  
   @if (loading()) {
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Cargando producto...</p>
-    </div>
-  } @else if (error()) {
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h2>Error al cargar el producto</h2>
-      <p>{{ error() }}</p>
-      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
-      <a routerLink="/productos" class="btn btn-outline">Volver a Productos</a>
-    </div>
-  } @else if (producto()) {
-    <div class="breadcrumb">
-      <div class="container">
-        <nav class="breadcrumb-nav">
-          <a routerLink="/">Inicio</a>
-          <span class="separator">›</span>
-          <a routerLink="/productos">Productos</a>
-          <span class="separator">›</span>
-          <span class="current">{{ producto()!.nombre }}</span>
-        </nav>
+    <!-- Estado de carga -->
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 text-center">
+        <div class="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Cargando producto...</p>
       </div>
     </div>
-    <section class="product-main">
-      <div class="container">
-        <div class="product-layout">
-          <div class="product-images">
-            <div class="main-image">
-              @if (getProductImages().length > 0) {
-                <img [src]="getProductImages()[selectedImage()]" [alt]="producto()!.nombre">
-              } @else {
-                <div class="image-placeholder">
-                  <span class="placeholder-icon">🌿</span>
+  } @else if (error()) {
+    <!-- Estado de error -->
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 text-center max-w-md">
+        <div class="text-6xl mb-4">⚠️</div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Error al cargar el producto</h2>
+        <p class="text-gray-600 mb-6">{{ error() }}</p>
+        <div class="flex flex-col gap-3">
+          <button (click)="retry()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            Reintentar
+          </button>
+          <a routerLink="/productos" class="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-semibold">
+            Volver a Productos
+          </a>
+        </div>
+      </div>
+    </div>
+  } @else if (producto()) {
+    
+    <!-- Breadcrumb -->
+    <div class="pt-8 pb-4">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-white/20 px-4 py-2">
+          <nav class="flex items-center gap-2 text-sm">
+            <a routerLink="/" class="text-green-600 hover:text-green-700 transition-colors duration-200">Inicio</a>
+            <span class="text-gray-400">›</span>
+            <a routerLink="/productos" class="text-green-600 hover:text-green-700 transition-colors duration-200">Productos</a>
+            <span class="text-gray-400">›</span>
+            <span class="text-gray-700 font-medium">{{ producto()!.nombre }}</span>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido Principal del Producto -->
+    <section class="pb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+          <div class="grid lg:grid-cols-2 gap-12">
+            
+            <!-- Imágenes del Producto -->
+            <div class="space-y-4">
+              <!-- Imagen principal -->
+              <div class="bg-gradient-to-br from-green-50 to-lime-50 rounded-xl p-8 border border-green-200/50 aspect-square flex items-center justify-center">
+                @if (getProductImages().length > 0) {
+                  <img [src]="getProductImages()[selectedImage()]" [alt]="producto()!.nombre" class="max-w-full max-h-full object-contain rounded-lg">
+                } @else {
+                  <div class="text-8xl text-green-500">🌿</div>
+                }
+              </div>
+              
+              <!-- Thumbnails -->
+              @if (getProductImages().length > 1) {
+                <div class="flex gap-3 overflow-x-auto">
+                  @for (image of getProductImages(); track $index) {
+                    <div 
+                      class="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden"
+                      [class]="selectedImage() === $index ? 'border-green-500 shadow-lg' : 'border-gray-200 hover:border-green-300'"
+                      (click)="selectImage($index)">
+                      <img [src]="image" [alt]="producto()!.nombre" class="w-full h-full object-cover">
+                    </div>
+                  }
                 </div>
               }
             </div>
-            
-            @if (getProductImages().length > 1) {
-              <div class="thumbnail-images">
-                @for (image of getProductImages(); track $index) {
-                  <div 
-                    class="thumbnail"
-                    [class.active]="selectedImage() === $index"
-                    (click)="selectImage($index)">
-                    <img [src]="image" [alt]="producto()!.nombre">
+
+            <!-- Información del Producto -->
+            <div class="space-y-6">
+              <!-- Header -->
+              <div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-4">{{ producto()!.nombre }}</h1>
+                
+                @if (producto()!.promedioCalificacion > 0) {
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="flex gap-1">
+                      @for (filled of getStarsArray(Math.round(producto()!.promedioCalificacion)); track $index) {
+                        <span class="text-lg" [class]="filled ? 'text-yellow-500' : 'text-gray-300'">⭐</span>
+                      }
+                    </div>
+                    <span class="text-gray-600">
+                      {{ producto()!.promedioCalificacion | number:'1.1-1' }} 
+                      ({{ producto()!.totalComentarios }} reseñas)
+                    </span>
                   </div>
                 }
               </div>
-            }
-          </div>
-          <div class="product-info">
-            <div class="product-header">
-              <h1 class="product-title">{{ producto()!.nombre }}</h1>
-              
-              @if (producto()!.promedioCalificacion > 0) {
-                <div class="product-rating">
-                  <div class="stars">
-                    @for (filled of getStarsArray(Math.round(producto()!.promedioCalificacion)); track $index) {
-                      <span class="star" [class.filled]="filled">⭐</span>
+
+              <!-- Precio -->
+              <div class="bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-6 border border-green-200/50">
+                <div class="text-4xl font-bold text-green-700 mb-1">
+                  ${{ producto()!.precioVenta | number:'1.2-2' }}
+                </div>
+                <div class="text-sm text-green-600">IVA incluido</div>
+              </div>
+
+              <!-- Descripción -->
+              <div>
+                <p class="text-gray-700 leading-relaxed text-lg">{{ producto()!.descripcion }}</p>
+              </div>
+
+              <!-- Características principales -->
+              @if (getCaracteristicas().length > 0) {
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200/50">
+                  <h3 class="text-lg font-bold text-blue-800 mb-4">Características Principales</h3>
+                  <ul class="space-y-2">
+                    @for (caracteristica of getCaracteristicas().slice(0, 4); track caracteristica) {
+                      <li class="flex items-center gap-3 text-blue-700">
+                        <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>
+                        {{ caracteristica }}
+                      </li>
                     }
+                  </ul>
+                </div>
+              }
+
+              <!-- Botones de acción -->
+              <div class="flex flex-col sm:flex-row gap-4">
+                <button (click)="goToCotizacion()" class="flex-1 px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center">
+                  Solicitar Cotización
+                </button>
+                <a routerLink="/contacto" class="flex-1 px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 text-center">
+                  Consultar Experto
+                </a>
+              </div>
+
+              <!-- Video demo -->
+              @if (producto()!.videoDemo) {
+                <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200/50">
+                  <h3 class="text-lg font-bold text-purple-800 mb-4">Video Demostración</h3>
+                  <div class="aspect-video bg-black rounded-lg overflow-hidden">
+                    <iframe 
+                      [src]="producto()!.videoDemo" 
+                      title="Video demostración"
+                      class="w-full h-full"
+                      allowfullscreen>
+                    </iframe>
                   </div>
-                  <span class="rating-text">
-                    {{ producto()!.promedioCalificacion | number:'1.1-1' }} 
-                    ({{ producto()!.totalComentarios }} reseñas)
-                  </span>
                 </div>
               }
             </div>
-
-            <div class="product-price">
-              <span class="price-value">${{ producto()!.precioVenta | number:'1.2-2' }}</span>
-              <span class="price-note">IVA incluido</span>
-            </div>
-
-            <div class="product-description">
-              <p>{{ producto()!.descripcion }}</p>
-            </div>
-
-            @if (getCaracteristicas().length > 0) {
-              <div class="key-features">
-                <h3>Características Principales</h3>
-                <ul class="features-list">
-                  @for (caracteristica of getCaracteristicas().slice(0, 4); track caracteristica) {
-                    <li>{{ caracteristica }}</li>
-                  }
-                </ul>
-              </div>
-            }
-
-            <div class="product-actions">
-              <button (click)="goToCotizacion()" class="btn btn-primary btn-large">
-                Solicitar Cotización
-              </button>
-              <a routerLink="/contacto" class="btn btn-outline btn-large">
-                Consultar Experto
-              </a>
-            </div>
-            @if (producto()!.videoDemo) {
-              <div class="video-demo">
-                <h3>Video Demostración</h3>
-                <div class="video-container">
-                  <iframe 
-                    [src]="producto()!.videoDemo" 
-                    title="Video demostración"
-                    allowfullscreen>
-                  </iframe>
-                </div>
-              </div>
-            }
           </div>
         </div>
       </div>
     </section>
-    <section class="product-details">
-      <div class="container">
-        <div class="tabs-container">
-          <div class="tabs-nav">
+
+    <!-- Tabs de Detalles -->
+    <section class="pb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+          
+          <!-- Navegación de tabs -->
+          <div class="flex overflow-x-auto border-b border-gray-200/50">
             <button 
-              class="tab-button"
-              [class.active]="activeTab() === 'descripcion'"
+              class="px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200"
+              [class]="activeTab() === 'descripcion' ? 'bg-green-100 text-green-800 border-b-2 border-green-500' : 'text-gray-600 hover:text-green-600 hover:bg-green-50'"
               (click)="setActiveTab('descripcion')">
               Descripción
             </button>
             <button 
-              class="tab-button"
-              [class.active]="activeTab() === 'caracteristicas'"
+              class="px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200"
+              [class]="activeTab() === 'caracteristicas' ? 'bg-green-100 text-green-800 border-b-2 border-green-500' : 'text-gray-600 hover:text-green-600 hover:bg-green-50'"
               (click)="setActiveTab('caracteristicas')">
               Características
             </button>
             <button 
-              class="tab-button"
-              [class.active]="activeTab() === 'beneficios'"
+              class="px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200"
+              [class]="activeTab() === 'beneficios' ? 'bg-green-100 text-green-800 border-b-2 border-green-500' : 'text-gray-600 hover:text-green-600 hover:bg-green-50'"
               (click)="setActiveTab('beneficios')">
               Beneficios
             </button>
             @if (producto()!.materiasPrimas && producto()!.materiasPrimas.length > 0) {
               <button 
-                class="tab-button"
-                [class.active]="activeTab() === 'componentes'"
+                class="px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200"
+                [class]="activeTab() === 'componentes' ? 'bg-green-100 text-green-800 border-b-2 border-green-500' : 'text-gray-600 hover:text-green-600 hover:bg-green-50'"
                 (click)="setActiveTab('componentes')">
                 Componentes
               </button>
             }
             <button 
-              class="tab-button"
-              [class.active]="activeTab() === 'comentarios'"
+              class="px-6 py-4 font-medium text-sm whitespace-nowrap transition-all duration-200"
+              [class]="activeTab() === 'comentarios' ? 'bg-green-100 text-green-800 border-b-2 border-green-500' : 'text-gray-600 hover:text-green-600 hover:bg-green-50'"
               (click)="setActiveTab('comentarios')">
               Reseñas ({{ producto()!.totalComentarios || 0 }})
             </button>
           </div>
 
-          <div class="tabs-content">
+          <!-- Contenido de tabs -->
+          <div class="p-6 lg:p-8">
             @if (activeTab() === 'descripcion') {
-              <div class="tab-content">
-                <h3>Descripción Detallada</h3>
-                <div class="description-content">
-                  <p>{{ producto()!.descripcionDetallada || producto()!.descripcion }}</p>
+              <div>
+                <h3 class="text-2xl font-bold text-green-800 mb-4">Descripción Detallada</h3>
+                <div class="prose max-w-none">
+                  <p class="text-gray-700 leading-relaxed text-lg">{{ producto()!.descripcionDetallada || producto()!.descripcion }}</p>
                 </div>
               </div>
             }
+
             @if (activeTab() === 'caracteristicas') {
-              <div class="tab-content">
-                <h3>Características Técnicas</h3>
+              <div>
+                <h3 class="text-2xl font-bold text-green-800 mb-6">Características Técnicas</h3>
                 @if (getCaracteristicas().length > 0) {
-                  <div class="characteristics-grid">
+                  <div class="grid md:grid-cols-2 gap-4">
                     @for (caracteristica of getCaracteristicas(); track caracteristica) {
-                      <div class="characteristic-item">
-                        <span class="check-icon">✓</span>
-                        <span>{{ caracteristica }}</span>
+                      <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-lime-50 rounded-lg border border-green-200/50">
+                        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">✓</div>
+                        <span class="text-green-800 font-medium">{{ caracteristica }}</span>
                       </div>
                     }
                   </div>
                 } @else {
-                  <p>No hay características específicas disponibles.</p>
+                  <p class="text-gray-600">No hay características específicas disponibles.</p>
                 }
               </div>
             }
+
             @if (activeTab() === 'beneficios') {
-              <div class="tab-content">
-                <h3>Beneficios del Sistema</h3>
+              <div>
+                <h3 class="text-2xl font-bold text-green-800 mb-6">Beneficios del Sistema</h3>
                 @if (getBeneficios().length > 0) {
-                  <div class="benefits-list">
+                  <div class="space-y-4">
                     @for (beneficio of getBeneficios(); track beneficio) {
-                      <div class="benefit-item">
-                        <span class="benefit-icon">🌟</span>
-                        <div class="benefit-text">
-                          <h4>{{ beneficio.split(':')[0] }}</h4>
+                      <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200/50">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">🌟</div>
+                        <div>
+                          <h4 class="text-lg font-bold text-blue-800 mb-1">{{ beneficio.split(':')[0] }}</h4>
                           @if (beneficio.includes(':')) {
-                            <p>{{ beneficio.split(':')[1] }}</p>
+                            <p class="text-blue-700">{{ beneficio.split(':')[1] }}</p>
                           }
                         </div>
                       </div>
                     }
                   </div>
                 } @else {
-                  <p>No hay beneficios específicos listados.</p>
+                  <p class="text-gray-600">No hay beneficios específicos listados.</p>
                 }
               </div>
             }
+
             @if (activeTab() === 'componentes' && producto()!.materiasPrimas && producto()!.materiasPrimas.length > 0) {
-              <div class="tab-content">
-                <h3>Componentes del Sistema</h3>
-                <div class="components-table">
-                  <div class="table-header">
-                    <div class="col">Componente</div>
-                    <div class="col">Cantidad</div>
-                    <div class="col">Unidad</div>
-                    <div class="col">Notas</div>
+              <div>
+                <h3 class="text-2xl font-bold text-green-800 mb-6">Componentes del Sistema</h3>
+                <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200/50 overflow-hidden">
+                  <!-- Header de tabla -->
+                  <div class="grid grid-cols-4 gap-4 p-4 bg-gradient-to-r from-green-100 to-lime-100 border-b border-green-200/50">
+                    <div class="font-bold text-green-800">Componente</div>
+                    <div class="font-bold text-green-800">Cantidad</div>
+                    <div class="font-bold text-green-800">Unidad</div>
+                    <div class="font-bold text-green-800">Notas</div>
                   </div>
+                  <!-- Filas de tabla -->
                   @for (material of producto()!.materiasPrimas; track material.id) {
-                    <div class="table-row">
-                      <div class="col component-name">{{ material.nombreMateriaPrima }}</div>
-                      <div class="col">{{ material.cantidadRequerida }}</div>
-                      <div class="col">{{ material.unidadMedida }}</div>
-                      <div class="col">{{ material.notas || '-' }}</div>
+                    <div class="grid grid-cols-4 gap-4 p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                      <div class="font-medium text-gray-900">{{ material.nombreMateriaPrima }}</div>
+                      <div class="text-gray-700">{{ material.cantidadRequerida }}</div>
+                      <div class="text-gray-700">{{ material.unidadMedida }}</div>
+                      <div class="text-gray-700">{{ material.notas || '-' }}</div>
                     </div>
                   }
                 </div>
               </div>
             }
+
             @if (activeTab() === 'comentarios') {
-              <div class="tab-content">
-                <div class="comments-header">
-                  <h3>Reseñas de Clientes</h3>
+              <div>
+                <!-- Header de comentarios -->
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-2xl font-bold text-green-800">Reseñas de Clientes</h3>
                   @if (isAuthenticated()) {
                     <button 
                       (click)="toggleCommentForm()" 
-                      class="btn btn-primary">
+                      class="px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                       {{ showCommentForm() ? 'Cancelar' : 'Escribir Reseña' }}
                     </button>
                   } @else {
-                    <a routerLink="/login" class="btn btn-outline">
+                    <a routerLink="/login" class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-semibold">
                       Iniciar Sesión para Reseñar
                     </a>
                   }
                 </div>
+
+                <!-- Formulario de comentario -->
                 @if (showCommentForm()) {
-                  <div class="comment-form-container">
-                    <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="comment-form">
-                      <div class="form-group">
-                        <label class="form-label">Calificación *</label>
-                        <div class="rating-input">
+                  <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200/50 mb-8">
+                    <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="space-y-4">
+                      <!-- Rating -->
+                      <div>
+                        <label class="block text-sm font-semibold text-blue-800 mb-2">Calificación *</label>
+                        <div class="flex gap-2">
                           @for (star of [1,2,3,4,5]; track star) {
                             <span 
-                              class="rating-star"
-                              [class.filled]="star <= commentForm.get('calificacion')?.value"
+                              class="text-2xl cursor-pointer transition-transform duration-200 hover:scale-110"
+                              [class]="star <= commentForm.get('calificacion')?.value ? 'text-yellow-500' : 'text-gray-300'"
                               (click)="commentForm.patchValue({calificacion: star})">
                               ⭐
                             </span>
@@ -254,79 +308,86 @@
                         </div>
                       </div>
 
-                      <div class="form-group">
-                        <label for="contenido" class="form-label">Tu reseña *</label>
+                      <!-- Contenido -->
+                      <div>
+                        <label for="contenido" class="block text-sm font-semibold text-blue-800 mb-2">Tu reseña *</label>
                         <textarea
                           id="contenido"
                           formControlName="contenido"
-                          class="form-textarea"
+                          class="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/90 backdrop-blur-sm resize-none"
                           placeholder="Comparte tu experiencia con este producto..."
                           rows="4"></textarea>
                       </div>
 
-                      <div class="form-actions">
-                        <button 
-                          type="submit" 
-                          class="btn btn-primary"
-                          [disabled]="!commentForm.valid || commentLoading()">
-                          @if (commentLoading()) {
-                            <span class="btn-spinner"></span>
+                      <!-- Botón submit -->
+                      <button 
+                        type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        [disabled]="!commentForm.valid || commentLoading()">
+                        @if (commentLoading()) {
+                          <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             Enviando...
-                          } @else {
-                            Publicar Reseña
-                          }
-                        </button>
-                      </div>
+                          </div>
+                        } @else {
+                          Publicar Reseña
+                        }
+                      </button>
                     </form>
                   </div>
                 }
-                <div class="comments-list">
-@if (hasComentarios()) {
+
+                <!-- Lista de comentarios -->
+                <div class="space-y-6">
+                  @if (hasComentarios()) {
                     @for (comentario of producto()!.comentarios; track comentario.id) {
-                      <div class="comment-item">
-                        <div class="comment-header">
-                          <div class="comment-author">
-                            <div class="author-avatar">
-{{ getInitials(comentario.nombreUsuario) }}
+                      <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50">
+                        <!-- Header del comentario -->
+                        <div class="flex items-start justify-between mb-4">
+                          <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                              {{ getInitials(comentario.nombreUsuario) }}
                             </div>
-                            <div class="author-info">
-                              <h4>{{ comentario.nombreUsuario }}</h4>
-                              <div class="comment-rating">
+                            <div>
+                              <h4 class="font-bold text-gray-900">{{ comentario.nombreUsuario }}</h4>
+                              <div class="flex gap-1 mb-1">
                                 @for (filled of getStarsArray(comentario.calificacion); track $index) {
-                                  <span class="star" [class.filled]="filled">⭐</span>
+                                  <span [class]="filled ? 'text-yellow-500' : 'text-gray-300'">⭐</span>
                                 }
                               </div>
                             </div>
                           </div>
-                          <div class="comment-date">
+                          <div class="text-sm text-gray-500">
                             {{ formatDate(comentario.fechaComentario) }}
                           </div>
                         </div>
                         
-                        <div class="comment-content">
-                          <p>{{ comentario.contenido }}</p>
-                        </div>
+                        <!-- Contenido del comentario -->
+                        <p class="text-gray-700 leading-relaxed mb-4">{{ comentario.contenido }}</p>
 
+                        <!-- Respuesta del admin -->
                         @if (comentario.respuestaAdmin) {
-                          <div class="admin-response">
-                            <div class="response-header">
-                              <span class="admin-badge">Respuesta del Equipo</span>
+                          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200/50">
+                            <div class="flex items-center justify-between mb-2">
+                              <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                Respuesta del Equipo
+                              </span>
                               @if (comentario.fechaRespuesta) {
-                                <span class="response-date">
+                                <span class="text-sm text-blue-600">
                                   {{ formatDate(comentario.fechaRespuesta) }}
                                 </span>
                               }
                             </div>
-                            <p>{{ comentario.respuestaAdmin }}</p>
+                            <p class="text-blue-800">{{ comentario.respuestaAdmin }}</p>
                           </div>
                         }
                       </div>
                     }
                   } @else {
-                    <div class="no-comments">
-                      <div class="no-comments-icon">💬</div>
-                      <h4>Aún no hay reseñas</h4>
-                      <p>Sé el primero en compartir tu experiencia con este producto.</p>
+                    <div class="text-center py-12">
+                      <div class="text-6xl mb-4">💬</div>
+                      <h4 class="text-xl font-bold text-gray-900 mb-2">Aún no hay reseñas</h4>
+                      <p class="text-gray-600">Sé el primero en compartir tu experiencia con este producto.</p>
                     </div>
                   }
                 </div>
@@ -336,16 +397,20 @@
         </div>
       </div>
     </section>
-    <section class="related-section">
-      <div class="container">
-        <div class="cta-container">
-          <h2>¿Interesado en este producto?</h2>
-          <p>Nuestro equipo de expertos está listo para ayudarte a encontrar la solución perfecta.</p>
-          <div class="cta-actions">
-            <button (click)="goToCotizacion()" class="btn btn-primary btn-large">
+
+    <!-- CTA Final -->
+    <section class="pb-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 text-center">
+          <h2 class="text-3xl font-bold text-green-800 mb-4">¿Interesado en este producto?</h2>
+          <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Nuestro equipo de expertos está listo para ayudarte a encontrar la solución perfecta.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button (click)="goToCotizacion()" class="px-8 py-4 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               Solicitar Cotización Gratuita
             </button>
-            <a routerLink="/contacto" class="btn btn-outline btn-large">
+            <a routerLink="/contacto" class="px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200">
               Hablar con un Experto
             </a>
           </div>

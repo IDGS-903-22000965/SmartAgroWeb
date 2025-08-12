@@ -1,332 +1,602 @@
-<div class="ventas-container">
-  <div class="header-section">
-    <h1 class="page-title">
-      <i class="fas fa-shopping-cart"></i>
-      Gestión de Ventas
-    </h1>
+<!-- Gestión de Ventas con diseño Tailwind manteniendo funcionalidad Angular completa -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
     
-    <nav class="tab-navigation">
-      <button 
-        class="tab-btn" 
-        [class.active]="vistaActiva === 'lista'"
-        (click)="cambiarVista('lista')">
-        <i class="fas fa-list"></i> Lista de Ventas
-      </button>
-      <button 
-        class="tab-btn" 
-        [class.active]="vistaActiva === 'estadisticas'"
-        (click)="cambiarVista('estadisticas')">
-        <i class="fas fa-chart-bar"></i> Estadísticas
-      </button>
-      <button 
-        class="tab-btn" 
-        [class.active]="vistaActiva === 'reportes'"
-        (click)="cambiarVista('reportes')">
-        <i class="fas fa-file-alt"></i> Reportes
-      </button>
-    </nav>
-  </div>
-  <div *ngIf="vistaActiva === 'lista'" class="lista-ventas">
-    <div class="filtros-section">
-      <div class="filtros-row">
-        <div class="filtro-grupo">
-          <label>Buscar:</label>
-          <input 
-            type="text" 
-            [(ngModel)]="filtros.searchTerm" 
-            placeholder="Número de venta, cliente, email..."
-            class="form-input">
-        </div>
-        
-        <div class="filtro-grupo">
-          <label>Estado:</label>
-          <select [(ngModel)]="filtros.estado" class="form-select">
-            <option value="">Todos los estados</option>
-            <option *ngFor="let estado of estados" [value]="estado">{{estado}}</option>
-          </select>
-        </div>
-        
-        <div class="filtro-grupo">
-          <label>Método de Pago:</label>
-          <select [(ngModel)]="filtros.metodoPago" class="form-select">
-            <option value="">Todos los métodos</option>
-            <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
-          </select>
+    <!-- Header de la página -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">
+            <i class="fas fa-shopping-cart"></i>
+            Gestión de Ventas
+          </h1>
+          <p class="text-gray-600">Administrar y monitorear todas las ventas</p>
         </div>
       </div>
-      
-      <div class="filtros-row">
-        <div class="filtro-grupo">
-          <label>Fecha Inicio:</label>
-          <input 
-            type="date" 
-            [(ngModel)]="filtros.fechaInicio" 
-            class="form-input">
-        </div>
-        
-        <div class="filtro-grupo">
-          <label>Fecha Fin:</label>
-          <input 
-            type="date" 
-            [(ngModel)]="filtros.fechaFin" 
-            class="form-input">
-        </div>
-        
-        <div class="filtro-acciones">
-          <button class="btn btn-primary" (click)="buscar()">
-            <i class="fas fa-search"></i> Buscar
-          </button>
-          <button class="btn btn-secondary" (click)="limpiarFiltros()">
-            <i class="fas fa-times"></i> Limpiar
-          </button>
-          <button class="btn btn-success" (click)="exportarCSV()">
-            <i class="fas fa-download"></i> Exportar CSV
-          </button>
-        </div>
-      </div>
-    </div>
-    <div *ngIf="loading" class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      Cargando ventas...
     </div>
 
-    <div *ngIf="error" class="error-state">
-      <i class="fas fa-exclamation-triangle"></i>
-      {{error}}
+    <!-- Navegación por tabs -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <nav class="flex gap-2 overflow-x-auto">
+        <button 
+          class="px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200"
+          [class]="vistaActiva === 'lista' ? 
+            'bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg' : 
+            'bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200'"
+          (click)="cambiarVista('lista')">
+          <i class="fas fa-list"></i> Lista de Ventas
+        </button>
+        <button 
+          class="px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200"
+          [class]="vistaActiva === 'estadisticas' ? 
+            'bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg' : 
+            'bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200'"
+          (click)="cambiarVista('estadisticas')">
+          <i class="fas fa-chart-bar"></i> Estadísticas
+        </button>
+        <button 
+          class="px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200"
+          [class]="vistaActiva === 'reportes' ? 
+            'bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg' : 
+            'bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200'"
+          (click)="cambiarVista('reportes')">
+          <i class="fas fa-file-alt"></i> Reportes
+        </button>
+      </nav>
     </div>
-    <div *ngIf="!loading && !error" class="tabla-container">
-      <table class="ventas-table">
-        <thead>
-          <tr>
-            <th>Número</th>
-            <th>Cliente</th>
-            <th>Total</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Método Pago</th>
-            <th>Items</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let venta of ventas" class="venta-row">
-            <td class="numero-venta">
-              <strong>{{venta.numeroVenta}}</strong>
-              <small *ngIf="venta.numeroCotizacion" class="cotizacion-ref">
-                Cot: {{venta.numeroCotizacion}}
-              </small>
-            </td>
-            <td class="cliente-info">
-              <div class="cliente-nombre">{{venta.nombreCliente}}</div>
-              <small *ngIf="venta.emailCliente" class="cliente-email">
-                {{venta.emailCliente}}
-              </small>
-            </td>
-            <td class="monto">
-              <strong>{{formatearMoneda(venta.total)}}</strong>
-            </td>
-            <td class="fecha">
-              {{formatearFecha(venta.fechaVenta)}}
-            </td>
-            <td class="estado">
-              <span class="badge" [ngClass]="getEstadoClass(venta.estadoVenta)">
+
+    <!-- Vista Lista de Ventas -->
+    <div *ngIf="vistaActiva === 'lista'" class="lista-ventas">
+      <!-- Filtros -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <!-- Buscador -->
+          <div class="filtro-grupo">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Buscar:</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+              <input 
+                type="text" 
+                [(ngModel)]="filtros.searchTerm" 
+                placeholder="Número de venta, cliente, email..."
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+            </div>
+          </div>
+          
+          <!-- Estado -->
+          <div class="filtro-grupo">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Estado:</label>
+            <select 
+              [(ngModel)]="filtros.estado" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let estado of estados" [value]="estado">{{estado}}</option>
+            </select>
+          </div>
+          
+          <!-- Método de Pago -->
+          <div class="filtro-grupo">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Método de Pago:</label>
+            <select 
+              [(ngModel)]="filtros.metodoPago" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+              <option value="">Todos los métodos</option>
+              <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <!-- Fecha Inicio -->
+          <div class="filtro-grupo">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Fecha Inicio:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="filtros.fechaInicio" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+          </div>
+          
+          <!-- Fecha Fin -->
+          <div class="filtro-grupo">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Fecha Fin:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="filtros.fechaFin" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+          </div>
+          
+          <!-- Acciones -->
+          <div class="lg:col-span-3 filtro-acciones">
+            <label class="block text-sm font-semibold text-green-800 mb-2">Acciones:</label>
+            <div class="flex gap-2">
+              <button 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+                (click)="buscar()">
+                <i class="fas fa-search"></i> Buscar
+              </button>
+              <button 
+                class="px-4 py-3 bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+                (click)="limpiarFiltros()">
+                <i class="fas fa-times"></i> Limpiar
+              </button>
+              <button 
+                class="px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" 
+                (click)="exportarCSV()">
+                <i class="fas fa-download"></i> Exportar CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estados de carga/error -->
+      <div *ngIf="loading" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center loading-state">
+        <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">
+          <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
+        </p>
+      </div>
+
+      <div *ngIf="error" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center error-state">
+        <div class="text-6xl mb-4">⚠️</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Error al cargar ventas</h3>
+        <p class="text-gray-600">
+          <i class="fas fa-exclamation-triangle"></i> {{error}}
+        </p>
+      </div>
+
+      <!-- Lista de ventas en formato de tarjetas -->
+      <div *ngIf="!loading && !error" class="space-y-6 tabla-container">
+        <div *ngFor="let venta of ventas" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 venta-row">
+          
+          <!-- Header de la venta -->
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4">
+            <div class="flex items-start gap-4 mb-4 lg:mb-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                <i class="fas fa-receipt"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 numero-venta">{{venta.numeroVenta}}</h3>
+                <p class="text-blue-700 font-medium cliente-info">{{venta.nombreCliente}}</p>
+                <p class="text-gray-600 text-sm" *ngIf="venta.emailCliente">
+                  <i class="fas fa-envelope"></i> {{venta.emailCliente}}
+                </p>
+                <span class="text-sm text-gray-500 fecha">
+                  <i class="fas fa-calendar-alt"></i> {{formatearFecha(venta.fechaVenta)}}
+                </span>
+                <small *ngIf="venta.numeroCotizacion" class="block text-xs text-gray-500 cotizacion-ref mt-1">
+                  <i class="fas fa-file-invoice"></i> Cotización: {{venta.numeroCotizacion}}
+                </small>
+              </div>
+            </div>
+            
+            <div class="flex flex-col items-end gap-2">
+              <div class="text-right">
+                <span class="text-2xl font-bold text-green-700 monto">{{formatearMoneda(venta.total)}}</span>
+                <p class="text-sm text-gray-500 items">
+                  <i class="fas fa-box"></i> {{venta.cantidadItems}} items
+                </p>
+              </div>
+              <div class="px-3 py-1 rounded-full text-sm font-medium estado" [ngClass]="{
+                'bg-green-100 text-green-800 border border-green-200': venta.estadoVenta === 'Entregado',
+                'bg-yellow-100 text-yellow-800 border border-yellow-200': venta.estadoVenta === 'Procesando', 
+                'bg-blue-100 text-blue-800 border border-blue-200': venta.estadoVenta === 'Enviado',
+                'bg-red-100 text-red-800 border border-red-200': venta.estadoVenta === 'Cancelado',
+                'bg-gray-100 text-gray-800 border border-gray-200': venta.estadoVenta === 'Pendiente'
+              }">
                 {{venta.estadoVenta}}
-              </span>
-            </td>
-            <td class="metodo-pago">
-              {{venta.metodoPago || 'No especificado'}}
-            </td>
-            <td class="items">
-              <span class="items-count">{{venta.cantidadItems}}</span>
-            </td>
-            <td class="acciones">
-              <div class="acciones-grupo">
-                <button 
-  class="btn-icon" 
-  title="Ver detalles"
-  (click)="verDetalles(venta.id)">
-  <i class="fas fa-eye"></i>
-</button>
-                <div class="dropdown">
-                  <button class="btn-icon dropdown-toggle" title="Cambiar estado">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <div class="dropdown-menu">
-                    <button 
-                      *ngFor="let estado of estados" 
-                      class="dropdown-item"
-                      [class.active]="estado === venta.estadoVenta"
-                      (click)="actualizarEstado(venta.id, estado)">
-                      {{estado}}
-                    </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalles de la venta -->
+          <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl p-4 mb-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-semibold text-gray-700">Método de Pago:</span>
+                <p class="text-gray-800 metodo-pago">
+                  <i class="fas fa-credit-card text-gray-500"></i> {{venta.metodoPago || 'No especificado'}}
+                </p>
+              </div>
+              <div>
+                <span class="font-semibold text-gray-700">Cantidad de Items:</span>
+                <p class="text-gray-800">
+                  <i class="fas fa-boxes text-gray-500"></i> {{venta.cantidadItems}} productos
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex gap-3 flex-wrap acciones">
+            <button 
+              class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium btn-icon" 
+              title="Ver detalles"
+              (click)="abrirModalDetalles(venta)">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+            
+            <!-- Dropdown de estados funcional -->
+            <div class="relative">
+              <select 
+                [value]="venta.estadoVenta"
+                (change)="actualizarEstado(venta.id, $any($event.target).value)"
+                class="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium border-0 cursor-pointer appearance-none pr-8">
+                <option *ngFor="let estado of estados" [value]="estado" class="text-gray-900 bg-white">
+                  {{estado}}
+                </option>
+              </select>
+              <i class="fas fa-chevron-down absolute right-2 top-1/2 transform -translate-y-1/2 text-white pointer-events-none text-xs"></i>
+            </div>
+            
+            <button 
+              class="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium"
+              title="Imprimir factura">
+              <i class="fas fa-print"></i> Imprimir
+            </button>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 paginacion" *ngIf="totalPages > 1">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div class="mb-4 lg:mb-0 paginacion-info">
+              <p class="text-gray-600">
+                Mostrando {{(currentPage - 1) * pageSize + 1}} - 
+                {{Math.min(currentPage * pageSize, totalCount)}} 
+                de {{totalCount}} ventas
+              </p>
+            </div>
+            
+            <div class="flex gap-2 paginacion-controles">
+              <button 
+                class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 btn-pagina"
+                [class]="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-600'"
+                [disabled]="currentPage === 1"
+                (click)="cambiarPagina(currentPage - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              
+              <button 
+                *ngFor="let pagina of getPaginationArray()"
+                class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 btn-pagina"
+                [class]="pagina === currentPage ? 'bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg active' : 'bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-600'"
+                (click)="cambiarPagina(pagina)">
+                {{pagina}}
+              </button>
+              
+              <button 
+                class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 btn-pagina"
+                [class]="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-600'"
+                [disabled]="currentPage === totalPages"
+                (click)="cambiarPagina(currentPage + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista Estadísticas -->
+    <div *ngIf="vistaActiva === 'estadisticas'" class="estadisticas-ventas">
+      <div *ngIf="estadisticas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 estadisticas-grid">
+        <!-- Métricas principales -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon ventas-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{estadisticas.totalVentas}}</h3>
+              <p class="text-gray-600">Total Ventas</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon dinero-icon">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{formatearMoneda(estadisticas.montoTotalVentas)}}</h3>
+              <p class="text-gray-600">Monto Total</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon hoy-icon">
+              <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{estadisticas.ventasHoy}}</h3>
+              <p class="text-gray-600">Ventas Hoy</p>
+              <small class="text-sm text-gray-500">{{formatearMoneda(estadisticas.montoVentasHoy)}}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon mes-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{estadisticas.ventasEsteMes}}</h3>
+              <p class="text-gray-600">Ventas del Mes</p>
+              <small class="text-sm text-gray-500">{{formatearMoneda(estadisticas.montoVentasEsteMes)}}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-yellow-600 to-orange-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon pendientes-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{estadisticas.ventasPendientes}}</h3>
+              <p class="text-gray-600">Pendientes</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 metrica-card">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg metrica-icon completadas-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="metrica-content">
+              <h3 class="text-2xl font-bold text-gray-900">{{estadisticas.ventasCompletadas}}</h3>
+              <p class="text-gray-600">Completadas</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+       
+
+        
+      </div>
+    </div>
+
+    <!-- Vista Reportes -->
+    <div *ngIf="vistaActiva === 'reportes'" class="reportes-ventas">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reportes-grid">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 reporte-card">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-gray-900">Reporte de Ventas</h4>
+              <p class="text-gray-600">Genera reportes detallados de ventas por período</p>
+            </div>
+          </div>
+          <button class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+            <i class="fas fa-file-pdf"></i> Generar Reporte
+          </button>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 reporte-card">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white shadow-lg">
+              <i class="fas fa-funnel-dollar"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-gray-900">Embudo de Conversión</h4>
+              <p class="text-gray-600">Análisis del proceso de conversión de cotizaciones a ventas</p>
+            </div>
+          </div>
+          <button class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+            <i class="fas fa-analytics"></i> Ver Embudo
+          </button>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 reporte-card">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg">
+              <i class="fas fa-chart-pie"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-gray-900">Productos Más Vendidos</h4>
+              <p class="text-gray-600">Top de productos con mayor volumen de ventas</p>
+            </div>
+          </div>
+          <button class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+            <i class="fas fa-trophy"></i> Ver Ranking
+          </button>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 reporte-card">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-full flex items-center justify-center text-white shadow-lg">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-gray-900">Clientes Frecuentes</h4>
+              <p class="text-gray-600">Lista de clientes con mayor actividad de compra</p>
+            </div>
+          </div>
+          <button class="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+            <i class="fas fa-star"></i> Ver Clientes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de detalles de venta -->
+    <div *ngIf="mostrarModalDetalles" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="cerrarModalDetalles()">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+        
+        <!-- Header del modal -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+          <h2 class="text-2xl font-bold text-green-800">
+            <i class="fas fa-receipt text-blue-600"></i> Detalles de la Venta
+          </h2>
+          <button (click)="cerrarModalDetalles()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+            ✕
+          </button>
+        </div>
+        
+        <div *ngIf="ventaSeleccionada" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+          
+          <!-- Información general -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 border border-blue-200/50">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                <i class="fas fa-receipt text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-gray-900">{{ventaSeleccionada.numeroVenta}}</h3>
+                <p class="text-blue-700 font-medium">{{ventaSeleccionada.nombreCliente}}</p>
+                <p class="text-gray-600" *ngIf="ventaSeleccionada.emailCliente">
+                  <i class="fas fa-envelope"></i> {{ventaSeleccionada.emailCliente}}
+                </p>
+              </div>
+              <div class="ml-auto text-right">
+                <span class="text-3xl font-bold text-green-700">{{formatearMoneda(ventaSeleccionada.total)}}</span>
+                <p class="text-sm text-gray-500">
+                  <i class="fas fa-calendar-alt"></i> {{formatearFecha(ventaSeleccionada.fechaVenta)}}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información detallada -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Datos de la venta -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200/50">
+              <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-600"></i> Información de la Venta
+              </h4>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Número de Venta:</span>
+                  <span class="text-gray-900">{{ventaSeleccionada.numeroVenta}}</span>
+                </div>
+                <div class="flex justify-between" *ngIf="ventaSeleccionada.numeroCotizacion">
+                  <span class="font-semibold text-gray-700">Cotización:</span>
+                  <span class="text-gray-900">{{ventaSeleccionada.numeroCotizacion}}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Estado:</span>
+                  <span class="px-3 py-1 rounded-full text-sm font-medium" [ngClass]="{
+                    'bg-green-100 text-green-800': ventaSeleccionada.estadoVenta === 'Entregado',
+                    'bg-yellow-100 text-yellow-800': ventaSeleccionada.estadoVenta === 'Procesando', 
+                    'bg-blue-100 text-blue-800': ventaSeleccionada.estadoVenta === 'Enviado',
+                    'bg-red-100 text-red-800': ventaSeleccionada.estadoVenta === 'Cancelado',
+                    'bg-gray-100 text-gray-800': ventaSeleccionada.estadoVenta === 'Pendiente'
+                  }">
+                    {{ventaSeleccionada.estadoVenta}}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Método de Pago:</span>
+                  <span class="text-gray-900">
+                    <i class="fas fa-credit-card text-gray-500"></i> {{ventaSeleccionada.metodoPago || 'No especificado'}}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Cantidad de Items:</span>
+                  <span class="text-gray-900">
+                    <i class="fas fa-box text-gray-500"></i> {{ventaSeleccionada.cantidadItems}}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen financiero -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 shadow-lg border border-green-200/50">
+              <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-calculator text-green-600"></i> Resumen Financiero
+              </h4>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">Subtotal:</span>
+                  <span class="text-gray-900">{{formatearMoneda(ventaSeleccionada.total * 0.84)}}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-700">IVA (16%):</span>
+                  <span class="text-gray-900">{{formatearMoneda(ventaSeleccionada.total * 0.16)}}</span>
+                </div>
+                <div class="border-t border-green-200 pt-3 mt-3">
+                  <div class="flex justify-between">
+                    <span class="text-lg font-bold text-green-800">Total:</span>
+                    <span class="text-xl font-bold text-green-700">{{formatearMoneda(ventaSeleccionada.total)}}</span>
                   </div>
                 </div>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="paginacion" *ngIf="totalPages > 1">
-        <div class="paginacion-info">
-          Mostrando {{(currentPage - 1) * pageSize + 1}} - 
-          {{Math.min(currentPage * pageSize, totalCount)}} 
-          de {{totalCount}} ventas
+            </div>
+          </div>
+
+          <!-- Sección de productos (simulada) -->
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200/50 mb-6">
+            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <i class="fas fa-shopping-bag text-purple-600"></i> Productos de la Venta
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 rounded-lg">
+                  <tr>
+                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Producto</th>
+                    <th class="text-center py-3 px-4 font-semibold text-gray-700">Cantidad</th>
+                    <th class="text-right py-3 px-4 font-semibold text-gray-700">Precio Unit.</th>
+                    <th class="text-right py-3 px-4 font-semibold text-gray-700">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <!-- Ejemplo de productos - en la implementación real estos vendrían del backend -->
+                  <tr class="hover:bg-gray-50">
+                    <td class="py-3 px-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center text-white text-xs">
+                          <i class="fas fa-box"></i>
+                        </div>
+                        <span class="font-medium text-gray-900">Producto Example</span>
+                      </div>
+                    </td>
+                    <td class="py-3 px-4 text-center">2</td>
+                    <td class="py-3 px-4 text-right">{{formatearMoneda(500)}}</td>
+                    <td class="py-3 px-4 text-right font-semibold">{{formatearMoneda(1000)}}</td>
+                  </tr>
+                  <!-- Más productos se cargarían aquí -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Historial de cambios (simulado) -->
+          <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 shadow-lg border border-gray-200/50">
+            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <i class="fas fa-history text-orange-600"></i> Historial de la Venta
+            </h4>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-plus text-blue-600 text-xs"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">Venta creada</p>
+                  <p class="text-sm text-gray-500">{{formatearFecha(ventaSeleccionada.fechaVenta)}}</p>
+                </div>
+              </div>
+              <!-- Más eventos del historial se mostrarían aquí -->
+            </div>
+          </div>
         </div>
         
-        <div class="paginacion-controles">
-          <button 
-            class="btn-pagina" 
-            [disabled]="currentPage === 1"
-            (click)="cambiarPagina(currentPage - 1)">
-            <i class="fas fa-chevron-left"></i>
+        <!-- Footer del modal -->
+        <div class="flex gap-3 p-6 border-t border-gray-200/50">
+          <button (click)="cerrarModalDetalles()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+            Cerrar
           </button>
           
-          <button 
-            *ngFor="let pagina of getPaginationArray()"
-            class="btn-pagina"
-            [class.active]="pagina === currentPage"
-            (click)="cambiarPagina(pagina)">
-            {{pagina}}
-          </button>
-          
-          <button 
-            class="btn-pagina" 
-            [disabled]="currentPage === totalPages"
-            (click)="cambiarPagina(currentPage + 1)">
-            <i class="fas fa-chevron-right"></i>
-          </button>
         </div>
-      </div>
-    </div>
-  </div>
-  <div *ngIf="vistaActiva === 'estadisticas'" class="estadisticas-ventas">
-    <div *ngIf="estadisticas" class="estadisticas-grid">
-      <div class="metrica-card">
-        <div class="metrica-icon ventas-icon">
-          <i class="fas fa-shopping-cart"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{estadisticas.totalVentas}}</h3>
-          <p>Total Ventas</p>
-        </div>
-      </div>
-
-      <div class="metrica-card">
-        <div class="metrica-icon dinero-icon">
-          <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{formatearMoneda(estadisticas.montoTotalVentas)}}</h3>
-          <p>Monto Total</p>
-        </div>
-      </div>
-
-      <div class="metrica-card">
-        <div class="metrica-icon hoy-icon">
-          <i class="fas fa-calendar-day"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{estadisticas.ventasHoy}}</h3>
-          <p>Ventas Hoy</p>
-          <small>{{formatearMoneda(estadisticas.montoVentasHoy)}}</small>
-        </div>
-      </div>
-
-      <div class="metrica-card">
-        <div class="metrica-icon mes-icon">
-          <i class="fas fa-calendar-alt"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{estadisticas.ventasEsteMes}}</h3>
-          <p>Ventas del Mes</p>
-          <small>{{formatearMoneda(estadisticas.montoVentasEsteMes)}}</small>
-        </div>
-      </div>
-
-      <div class="metrica-card">
-        <div class="metrica-icon pendientes-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{estadisticas.ventasPendientes}}</h3>
-          <p>Pendientes</p>
-        </div>
-      </div>
-
-      <div class="metrica-card">
-        <div class="metrica-icon completadas-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="metrica-content">
-          <h3>{{estadisticas.ventasCompletadas}}</h3>
-          <p>Completadas</p>
-        </div>
-      </div>
-      <div class="grafico-card full-width">
-        <h4>Distribución por Estado</h4>
-        <div class="distribucion-barras">
-          <ng-container *ngFor="let estado of estados">
-            <div 
-              class="barra-item"
-              *ngIf="estadisticas?.ventasPorEstado && estadisticas.ventasPorEstado[estado]">
-              <div class="barra-label">{{estado}}</div>
-              <div class="barra-container">
-                <div 
-                  class="barra-fill" 
-                  [style.width.%]="estadisticas && estadisticas.totalVentas > 0 ? (estadisticas.ventasPorEstado[estado] / estadisticas.totalVentas) * 100 : 0">
-                </div>
-              </div>
-              <div class="barra-valor">{{estadisticas.ventasPorEstado[estado]}}</div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
-      <div class="grafico-card full-width">
-        <h4>Distribución por Método de Pago</h4>
-        <div class="distribucion-barras">
-          <ng-container *ngFor="let metodo of metodosPago">
-            <div 
-              class="barra-item"
-              *ngIf="estadisticas?.ventasPorMetodoPago && estadisticas.ventasPorMetodoPago[metodo]">
-              <div class="barra-label">{{metodo}}</div>
-              <div class="barra-container">
-                <div 
-                  class="barra-fill metodo-pago" 
-                  [style.width.%]="estadisticas && estadisticas.totalVentas > 0 ? (estadisticas.ventasPorMetodoPago[metodo] / estadisticas.totalVentas) * 100 : 0">
-                </div>
-              </div>
-              <div class="barra-valor">{{estadisticas.ventasPorMetodoPago[metodo]}}</div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div *ngIf="vistaActiva === 'reportes'" class="reportes-ventas">
-    <div class="reportes-grid">
-      <div class="reporte-card">
-        <h4><i class="fas fa-chart-line"></i> Reporte de Ventas</h4>
-        <p>Genera reportes detallados de ventas por período</p>
-        <button class="btn btn-primary">Generar Reporte</button>
-      </div>
-
-      <div class="reporte-card">
-        <h4><i class="fas fa-funnel-dollar"></i> Embudo de Conversión</h4>
-        <p>Análisis del proceso de conversión de cotizaciones a ventas</p>
-        <button class="btn btn-primary">Ver Embudo</button>
-      </div>
-
-      <div class="reporte-card">
-        <h4><i class="fas fa-chart-pie"></i> Productos Más Vendidos</h4>
-        <p>Top de productos con mayor volumen de ventas</p>
-        <button class="btn btn-primary">Ver Ranking</button>
-      </div>
-
-      <div class="reporte-card">
-        <h4><i class="fas fa-users"></i> Clientes Frecuentes</h4>
-        <p>Lista de clientes con mayor actividad de compra</p>
-        <button class="btn btn-primary">Ver Clientes</button>
       </div>
     </div>
   </div>

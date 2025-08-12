@@ -1,596 +1,607 @@
-<div class="compras-admin">
-  <div class="page-header">
-    <div class="header-content">
-      <h1>Compras a Proveedores</h1>
-      <p>Gestión de órdenes de compra y materias primas</p>
-    </div>
-    <div class="header-actions">
-      <button (click)="openCreateModal()" class="btn btn-primary">
-        ➕ Nueva Compra
-      </button>
-    </div>
-  </div>
-
+<!-- Gestión de Compras a Proveedores con el MISMO estilo exacto de gestión de comentarios -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
     
-  @if (stats()) {
-    <div class="stats-grid">
-      <div class="stat-card total">
-        <div class="stat-icon">📦</div>
-        <div class="stat-content">
-          <h3>Total Compras</h3>
-          <div class="stat-value">{{ stats()!.totalCompras }}</div>
+    <!-- Header de la página -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">Compras a Proveedores</h1>
+          <p class="text-gray-600">Gestión de órdenes de compra y materias primas</p>
         </div>
-      </div>
-      
-      <div class="stat-card pending">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-content">
-          <h3>Pendientes</h3>
-          <div class="stat-value">{{ stats()!.comprasPendientes }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card received">
-        <div class="stat-icon">✅</div>
-        <div class="stat-content">
-          <h3>Recibidas</h3>
-          <div class="stat-value">{{ stats()!.comprasRecibidas }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card cancelled">
-        <div class="stat-icon">❌</div>
-        <div class="stat-content">
-          <h3>Canceladas</h3>
-          <div class="stat-value">{{ stats()!.comprasCanceladas }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card monthly">
-        <div class="stat-icon">📅</div>
-        <div class="stat-content">
-          <h3>Este Mes</h3>
-          <div class="stat-value">{{ stats()!.comprasEsteMes }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card expense">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <h3>Gasto Mensual</h3>
-          <div class="stat-value">{{ formatCurrency(stats()!.gastoEsteMes) }}</div>
+        
+        <div class="flex gap-4">
+          <button (click)="openCreateModal()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            ➕ Nueva Compra
+          </button>
         </div>
       </div>
     </div>
-  }
 
-  
-  <div class="filters-section">
-    <div class="filters-container">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          placeholder="Buscar por número, proveedor u observaciones..."
-          [value]="searchTerm()"
-          (input)="onSearchChange($event)"
-          class="search-input">
+    <!-- Estadísticas -->
+    @if (stats()) {
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl p-4 text-center shadow-lg border border-blue-200/50">
+          <span class="block text-2xl font-bold text-blue-700">{{ stats()!.totalCompras }}</span>
+          <span class="text-sm text-blue-600 font-medium">Total Compras</span>
+        </div>
+        <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-4 text-center shadow-lg border border-orange-200/50">
+          <span class="block text-2xl font-bold text-orange-700">{{ stats()!.comprasPendientes }}</span>
+          <span class="text-sm text-orange-600 font-medium">Pendientes</span>
+        </div>
+        <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-xl p-4 text-center shadow-lg border border-green-200/50">
+          <span class="block text-2xl font-bold text-green-700">{{ stats()!.comprasRecibidas }}</span>
+          <span class="text-sm text-green-600 font-medium">Recibidas</span>
+        </div>
+        <div class="bg-gradient-to-br from-red-100 to-red-200 rounded-xl p-4 text-center shadow-lg border border-red-200/50">
+          <span class="block text-2xl font-bold text-red-700">{{ stats()!.comprasCanceladas }}</span>
+          <span class="text-sm text-red-600 font-medium">Canceladas</span>
+        </div>
+        <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-4 text-center shadow-lg border border-purple-200/50">
+          <span class="block text-2xl font-bold text-purple-700">{{ stats()!.comprasEsteMes }}</span>
+          <span class="text-sm text-purple-600 font-medium">Este Mes</span>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl p-4 text-center shadow-lg border border-emerald-200/50">
+          <span class="block text-2xl font-bold text-emerald-700">{{ formatCurrency(stats()!.gastoEsteMes) }}</span>
+          <span class="text-sm text-emerald-600 font-medium">Gasto Mensual</span>
+        </div>
       </div>
-      
-      <div class="filter-selects">
-        <select 
-          [value]="selectedEstado()" 
-          (change)="onEstadoChange($event)" 
-          class="filter-select">
-          @for (option of estadoOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
+    }
 
-        <select 
-          [value]="selectedProveedor()" 
-          (change)="onProveedorChange($event)" 
-          class="filter-select">
-          <option value="todos">Todos los proveedores</option>
-          @for (proveedor of proveedores(); track proveedor.id) {
-            <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-          }
-        </select>
-      </div>
-    </div>
-  </div>
-
-  
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Cargando compras...</p>
-    </div>
-  } @else if (error()) {
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h3>Error al cargar compras</h3>
-      <p>{{ error() }}</p>
-      <button (click)="retry()" class="btn btn-primary">Reintentar</button>
-    </div>
-  } @else if (compras().length === 0) {
-    <div class="empty-container">
-      <div class="empty-icon">📦</div>
-      <h3>No hay compras</h3>
-      <p>No se encontraron compras que coincidan con los filtros aplicados</p>
-      <button (click)="openCreateModal()" class="btn btn-primary">Crear Primera Compra</button>
-    </div>
-  } @else {
-    <div class="compras-table">
-      <div class="table-header">
-        <div class="col">Número</div>
-        <div class="col">Proveedor</div>
-        <div class="col">Total</div>
-        <div class="col">Fecha</div>
-        <div class="col">Estado</div>
-        <div class="col">Items</div>
-        <div class="col">Acciones</div>
-      </div>
-      
-      @for (compra of compras(); track compra.id) {
-        <div class="table-row">
-          <div class="col numero-compra">
-            <strong>{{ compra.numeroCompra }}</strong>
-            @if (compra.observaciones) {
-              <small class="observaciones">💬 {{ compra.observaciones }}</small>
+    <!-- Filtros -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Buscador -->
+        <div class="flex-1">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar por número, proveedor u observaciones..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($event)"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+          </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="flex gap-2 overflow-x-auto">
+          <select 
+            [value]="selectedEstado()" 
+            (change)="onEstadoChange($event)" 
+            class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 focus:ring-2 focus:ring-green-500">
+            @for (option of estadoOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
             }
+          </select>
+
+          <select 
+            [value]="selectedProveedor()" 
+            (change)="onProveedorChange($event)" 
+            class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 focus:ring-2 focus:ring-green-500">
+            <option value="todos">Todos los proveedores</option>
+            @for (proveedor of proveedores(); track proveedor.id) {
+              <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estados de carga/error/vacío -->
+    @if (loading()) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Cargando compras...</p>
+      </div>
+    } @else if (error()) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">⚠️</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Error al cargar compras</h3>
+        <p class="text-gray-600 mb-4">{{ error() }}</p>
+        <button (click)="retry()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          Reintentar
+        </button>
+      </div>
+    } @else if (compras().length === 0) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">📦</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay compras</h3>
+        <p class="text-gray-600 mb-4">No se encontraron compras que coincidan con los filtros aplicados</p>
+        <button (click)="openCreateModal()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          Crear Primera Compra
+        </button>
+      </div>
+    } @else {
+      <!-- Lista de compras -->
+      <div class="space-y-6">
+        @for (compra of compras(); track compra.id) {
+          <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            
+            <!-- Header de la compra -->
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4">
+              <div class="flex items-start gap-4 mb-4 lg:mb-0">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                  📦
+                </div>
+                <div>
+                  <h3 class="font-bold text-gray-900">{{ compra.numeroCompra }}</h3>
+                  <p class="text-green-700 font-medium">{{ compra.proveedorNombre }}</p>
+                  <span class="text-sm text-gray-500">{{ formatDate(compra.fechaCompra) }}</span>
+                  @if (compra.observaciones) {
+                    <p class="text-sm text-gray-600 mt-1">💬 {{ compra.observaciones }}</p>
+                  }
+                </div>
+              </div>
+              
+              <div class="flex flex-col items-end gap-2">
+                <div class="text-2xl font-bold text-green-800">{{ formatCurrency(compra.total) }}</div>
+                <div class="px-3 py-1 rounded-full text-sm font-medium" [class]="getEstadoBadgeClass(compra.estado)">
+                  {{ compra.estado }}
+                </div>
+                <span class="text-sm text-gray-500">{{ compra.cantidadItems }} items</span>
+              </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex gap-3 flex-wrap">
+              <button 
+                (click)="openDetailsModal(compra)"
+                class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                👁️ Ver Detalles
+              </button>
+              
+              @if (compra.estado === 'Pendiente') {
+                <button 
+                  (click)="openEditModal(compra)"
+                  class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                  ✏️ Editar
+                </button>
+                
+                <button 
+                  (click)="cambiarEstado(compra, 'Recibido')"
+                  class="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                  ✅ Recibido
+                </button>
+                
+                <button 
+                  (click)="cambiarEstado(compra, 'Cancelado')"
+                  class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                  ❌ Cancelar
+                </button>
+              }
+              
+              @if (compra.estado === 'Cancelado' || compra.estado === 'Pendiente') {
+                <button 
+                  (click)="deleteCompra(compra)"
+                  class="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                  🗑️ Eliminar
+                </button>
+              }
+            </div>
           </div>
+        }
+      </div>
+    }
+
+    <!-- Modal de crear compra -->
+    @if (showCreateModal()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeCreateModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-6xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
           
-          <div class="col proveedor">
-            {{ compra.proveedorNombre }}
-          </div>
-          
-          <div class="col total">
-            <span class="amount">{{ formatCurrency(compra.total) }}</span>
-          </div>
-          
-          <div class="col fecha">
-            {{ formatDate(compra.fechaCompra) }}
-          </div>
-          
-          <div class="col estado">
-            <span class="status-badge" [class]="getEstadoBadgeClass(compra.estado)">
-              {{ compra.estado }}
-            </span>
-          </div>
-          
-          <div class="col items">
-            <span class="item-count">{{ compra.cantidadItems }} items</span>
-          </div>
-          
-          <div class="col acciones">
-            <button 
-              (click)="openDetailsModal(compra)"
-              class="btn btn-sm btn-outline"
-              title="Ver detalles">
-              👁️
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Nueva Compra a Proveedor</h2>
+            <button (click)="closeCreateModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
             </button>
-            
-            @if (compra.estado === 'Pendiente') {
-              <button 
-                (click)="openEditModal(compra)"
-                class="btn btn-sm btn-primary"
-                title="Editar">
-                ✏️
-              </button>
-              
-              <button 
-                (click)="cambiarEstado(compra, 'Recibido')"
-                class="btn btn-sm btn-success"
-                title="Marcar como recibido">
-                ✅
-              </button>
-              
-              <button 
-                (click)="cambiarEstado(compra, 'Cancelado')"
-                class="btn btn-sm btn-warning"
-                title="Cancelar">
-                ❌
-              </button>
-            }
-            
-            @if (compra.estado === 'Cancelado' || compra.estado === 'Pendiente') {
-              <button 
-                (click)="deleteCompra(compra)"
-                class="btn btn-sm btn-danger"
-                title="Eliminar">
-                🗑️
-              </button>
-            }
           </div>
-        </div>
-      }
-    </div>
-  }
-
-  
-  @if (showCreateModal()) {
-  <div class="modal-overlay" (click)="closeCreateModal()">
-    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Nueva Compra a Proveedor</h2>
-        <button (click)="closeCreateModal()" class="close-btn">✕</button>
-      </div>
-      
-      <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="proveedor">Proveedor *</label>
-              <select
-                id="proveedor"
-                formControlName="proveedorId"
-                class="form-control">
-                <option value="">Seleccionar proveedor</option>
-                @for (proveedor of proveedores(); track proveedor.id) {
-                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-                }
-              </select>
-              @if (createForm.get('proveedorId')?.errors && createForm.get('proveedorId')?.touched) {
-                <div class="error-message">El proveedor es requerido</div>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="fechaCompra">Fecha de Compra *</label>
-              <input
-                id="fechaCompra"
-                type="date"
-                formControlName="fechaCompra"
-                class="form-control">
-              @if (createForm.get('fechaCompra')?.errors && createForm.get('fechaCompra')?.touched) {
-                <div class="error-message">La fecha es requerida</div>
-              }
-            </div>
-
-            <div class="form-group full-width">
-              <label for="observaciones">Observaciones</label>
-              <textarea
-                id="observaciones"
-                formControlName="observaciones"
-                class="form-control"
-                rows="3"
-                placeholder="Observaciones adicionales sobre la compra"></textarea>
-            </div>
-          </div>
-
-            
-            <div class="detalles-section">
-            <div class="detalles-header">
-              <h3>Detalles de la Compra</h3>
-              <button type="button" (click)="addDetalle('create')" class="btn btn-sm btn-success">
-                ➕ Agregar Item
-              </button>
-            </div>
-
+          
+          <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
               
-                 
-            <div formArrayName="detalles">
-              @if (createDetalles.length > 0) {
-                <div class="detalles-table">
-                  @for (detalle of createDetalles.controls; track $index; let i = $index) {
-                    <div class="detalle-row" [formGroupName]="i">
-                      <div class="detalle-field">
-                        <label>Materia Prima *</label>
-                        <select 
-                          formControlName="materiaPrimaId" 
-                          class="form-control"
-                          (change)="onMateriaPrimaChange(i, 'create')">
-                          <option value="">Seleccionar materia prima</option>
-                          @for (mp of materiasPrimas(); track mp.id) {
-                            <option [value]="mp.id">{{ mp.nombre }} - {{ mp.unidadMedida }}</option>
-                          }
-                        </select>
-                        @if (detalle.get('materiaPrimaId')?.errors && detalle.get('materiaPrimaId')?.touched) {
-                          <div class="error-message">Seleccione una materia prima</div>
-                        }
-                      </div>
+              <!-- Información general -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Proveedor *</label>
+                  <select
+                    formControlName="proveedorId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                    <option value="">Seleccionar proveedor</option>
+                    @for (proveedor of proveedores(); track proveedor.id) {
+                      <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+                    }
+                  </select>
+                  @if (createForm.get('proveedorId')?.errors && createForm.get('proveedorId')?.touched) {
+                    <div class="text-red-500 text-sm mt-1">El proveedor es requerido</div>
+                  }
+                </div>
 
-                      <div class="detalle-field">
-                        <label>Cantidad *</label>
-                        <input 
-                          type="number" 
-                          formControlName="cantidad" 
-                          class="form-control" 
-                          min="0.01" 
-                          step="0.01"
-                          placeholder="1.00">
-                        @if (detalle.get('cantidad')?.errors && detalle.get('cantidad')?.touched) {
-                          <div class="error-message">Cantidad requerida (mín. 0.01)</div>
-                        }
-                      </div>
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Fecha de Compra *</label>
+                  <input
+                    type="date"
+                    formControlName="fechaCompra"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                  @if (createForm.get('fechaCompra')?.errors && createForm.get('fechaCompra')?.touched) {
+                    <div class="text-red-500 text-sm mt-1">La fecha es requerida</div>
+                  }
+                </div>
 
-                      <div class="detalle-field">
-                        <label>Precio Unitario *</label>
-                        <input 
-                          type="number" 
-                          formControlName="precioUnitario" 
-                          class="form-control" 
-                          min="0.01" 
-                          step="0.01"
-                          placeholder="0.00">
-                        @if (detalle.get('precioUnitario')?.errors && detalle.get('precioUnitario')?.touched) {
-                          <div class="error-message">Precio requerido (mín. 0.01)</div>
-                        }
-                      </div>
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Observaciones</label>
+                  <textarea
+                    formControlName="observaciones"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm resize-none"
+                    placeholder="Observaciones adicionales sobre la compra..."
+                    rows="3"></textarea>
+                </div>
+              </div>
 
-                      <div class="detalle-field">
-                        <label>Subtotal</label>
-                        <div class="subtotal-display">
-                          {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
+              <!-- Detalles de la compra -->
+              <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200/50 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-bold text-gray-900">Detalles de la Compra</h3>
+                  <button type="button" (click)="addDetalle('create')" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    ➕ Agregar Item
+                  </button>
+                </div>
+
+                <!-- Lista de items -->
+                <div formArrayName="detalles">
+                  @if (createDetalles.length > 0) {
+                    <div class="space-y-4">
+                      @for (detalle of createDetalles.controls; track $index; let i = $index) {
+                        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-lg" [formGroupName]="i">
+                          <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                            <div class="lg:col-span-2">
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Materia Prima *</label>
+                              <select 
+                                formControlName="materiaPrimaId" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                (change)="onMateriaPrimaChange(i, 'create')">
+                                <option value="">Seleccionar materia prima</option>
+                                @for (mp of materiasPrimas(); track mp.id) {
+                                  <option [value]="mp.id">{{ mp.nombre }} - {{ mp.unidadMedida }}</option>
+                                }
+                              </select>
+                              @if (detalle.get('materiaPrimaId')?.errors && detalle.get('materiaPrimaId')?.touched) {
+                                <div class="text-red-500 text-sm mt-1">Seleccione una materia prima</div>
+                              }
+                            </div>
+
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+                              <input 
+                                type="number" 
+                                formControlName="cantidad" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" 
+                                min="0.01" 
+                                step="0.01"
+                                placeholder="1.00">
+                              @if (detalle.get('cantidad')?.errors && detalle.get('cantidad')?.touched) {
+                                <div class="text-red-500 text-sm mt-1">Cantidad requerida (mín. 0.01)</div>
+                              }
+                            </div>
+
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Precio Unitario *</label>
+                              <input 
+                                type="number" 
+                                formControlName="precioUnitario" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" 
+                                min="0.01" 
+                                step="0.01"
+                                placeholder="0.00">
+                              @if (detalle.get('precioUnitario')?.errors && detalle.get('precioUnitario')?.touched) {
+                                <div class="text-red-500 text-sm mt-1">Precio requerido (mín. 0.01)</div>
+                              }
+                            </div>
+
+                            <div class="flex items-end">
+                              <button 
+                                type="button" 
+                                (click)="removeDetalle('create', i)" 
+                                class="w-full px-3 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                                🗑️ Eliminar
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div class="mt-3 text-right">
+                            <span class="text-lg font-bold text-green-800">
+                              Subtotal: {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-
-                      <div class="detalle-actions">
-                        <button 
-                          type="button" 
-                          (click)="removeDetalle('create', i)" 
-                          class="btn btn-sm btn-danger"
-                          title="Eliminar item">
-                          🗑️
-                        </button>
-                      </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="text-center py-8">
+                      <div class="text-4xl mb-4">📦</div>
+                      <p class="text-gray-600 mb-4">No hay items agregados. Debe agregar al menos un item para crear la compra.</p>
+                      <button type="button" (click)="addDetalle('create')" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                        ➕ Agregar Primer Item
+                      </button>
                     </div>
                   }
                 </div>
-              } @else {
-                <div class="no-detalles">
-                  <p>No hay items agregados. Debe agregar al menos un item para crear la compra.</p>
-                  <button type="button" (click)="addDetalle('create')" class="btn btn-primary">
-                    ➕ Agregar Primer Item
+
+                @if (createDetalles.length > 0) {
+                  <div class="mt-6 bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-4 border border-green-200/50">
+                    <div class="text-right">
+                      <span class="text-2xl font-bold text-green-800">Total: {{ formatCurrency(createFormTotal()) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="closeCreateModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!createForm.valid || submitting()">
+                @if (submitting()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creando...
+                  </div>
+                } @else {
+                  Crear Compra
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal de editar compra -->
+    @if (showEditModal() && selectedCompra()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeEditModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-6xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Editar Compra: {{ selectedCompra()!.numeroCompra }}</h2>
+            <button (click)="closeEditModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
+          </div>
+          
+          <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Proveedor *</label>
+                  <select
+                    formControlName="proveedorId"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                    @for (proveedor of proveedores(); track proveedor.id) {
+                      <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Fecha de Compra *</label>
+                  <input
+                    type="date"
+                    formControlName="fechaCompra"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Observaciones</label>
+                  <textarea
+                    formControlName="observaciones"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm resize-none"
+                    rows="3"></textarea>
+                </div>
+              </div>
+
+              <!-- Detalles de la compra -->
+              <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200/50 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-bold text-gray-900">Detalles de la Compra</h3>
+                  <button type="button" (click)="addDetalle('edit')" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    ➕ Agregar Item
                   </button>
                 </div>
-              }
-            </div>
 
-               @if (createDetalles.length > 0) {
-              <div class="total-section">
-                <div class="total-row">
-                  <strong>Total: {{ formatCurrency(createFormTotal()) }}</strong>
-                </div>
-              </div>
-            }
-            
-            </div>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" (click)="closeCreateModal()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="!createForm.valid || submitting()">
-              @if (submitting()) {
-                <span class="spinner-sm"></span>
-              }
-              Crear Compra
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  }
+                @if (editDetalles && editDetalles.length > 0 && editDetalles.controls) {
+                  <div class="space-y-4">
+                    @for (detalle of editDetalles.controls; track $index; let i = $index) {
+                      @if (detalle && detalle.get('materiaPrimaId') && detalle.get('cantidad') && detalle.get('precioUnitario')) {
+                        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-lg" [formGroupName]="i">
+                          <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                            <div class="lg:col-span-2">
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Materia Prima *</label>
+                              <select formControlName="materiaPrimaId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                @for (mp of materiasPrimas(); track mp.id) {
+                                  <option [value]="mp.id">{{ mp.nombre }}</option>
+                                }
+                              </select>
+                            </div>
 
-  
-  @if (showEditModal() && selectedCompra()) {
-    <div class="modal-overlay" (click)="closeEditModal()">
-      <div class="modal-content large-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Editar Compra: {{ selectedCompra()!.numeroCompra }}</h2>
-          <button (click)="closeEditModal()" class="close-btn">✕</button>
-        </div>
-        
-        <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
-          <div class="modal-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="editProveedor">Proveedor *</label>
-                <select
-                  id="editProveedor"
-                  formControlName="proveedorId"
-                  class="form-control">
-                  @for (proveedor of proveedores(); track proveedor.id) {
-                    <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-                  }
-                </select>
-              </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+                              <input type="number" formControlName="cantidad" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" min="1">
+                            </div>
 
-              <div class="form-group">
-                <label for="editFechaCompra">Fecha de Compra *</label>
-                <input
-                  id="editFechaCompra"
-                  type="date"
-                  formControlName="fechaCompra"
-                  class="form-control">
-              </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Precio Unitario *</label>
+                              <input type="number" formControlName="precioUnitario" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" min="0.01" step="0.01">
+                            </div>
 
-              <div class="form-group full-width">
-                <label for="editObservaciones">Observaciones</label>
-                <textarea
-                  id="editObservaciones"
-                  formControlName="observaciones"
-                  class="form-control"
-                  rows="3"></textarea>
-              </div>
-            </div>
-
-            
-            <div class="detalles-section">
-              <div class="detalles-header">
-                <h3>Detalles de la Compra</h3>
-                <button type="button" (click)="addDetalle('edit')" class="btn btn-sm btn-success">
-                  ➕ Agregar Item
-                </button>
-              </div>
-
-              
-              @if (editDetalles && editDetalles.length > 0 && editDetalles.controls) {
-                <div class="detalles-table">
-                  @for (detalle of editDetalles.controls; track $index; let i = $index) {
-                    @if (detalle && detalle.get('materiaPrimaId') && detalle.get('cantidad') && detalle.get('precioUnitario')) {
-                      <div class="detalle-row" [formGroupName]="i">
-                        <div class="detalle-field">
-                          <label>Materia Prima *</label>
-                          <select formControlName="materiaPrimaId" class="form-control">
-                            @for (mp of materiasPrimas(); track mp.id) {
-                              <option [value]="mp.id">{{ mp.nombre }}</option>
-                            }
-                          </select>
-                        </div>
-
-                        <div class="detalle-field">
-                          <label>Cantidad *</label>
-                          <input type="number" formControlName="cantidad" class="form-control" min="1">
-                        </div>
-
-                        <div class="detalle-field">
-                          <label>Precio Unitario *</label>
-                          <input type="number" formControlName="precioUnitario" class="form-control" min="0.01" step="0.01">
-                        </div>
-
-                        <div class="detalle-field">
-                          <label>Subtotal</label>
-                          <div class="subtotal-display">
-                            {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
+                            <div class="flex items-end">
+                              <button type="button" (click)="removeDetalle('edit', i)" class="w-full px-3 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div class="mt-3 text-right">
+                            <span class="text-lg font-bold text-green-800">
+                              Subtotal: {{ formatCurrency(calculateSubtotal(detalle.get('cantidad')?.value || 0, detalle.get('precioUnitario')?.value || 0)) }}
+                            </span>
                           </div>
                         </div>
-
-                        <div class="detalle-actions">
-                          <button type="button" (click)="removeDetalle('edit', i)" class="btn btn-sm btn-danger">
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
+                      }
                     }
-                  }
-                </div>
-              }
-
-              @if (editDetalles.length > 0) {
-                <div class="total-section">
-                  <div class="total-row">
-<strong>Total: {{ formatCurrency(calculateTotal('edit')) }}</strong>
                   </div>
-                </div>
-              }
+                }
+
+                @if (editDetalles.length > 0) {
+                  <div class="mt-6 bg-gradient-to-r from-green-50 to-lime-50 rounded-xl p-4 border border-green-200/50">
+                    <div class="text-right">
+                      <span class="text-2xl font-bold text-green-800">Total: {{ formatCurrency(calculateTotal('edit')) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="closeEditModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="!editForm.valid || submitting()">
+                @if (submitting()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Guardando...
+                  </div>
+                } @else {
+                  Guardar Cambios
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal de detalles -->
+    @if (showDetailsModal() && selectedCompra()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeDetailsModal()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">{{ selectedCompra()!.numeroCompra }}</h2>
+            <button (click)="closeDetailsModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
           </div>
           
-          <div class="modal-footer">
-          <button type="button" (click)="closeCreateModal()" class="btn btn-outline">
-            Cancelar
-          </button>
-            <button 
-            type="submit" 
-            class="btn btn-primary"
-            [disabled]="!createFormValid() || submitting()">
-            @if (submitting()) {
-              <span class="spinner-sm"></span>
-            }
-            {{ submitting() ? 'Creando...' : 'Crear Compra' }}
-          </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  }
-
-  
-  @if (showDetailsModal() && selectedCompra()) {
-    <div class="modal-overlay" (click)="closeDetailsModal()">
-      <div class="modal-content large-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>{{ selectedCompra()!.numeroCompra }}</h2>
-          <button (click)="closeDetailsModal()" class="close-btn">✕</button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="compra-details">
-            <div class="details-section">
-              <h3>Información General</h3>
-              <div class="details-grid">
-                <div class="detail-item">
-                  <label>Número de Compra:</label>
-                  <span>{{ selectedCompra()!.numeroCompra }}</span>
+          <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+            
+            <!-- Información general -->
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 mb-6 border border-gray-200/50">
+              <h3 class="text-lg font-bold text-gray-900 mb-4">Información General</h3>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Número de Compra:</span>
+                  <p class="font-bold text-gray-900">{{ selectedCompra()!.numeroCompra }}</p>
                 </div>
-                <div class="detail-item">
-                  <label>Proveedor:</label>
-                  <span>{{ selectedCompra()!.proveedorNombre }}</span>
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Proveedor:</span>
+                  <p class="font-bold text-gray-900">{{ selectedCompra()!.proveedorNombre }}</p>
                 </div>
-                <div class="detail-item">
-                  <label>Fecha de Compra:</label>
-                  <span>{{ formatDate(selectedCompra()!.fechaCompra) }}</span>
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Fecha de Compra:</span>
+                  <p class="font-bold text-gray-900">{{ formatDate(selectedCompra()!.fechaCompra) }}</p>
                 </div>
-                <div class="detail-item">
-                  <label>Estado:</label>
-                  <span class="status-badge" [class]="getEstadoBadgeClass(selectedCompra()!.estado)">
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Estado:</span>
+                  <span class="inline-block px-3 py-1 rounded-full text-sm font-medium" [class]="getEstadoBadgeClass(selectedCompra()!.estado)">
                     {{ selectedCompra()!.estado }}
                   </span>
                 </div>
-                <div class="detail-item">
-                  <label>Total:</label>
-                  <span class="amount-large">{{ formatCurrency(selectedCompra()!.total) }}</span>
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Total:</span>
+                  <p class="text-2xl font-bold text-green-800">{{ formatCurrency(selectedCompra()!.total) }}</p>
                 </div>
                 @if (selectedCompra()!.observaciones) {
-                  <div class="detail-item full-width">
-                    <label>Observaciones:</label>
-                    <span>{{ selectedCompra()!.observaciones }}</span>
+                  <div class="lg:col-span-2">
+                    <span class="text-sm font-medium text-gray-600">Observaciones:</span>
+                    <p class="text-gray-900">{{ selectedCompra()!.observaciones }}</p>
                   </div>
                 }
               </div>
             </div>
 
-            <div class="details-section">
-<h3 class="text-lg font-semibold">
-  Items ({{ selectedCompra()!.detalles.length || 0 }} items)
-</h3>              @if (selectedCompra()!.detalles.length) {
-                <div class="detalles-table-view">
-                  <div class="detalles-header-view">
-                    <div class="col">Materia Prima</div>
-                    <div class="col">Cantidad</div>
-                    <div class="col">Precio Unit.</div>
-                    <div class="col">Subtotal</div>
-                  </div>
+            <!-- Detalles de items -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200/50">
+              <h3 class="text-lg font-bold text-blue-900 mb-4">
+                Items ({{ selectedCompra()!.detalles.length || 0 }} items)
+              </h3>
+              
+              @if (selectedCompra()!.detalles.length) {
+                <div class="space-y-3">
                   @for (detalle of selectedCompra()!.detalles; track detalle.id) {
-                    <div class="detalles-row-view">
-                      <div class="col">{{ detalle.materiaPrimaNombre }}</div>
-                      <div class="col">{{ detalle.cantidad }}</div>
-                      <div class="col">{{ formatCurrency(detalle.precioUnitario) }}</div>
-                      <div class="col">{{ formatCurrency(detalle.subtotal) }}</div>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                        <div>
+                          <span class="text-sm font-medium text-gray-600">Materia Prima:</span>
+                          <p class="font-bold text-gray-900">{{ detalle.materiaPrimaNombre }}</p>
+                        </div>
+                        <div>
+                          <span class="text-sm font-medium text-gray-600">Cantidad:</span>
+                          <p class="font-bold text-gray-900">{{ detalle.cantidad }}</p>
+                        </div>
+                        <div>
+                          <span class="text-sm font-medium text-gray-600">Precio Unit.:</span>
+                          <p class="font-bold text-gray-900">{{ formatCurrency(detalle.precioUnitario) }}</p>
+                        </div>
+                        <div>
+                          <span class="text-sm font-medium text-gray-600">Subtotal:</span>
+                          <p class="font-bold text-green-800">{{ formatCurrency(detalle.subtotal) }}</p>
+                        </div>
+                      </div>
                     </div>
                   }
-                  <div class="detalles-total-view">
-                    <div class="col"></div>
-                    <div class="col"></div>
-                    <div class="col"><strong>Total:</strong></div>
-                    <div class="col"><strong>{{ formatCurrency(selectedCompra()!.total) }}</strong></div>
+                </div>
+                
+                <!-- Total final -->
+                <div class="mt-4 bg-gradient-to-r from-green-50 to-lime-50 rounded-lg p-4 border border-green-200/50">
+                  <div class="text-right">
+                    <span class="text-2xl font-bold text-green-800">Total: {{ formatCurrency(selectedCompra()!.total) }}</span>
                   </div>
                 </div>
               } @else {
-                <div class="no-data">Sin detalles disponibles</div>
+                <div class="text-center py-8">
+                  <div class="text-4xl mb-2">📦</div>
+                  <p class="text-gray-600">Sin detalles disponibles</p>
+                </div>
               }
             </div>
           </div>
-        </div>
-        
-        <div class="modal-footer">
-          @if (selectedCompra()!.estado === 'Pendiente') {
-            <button (click)="openEditModal(selectedCompra()!)" class="btn btn-primary">
-              ✏️ Editar Compra
+          
+          <!-- Footer del modal -->
+          <div class="flex gap-3 p-6 border-t border-gray-200/50">
+            @if (selectedCompra()!.estado === 'Pendiente') {
+              <button (click)="openEditModal(selectedCompra()!)" class="px-4 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                ✏️ Editar Compra
+              </button>
+            }
+            <button (click)="closeDetailsModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+              Cerrar
             </button>
-          }
-          <button (click)="closeDetailsModal()" class="btn btn-outline">
-            Cerrar
-          </button>
+          </div>
         </div>
       </div>
-    </div>
-  }
+    }
+
+  </div>
 </div>

@@ -1,815 +1,471 @@
-<div class="materias-primas-page">
-  <div class="page-header">
-    <div class="header-content">
-      <h1><i class="fas fa-boxes"></i> Administración de Materias Primas</h1>
-      <p class="subtitle">Gestión completa de inventario con método de costeo</p>
-    </div>
-    <button 
-      class="btn btn-primary" 
-      (click)="openCreateModal()"
-      [disabled]="loading()">
-      <i class="fas fa-plus"></i>
-      Nueva Materia Prima
-    </button>
-  </div>
-  <div class="stats-grid">
-    <div class="stat-card total">
-      <div class="stat-icon">
-        <i class="fas fa-cube"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas().total }}</h3>
-        <p>Total Materias Primas</p>
-      </div>
-    </div>
-    
-    <div class="stat-card activas">
-      <div class="stat-icon">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas().activas }}</h3>
-        <p>Activas</p>
-      </div>
-    </div>
-    
-    <div class="stat-card bajo-stock">
-      <div class="stat-icon">
-        <i class="fas fa-exclamation-triangle"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas().bajoStock }}</h3>
-        <p>Bajo Stock</p>
-      </div>
-    </div>
-    
-    <div class="stat-card valor">
-      <div class="stat-icon">
-        <i class="fas fa-dollar-sign"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ formatCurrency(estadisticas().valorTotal) }}</h3>
-        <p>Valor Total Inventario</p>
-      </div>
-    </div>
-  </div>
-  <div class="filtros-section">
-    <div class="filtros-grid">
-      <div class="filtro-item">
-        <label>Buscar</label>
-        <input 
-          type="text" 
-          class="form-input"
-          placeholder="Buscar por nombre, descripción..."
-          [(ngModel)]="filtros.busqueda"
-          (input)="aplicarFiltros()">
-      </div>
-      
-      <div class="filtro-item">
-        <label>Proveedor</label>
-        <select 
-          class="form-select"
-          [(ngModel)]="filtros.proveedor"
-          (change)="aplicarFiltros()">
-          <option value="">Todos los proveedores</option>
-          @for (proveedor of proveedores(); track proveedor.id) {
-            <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-          }
-        </select>
-      </div>
-      
-      <div class="filtro-item">
-        <label>Estado</label>
-        <select 
-          class="form-select"
-          [(ngModel)]="filtros.estado"
-          (change)="aplicarFiltros()">
-          <option value="">Todos</option>
-          <option value="true">Activas</option>
-          <option value="false">Inactivas</option>
-        </select>
-      </div>
-      
-      <div class="filtro-item">
-        <label class="checkbox-label">
-          <input 
-            type="checkbox"
-            [(ngModel)]="filtros.bajoStock"
-            (change)="aplicarFiltros()">
-          <span class="checkmark"></span>
-          Solo bajo stock
-        </label>
-      </div>
-      
-      <div class="filtro-actions">
-        <button class="btn btn-outline" (click)="limpiarFiltros()">
-          <i class="fas fa-times"></i>
-          Limpiar
+<!-- ADMINISTRACIÓN DE MATERIAS PRIMAS - TAILWIND COMPLETO -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- HEADER -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2 flex items-center gap-3">
+            📦 Administración de Materias Primas
+          </h1>
+          <p class="text-gray-600">Gestión completa de inventario con método de costeo</p>
+        </div>
+        <button (click)="openCreateModal()" [disabled]="loading()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl hover:shadow-lg transition-all font-medium disabled:opacity-50">
+          ➕ Nueva Materia Prima
         </button>
       </div>
     </div>
-  </div>
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Cargando materias primas...</p>
-    </div>
-  }
-  @if (error()) {
-    <div class="alert alert-error">
-      <i class="fas fa-exclamation-circle"></i>
-      <div>
-        <h4>Error al cargar datos</h4>
-        <p>{{ error() }}</p>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">📦</div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900">{{ estadisticas().total }}</h3>
+            <p class="text-sm text-gray-600">Total Materias Primas</p>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-outline" (click)="retry()">
-        <i class="fas fa-redo"></i>
-        Reintentar
+
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xl">✅</div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900">{{ estadisticas().activas }}</h3>
+            <p class="text-sm text-gray-600">Activas</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xl">⚠️</div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-900">{{ estadisticas().bajoStock }}</h3>
+              <p class="text-sm text-gray-600">Bajo Stock</p>
+            </div>
+          </div>
+      </div>
+
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xl">💰</div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900">{{ formatCurrency(estadisticas().valorTotal) }}</h3>
+            <p class="text-sm text-gray-600">Valor Total Inventario</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <input type="text" placeholder="Buscar por nombre, descripción..." [(ngModel)]="filtros.busqueda" (input)="aplicarFiltros()" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+          <select [(ngModel)]="filtros.proveedor" (change)="aplicarFiltros()" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+            <option value="">Todos</option>
+            <option *ngFor="let p of proveedores()" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+            <option value="">Todos</option>
+            <option value="true">Activas</option>
+            <option value="false">Inactivas</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" [(ngModel)]="filtros.bajoStock" (change)="aplicarFiltros()" class="w-4 h-4 text-green-600">
+          <label class="text-sm text-gray-700">Solo bajo stock</label>
+        </div>
+
+        <button (click)="limpiarFiltros()" class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition">
+          🧹 Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- ESTADOS -->
+    <div *ngIf="loading()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+      <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-600">Cargando materias primas...</p>
+    </div>
+
+    <div *ngIf="error()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="flex items-center gap-3 text-red-600">
+        <i class="fas fa-exclamation-circle text-xl"></i>
+        <div>
+          <h4 class="font-bold">Error al cargar datos</h4>
+          <p>{{ error() }}</p>
+        </div>
+      </div>
+      <button (click)="retry()" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition">
+        🔄 Reintentar
       </button>
     </div>
-  }
-  @if (!loading() && !error()) {
-    <div class="table-container">
-      <div class="table-header">
-        <h3>
-          <i class="fas fa-list"></i>
-          Materias Primas
-          <span class="count">({{ materiasPrimasFiltradas().length }})</span>
-        </h3>
+
+    <!-- TABLA -->
+    <div *ngIf="!loading() && !error()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+      <div class="flex items-center justify-between p-4 border-b">
+        <h3 class="text-lg font-bold text-green-800">Materias Primas <span class="text-sm text-gray-500">({{ materiasPrimasFiltradas().length }})</span></h3>
       </div>
-      
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50/80">
             <tr>
-              <th>Materia Prima</th>
-              <th>Proveedor</th>
-              <th>Unidad</th>
-              <th>Costo Unitario</th>
-              <th>Stock</th>
-              <th>Valor Inventario</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Materia Prima</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Proveedor</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Unidad</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Costo Unit.</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Stock</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Valor Inventario</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            @for (materiaPrima of materiasPrimasPaginadas(); track materiaPrima.id) {
-              <tr [class.bajo-stock]="materiaPrima.stock <= materiaPrima.stockMinimo">
-                <td>
-                  <div class="materia-info">
-                    <strong>{{ materiaPrima.nombre }}</strong>
-                    @if (materiaPrima.descripcion) {
-                      <small>{{ materiaPrima.descripcion }}</small>
-                    }
-                  </div>
-                </td>
-                <td>{{ materiaPrima.proveedorNombre || 'Sin proveedor' }}</td>
-                <td>{{ materiaPrima.unidadMedida }}</td>
-                <td>{{ formatCurrency(materiaPrima.costoUnitario) }}</td>
-                <td>
-                  <div class="stock-info">
-                    <span [class]="getStockStatusClass(materiaPrima)">
-                      {{ materiaPrima.stock }}
-                    </span>
-                    <small>Min: {{ materiaPrima.stockMinimo }}</small>
-                  </div>
-                </td>
-                <td>{{ formatCurrency(materiaPrima.valorInventario || 0) }}</td>
-                <td>
-                  <span 
-                    class="status-badge"
-                    [class.active]="materiaPrima.activo"
-                    [class.inactive]="!materiaPrima.activo">
-                    {{ materiaPrima.activo ? 'Activa' : 'Inactiva' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button 
-                      class="btn-action btn-view"
-                      (click)="openDetailsModal(materiaPrima)"
-                      title="Ver detalles">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button 
-                      class="btn-action btn-stock"
-                      (click)="openStockModal(materiaPrima)"
-                      title="Ajustar stock">
-                      <i class="fas fa-boxes"></i>
-                    </button>
-                    <button 
-                      class="btn-action btn-costeo"
-                      (click)="openCosteoModal(materiaPrima)"
-                      title="Ver costeo">
-                      <i class="fas fa-calculator"></i>
-                    </button>
-                    <button 
-                      class="btn-action btn-edit"
-                      (click)="openEditModal(materiaPrima)"
-                      title="Editar">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button 
-                      class="btn-action btn-toggle"
-                      (click)="toggleEstado(materiaPrima)"
-                      [title]="materiaPrima.activo ? 'Desactivar' : 'Activar'">
-                      <i class="fas" [class.fa-toggle-on]="materiaPrima.activo" [class.fa-toggle-off]="!materiaPrima.activo"></i>
-                    </button>
-                    <button 
-                      class="btn-action btn-delete"
-                      (click)="eliminarMateriaPrima(materiaPrima)"
-                      title="Eliminar">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="empty-state">
-                  <div class="empty-content">
-                    <i class="fas fa-cube"></i>
-                    <h3>No hay materias primas</h3>
-                    <p>No se encontraron materias primas con los filtros seleccionados.</p>
-                  </div>
-                </td>
-              </tr>
-            }
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let mp of materiasPrimasPaginadas()" [class.bg-red-50]="mp.stock <= mp.stockMinimo" class="hover:bg-gray-50 transition">
+              <td class="px-4 py-3">
+                <strong class="text-gray-900">{{ mp.nombre }}</strong>
+                <div *ngIf="mp.descripcion" class="text-xs text-gray-500">{{ mp.descripcion }}</div>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-700">{{ mp.proveedorNombre || 'Sin proveedor' }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700">{{ mp.unidadMedida }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700">{{ formatCurrency(mp.costoUnitario) }}</td>
+              <td class="px-4 py-3">
+                <span [class]="mp.stock <= mp.stockMinimo ? 'text-orange-600 font-bold' : 'text-green-700'">{{ mp.stock }}</span>
+                <div class="text-xs text-gray-500">Min: {{ mp.stockMinimo }}</div>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-900 font-semibold">{{ formatCurrency(mp.valorInventario || 0) }}</td>
+              <td class="px-4 py-3">
+                <span [class]="mp.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'" class="px-2 py-1 rounded-full text-xs font-medium">{{ mp.activo ? 'Activa' : 'Inactiva' }}</span>
+              </td>
+              <td class="px-4 py-3 flex gap-2">
+                <button (click)="openDetailsModal(mp)" class="p-1 text-blue-600 hover:text-blue-800" title="Ver detalles">👁️</button>
+                <button (click)="openStockModal(mp)" class="p-1 text-green-600 hover:text-green-800" title="Ajustar stock">📦</button>
+                <button (click)="openCosteoModal(mp)" class="p-1 text-purple-600 hover:text-purple-800" title="Ver costeo">🧮</button>
+                <button (click)="openEditModal(mp)" class="p-1 text-yellow-600 hover:text-yellow-800" title="Editar">✏️</button>
+                <button (click)="toggleEstado(mp)" class="p-1 text-gray-600 hover:text-gray-800" title="{{ mp.activo ? 'Desactivar' : 'Activar' }}">🔁</button>
+                <button (click)="eliminarMateriaPrima(mp)" class="p-1 text-red-600 hover:text-red-800" title="Eliminar">🗑️</button>
+              </td>
+            </tr>
+            <tr *ngIf="materiasPrimasFiltradas().length === 0">
+              <td colspan="8" class="text-center py-12 text-gray-500">
+                <div class="text-3xl mb-2">📦</div>
+                <p>No se encontraron materias primas.</p>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
-      @if (totalPages() > 1) {
-        <div class="pagination">
-          <button 
-            class="btn-page"
-            [disabled]="currentPage === 1"
-            (click)="cambiarPagina(currentPage - 1)">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          
-          @for (page of getPaginas(); track page) {
-            <button 
-              class="btn-page"
-              [class.active]="page === currentPage"
-              (click)="cambiarPagina(page)">
-              {{ page }}
-            </button>
-          }
-          
-          <button 
-            class="btn-page"
-            [disabled]="currentPage === totalPages()"
-            (click)="cambiarPagina(currentPage + 1)">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      }
+
+      <!-- PAGINACIÓN -->
+      <div *ngIf="totalPages() > 1" class="flex justify-center items-center gap-2 p-4 border-t bg-gray-50/50">
+        <button [disabled]="currentPage === 1" (click)="cambiarPagina(currentPage - 1)" class="px-3 py-1 text-sm rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50">←</button>
+        <button *ngFor="let p of getPaginas()" (click)="cambiarPagina(p)" [class.bg-green-600 text-white]="p === currentPage" class="px-3 py-1 text-sm rounded-lg bg-gray-200 hover:bg-gray-300 transition">{{ p }}</button>
+        <button [disabled]="currentPage === totalPages()" (click)="cambiarPagina(currentPage + 1)" class="px-3 py-1 text-sm rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50">→</button>
+      </div>
     </div>
-  }
+
+  </div>
 </div>
-@if (showCreateModal()) {
-  <div class="modal-overlay" (click)="closeCreateModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2><i class="fas fa-plus"></i> Nueva Materia Prima</h2>
-        <button class="btn-close" (click)="closeCreateModal()">
-          <i class="fas fa-times"></i>
+
+<!-- MODAL CREAR -->
+<div *ngIf="showCreateModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeCreateModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-2xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Nueva Materia Prima</h2>
+      <button (click)="closeCreateModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
+    </div>
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <input type="text" formControlName="nombre" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="Nombre">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor *</label>
+          <select formControlName="proveedorId" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let p of proveedores()" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <textarea formControlName="descripcion" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="Descripción opcional"></textarea>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Unidad de Medida *</label>
+          <input type="text" formControlName="unidadMedida" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="ej: Kg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Costo Unitario *</label>
+          <input type="number" formControlName="costoUnitario" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Stock Inicial</label>
+          <input type="number" formControlName="stock" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="0" min="0">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Stock Mínimo *</label>
+          <input type="number" formControlName="stockMinimo" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-4 border-t">
+        <button type="button" (click)="closeCreateModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
+        <button type="submit" [disabled]="createForm.invalid || submitting()" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl disabled:opacity-50">
+          {{ submitting() ? 'Guardando...' : 'Guardar' }}
         </button>
       </div>
-      
-      <div class="modal-body">
-        @if (error()) {
-          <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ error() }}
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div *ngIf="showEditModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeEditModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-2xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Editar Materia Prima</h2>
+      <button (click)="closeEditModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
+    </div>
+
+    <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <input type="text" formControlName="nombre" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor *</label>
+          <select formControlName="proveedorId" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let p of proveedores()" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <textarea formControlName="descripcion" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80"></textarea>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Unidad de Medida *</label>
+          <input type="text" formControlName="unidadMedida" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Costo Unitario *</label>
+          <input type="number" formControlName="costoUnitario" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Stock Actual</label>
+          <input type="number" formControlName="stock" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" min="0">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Stock Mínimo *</label>
+          <input type="number" formControlName="stockMinimo" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" min="0">
+        </div>
+      </div>
+
+      <div>
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" formControlName="activo">
+          <span>Materia prima activa</span>
+        </label>
+      </div>
+
+      <div class="flex gap-3 p-4 border-t">
+        <button type="button" (click)="closeEditModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
+        <button type="submit" [disabled]="editForm.invalid || submitting()" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl disabled:opacity-50">
+          {{ submitting() ? 'Actualizando...' : 'Actualizar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL AJUSTAR STOCK -->
+<div *ngIf="showStockModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeStockModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-lg max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Ajustar Stock</h2>
+      <button (click)="closeStockModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
+    </div>
+
+    <form [formGroup]="stockForm" (ngSubmit)="submitStock()" class="p-6 space-y-4">
+      <div *ngIf="selectedMateriaPrima()" class="bg-gray-50 rounded-xl p-4">
+        <h4 class="font-bold text-gray-900">{{ selectedMateriaPrima()!.nombre }}</h4>
+        <p class="text-sm text-gray-600">Stock actual: <strong>{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</strong></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Movimiento *</label>
+        <select formControlName="tipo" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80">
+          <option value="Entrada">Entrada (Incrementar)</option>
+          <option value="Salida">Salida (Decrementar)</option>
+          <option value="Ajuste">Ajuste de Inventario</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+        <input type="number" formControlName="cantidad" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" step="0.01" min="0.01">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Costo Unitario *</label>
+        <input type="number" formControlName="costoUnitario" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" step="0.01" min="0.01">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Referencia</label>
+        <input type="text" formControlName="referencia" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="ej: Orden de compra">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+        <textarea formControlName="observaciones" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80" placeholder="Motivo del ajuste"></textarea>
+      </div>
+
+      <div class="flex gap-3 p-4 border-t">
+        <button type="button" (click)="closeStockModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
+        <button type="submit" [disabled]="stockForm.invalid || submitting()" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl disabled:opacity-50">
+          {{ submitting() ? 'Procesando...' : 'Aplicar Cambio' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DETALLES -->
+<div *ngIf="showDetailsModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeDetailsModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-3xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Detalles de Materia Prima</h2>
+      <button (click)="closeDetailsModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
+    </div>
+
+    <div *ngIf="selectedMateriaPrima()" class="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="font-bold text-green-800 mb-2">Información General</h4>
+          <div class="space-y-1 text-sm">
+            <div><strong class="text-gray-700">Nombre:</strong> {{ selectedMateriaPrima()!.nombre }}</div>
+            <div><strong class="text-gray-700">Descripción:</strong> {{ selectedMateriaPrima()!.descripcion || 'Sin descripción' }}</div>
+            <div><strong class="text-gray-700">Proveedor:</strong> {{ selectedMateriaPrima()!.proveedorNombre || 'Sin proveedor' }}</div>
+            <div><strong class="text-gray-700">Estado:</strong> <span [class]="selectedMateriaPrima()!.activo ? 'text-green-600' : 'text-gray-500'">{{ selectedMateriaPrima()!.activo ? 'Activa' : 'Inactiva' }}</span></div>
           </div>
-        }
-        
-        <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Nombre *</label>
-              <input 
-                type="text"
-                class="form-input"
-                [class.error]="isFieldInvalid('nombre', createForm)"
-                formControlName="nombre"
-                placeholder="Nombre de la materia prima">
-              @if (getFieldError('nombre', createForm)) {
-                <span class="field-error">{{ getFieldError('nombre', createForm) }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Proveedor *</label>
-              <select 
-                class="form-select"
-                [class.error]="isFieldInvalid('proveedorId', createForm)"
-                formControlName="proveedorId">
-                <option value="">Seleccionar proveedor</option>
-                @for (proveedor of proveedores(); track proveedor.id) {
-                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-                }
-              </select>
-              @if (getFieldError('proveedorId', createForm)) {
-                <span class="field-error">{{ getFieldError('proveedorId', createForm) }}</span>
-              }
-            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="font-bold text-green-800 mb-2">Inventario</h4>
+          <div class="space-y-1 text-sm">
+            <div><strong class="text-gray-700">Unidad:</strong> {{ selectedMateriaPrima()!.unidadMedida }}</div>
+            <div><strong class="text-gray-700">Stock Actual:</strong> <span [class]="getStockStatusClass(selectedMateriaPrima()!)">{{ selectedMateriaPrima()!.stock }}</span></div>
+            <div><strong class="text-gray-700">Stock Mínimo:</strong> {{ selectedMateriaPrima()!.stockMinimo }}</div>
+            <div><strong class="text-gray-700">Valor Inventario:</strong> {{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</div>
           </div>
-          
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea 
-              class="form-textarea"
-              formControlName="descripcion"
-              placeholder="Descripción opcional de la materia prima"
-              rows="3"></textarea>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Unidad de Medida *</label>
-              <input 
-                type="text"
-                class="form-input"
-                [class.error]="isFieldInvalid('unidadMedida', createForm)"
-                formControlName="unidadMedida"
-                placeholder="ej: Kg, Lt, Pza">
-              @if (getFieldError('unidadMedida', createForm)) {
-                <span class="field-error">{{ getFieldError('unidadMedida', createForm) }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Costo Unitario *</label>
-              <input 
-                type="number"
-                class="form-input"
-                [class.error]="isFieldInvalid('costoUnitario', createForm)"
-                formControlName="costoUnitario"
-                placeholder="0.00"
-                step="0.01"
-                min="0">
-              @if (getFieldError('costoUnitario', createForm)) {
-                <span class="field-error">{{ getFieldError('costoUnitario', createForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Stock Inicial</label>
-              <input 
-                type="number"
-                class="form-input"
-                formControlName="stock"
-                placeholder="0"
-                min="0">
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Stock Mínimo *</label>
-              <input 
-                type="number"
-                class="form-input"
-                [class.error]="isFieldInvalid('stockMinimo', createForm)"
-                formControlName="stockMinimo"
-                placeholder="0"
-                min="0">
-              @if (getFieldError('stockMinimo', createForm)) {
-                <span class="field-error">{{ getFieldError('stockMinimo', createForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline" (click)="closeCreateModal()">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="createForm.invalid || submitting()">
-              @if (submitting()) {
-                <div class="btn-spinner"></div>
-                Guardando...
-              } @else {
-                <i class="fas fa-save"></i>
-                Guardar
-              }
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
-}
-@if (showEditModal()) {
-  <div class="modal-overlay" (click)="closeEditModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2><i class="fas fa-edit"></i> Editar Materia Prima</h2>
-        <button class="btn-close" (click)="closeEditModal()">
-          <i class="fas fa-times"></i>
-        </button>
+</div>
+
+<!-- MODAL COSTEO -->
+<div *ngIf="showCosteoModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeCosteoModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Análisis de Costeo</h2>
+      <button (click)="closeCosteoModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
+    </div>
+
+    <div *ngIf="selectedMateriaPrima()" class="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+      <div class="bg-gray-50 rounded-xl p-4">
+        <h3 class="text-lg font-bold text-gray-900">{{ selectedMateriaPrima()!.nombre }}</h3>
+        <p class="text-sm text-gray-600">{{ selectedMateriaPrima()!.descripcion }}</p>
       </div>
-      
-      <div class="modal-body">
-        @if (error()) {
-          <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ error() }}
-          </div>
-        }
-        
-        <form [formGroup]="editForm" (ngSubmit)="submitEdit()">
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Nombre *</label>
-              <input 
-                type="text"
-                class="form-input"
-                [class.error]="isFieldInvalid('nombre', editForm)"
-                formControlName="nombre">
-              @if (getFieldError('nombre', editForm)) {
-                <span class="field-error">{{ getFieldError('nombre', editForm) }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Proveedor *</label>
-              <select 
-                class="form-select"
-                [class.error]="isFieldInvalid('proveedorId', editForm)"
-                formControlName="proveedorId">
-                <option value="">Seleccionar proveedor</option>
-                @for (proveedor of proveedores(); track proveedor.id) {
-                  <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
-                }
-              </select>
-              @if (getFieldError('proveedorId', editForm)) {
-                <span class="field-error">{{ getFieldError('proveedorId', editForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea 
-              class="form-textarea"
-              formControlName="descripcion"
-              rows="3"></textarea>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Unidad de Medida *</label>
-              <input 
-                type="text"
-                class="form-input"
-                [class.error]="isFieldInvalid('unidadMedida', editForm)"
-                formControlName="unidadMedida">
-              @if (getFieldError('unidadMedida', editForm)) {
-                <span class="field-error">{{ getFieldError('unidadMedida', editForm) }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Costo Unitario *</label>
-              <input 
-                type="number"
-                class="form-input"
-                [class.error]="isFieldInvalid('costoUnitario', editForm)"
-                formControlName="costoUnitario"
-                step="0.01"
-                min="0">
-              @if (getFieldError('costoUnitario', editForm)) {
-                <span class="field-error">{{ getFieldError('costoUnitario', editForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Stock Actual</label>
-              <input 
-                type="number"
-                class="form-input"
-                formControlName="stock"
-                min="0">
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Stock Mínimo *</label>
-              <input 
-                type="number"
-                class="form-input"
-                [class.error]="isFieldInvalid('stockMinimo', editForm)"
-                formControlName="stockMinimo"
-                min="0">
-              @if (getFieldError('stockMinimo', editForm)) {
-                <span class="field-error">{{ getFieldError('stockMinimo', editForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="activo">
-              <span class="checkmark"></span>
-              Materia prima activa
-            </label>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline" (click)="closeEditModal()">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="editForm.invalid || submitting()">
-              @if (submitting()) {
-                <div class="btn-spinner"></div>
-                Actualizando...
-              } @else {
-                <i class="fas fa-save"></i>
-                Actualizar
-              }
-            </button>
-          </div>
-        </form>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-blue-50 rounded-xl p-4 text-center">
+          <h4 class="font-bold text-blue-800">Costo Actual</h4>
+          <div class="text-xl font-bold text-blue-600">{{ formatCurrency(selectedMateriaPrima()!.costoUnitario) }}</div>
+          <small class="text-blue-500">Por {{ selectedMateriaPrima()!.unidadMedida }}</small>
+        </div>
+        <div class="bg-green-50 rounded-xl p-4 text-center">
+          <h4 class="font-bold text-green-800">Costo Promedio</h4>
+          <div class="text-xl font-bold text-green-600">{{ formatCurrency(calcularCostoPromedio(selectedMateriaPrima()!)) }}</div>
+          <small class="text-green-500">Promedio ponderado</small>
+        </div>
+        <div class="bg-purple-50 rounded-xl p-4 text-center">
+          <h4 class="font-bold text-purple-800">Último Costo</h4>
+          <div class="text-xl font-bold text-purple-600">{{ formatCurrency(calcularCostoUltimo(selectedMateriaPrima()!)) }}</div>
+          <small class="text-purple-500">Última entrada</small>
+        </div>
+        <div class="bg-orange-50 rounded-xl p-4 text-center">
+          <h4 class="font-bold text-orange-800">Valor Inventario</h4>
+          <div class="text-xl font-bold text-orange-600">{{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</div>
+          <small class="text-orange-500">{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</small>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-green-800 mb-3">Historial de Movimientos</h4>
+        <div *ngIf="movimientosStock().length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 bg-gray-50 rounded-xl">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Fecha</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tipo</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Cantidad</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Costo Unit.</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Total</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Referencia</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr *ngFor="let m of movimientosStock()">
+                <td class="px-4 py-2 text-sm">{{ formatDate(m.fecha) }}</td>
+                <td class="px-4 py-2 text-sm">
+                  <span [class]="m.tipo === 'Entrada' ? 'text-green-600' : m.tipo === 'Salida' ? 'text-red-600' : 'text-blue-600'" class="font-semibold">{{ m.tipo }}</span>
+                </td>
+                <td class="px-4 py-2 text-sm">{{ m.cantidad }}</td>
+                <td class="px-4 py-2 text-sm">{{ formatCurrency(m.costoUnitario) }}</td>
+                <td class="px-4 py-2 text-sm font-semibold">{{ formatCurrency(m.cantidad * m.costoUnitario) }}</td>
+                <td class="px-4 py-2 text-sm">{{ m.referencia || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="movimientosStock().length === 0" class="text-center py-8 text-gray-500">
+          <div class="text-3xl mb-2">📋</div>
+          <p>No hay movimientos registrados</p>
+        </div>
       </div>
     </div>
   </div>
-}
-@if (showStockModal()) {
-  <div class="modal-overlay" (click)="closeStockModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2><i class="fas fa-boxes"></i> Ajustar Stock</h2>
-        <button class="btn-close" (click)="closeStockModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        @if (selectedMateriaPrima()) {
-          <div class="selected-item-info">
-            <h4>{{ selectedMateriaPrima()!.nombre }}</h4>
-            <p>Stock actual: <strong>{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</strong></p>
-          </div>
-        }
-        
-        <form [formGroup]="stockForm" (ngSubmit)="submitStock()">
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Tipo de Movimiento *</label>
-              <select 
-                class="form-select"
-                formControlName="tipo">
-                <option value="Entrada">Entrada (Incrementar)</option>
-                <option value="Salida">Salida (Decrementar)</option>
-                <option value="Ajuste">Ajuste de Inventario</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Cantidad *</label>
-              <input 
-                type="number"
-                class="form-input"
-                [class.error]="isFieldInvalid('cantidad', stockForm)"
-                formControlName="cantidad"
-                step="0.01"
-                min="0.01">
-              @if (getFieldError('cantidad', stockForm)) {
-                <span class="field-error">{{ getFieldError('cantidad', stockForm) }}</span>
-              }
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Costo Unitario *</label>
-            <input 
-              type="number"
-              class="form-input"
-              [class.error]="isFieldInvalid('costoUnitario', stockForm)"
-              formControlName="costoUnitario"
-              step="0.01"
-              min="0.01">
-            @if (getFieldError('costoUnitario', stockForm)) {
-              <span class="field-error">{{ getFieldError('costoUnitario', stockForm) }}</span>
-            }
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Referencia</label>
-            <input 
-              type="text"
-              class="form-input"
-              formControlName="referencia"
-              placeholder="Número de compra, orden, etc.">
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Observaciones</label>
-            <textarea 
-              class="form-textarea"
-              formControlName="observaciones"
-              placeholder="Motivo del ajuste de stock"
-              rows="3"></textarea>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline" (click)="closeStockModal()">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="stockForm.invalid || submitting()">
-              @if (submitting()) {
-                <div class="btn-spinner"></div>
-                Procesando...
-              } @else {
-                <i class="fas fa-check"></i>
-                Aplicar Cambio
-              }
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-}
-@if (showCosteoModal()) {
-  <div class="modal-overlay" (click)="closeCosteoModal()">
-    <div class="modal-container modal-large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2><i class="fas fa-calculator"></i> Análisis de Costeo</h2>
-        <button class="btn-close" (click)="closeCosteoModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        @if (selectedMateriaPrima()) {
-          <div class="costeo-header">
-            <h3>{{ selectedMateriaPrima()!.nombre }}</h3>
-            <p>{{ selectedMateriaPrima()!.descripcion }}</p>
-          </div>
-          
-          <div class="costeo-grid">
-            <div class="costeo-card">
-              <h4><i class="fas fa-tag"></i> Costo Actual</h4>
-              <div class="costeo-value">{{ formatCurrency(selectedMateriaPrima()!.costoUnitario) }}</div>
-              <small>Por {{ selectedMateriaPrima()!.unidadMedida }}</small>
-            </div>
-            
-            <div class="costeo-card">
-              <h4><i class="fas fa-chart-line"></i> Costo Promedio</h4>
-              <div class="costeo-value">{{ formatCurrency(calcularCostoPromedio(selectedMateriaPrima()!)) }}</div>
-              <small>Promedio ponderado</small>
-            </div>
-            
-            <div class="costeo-card">
-              <h4><i class="fas fa-clock"></i> Último Costo</h4>
-              <div class="costeo-value">{{ formatCurrency(calcularCostoUltimo(selectedMateriaPrima()!)) }}</div>
-              <small>Última entrada</small>
-            </div>
-            
-            <div class="costeo-card">
-              <h4><i class="fas fa-cubes"></i> Valor Inventario</h4>
-              <div class="costeo-value">{{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</div>
-              <small>{{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}</small>
-            </div>
-          </div>
-          
-          <div class="movimientos-section">
-            <h4><i class="fas fa-history"></i> Historial de Movimientos</h4>
-            
-            @if (movimientosStock().length > 0) {
-              <div class="movimientos-table">
-                <table class="table-simple">
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Tipo</th>
-                      <th>Cantidad</th>
-                      <th>Costo Unit.</th>
-                      <th>Total</th>
-                      <th>Referencia</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (movimiento of movimientosStock(); track movimiento.id) {
-                      <tr>
-                        <td>{{ formatDate(movimiento.fecha) }}</td>
-                        <td>
-                          <span 
-                            class="movement-badge"
-                            [class.entrada]="movimiento.tipo === 'Entrada'"
-                            [class.salida]="movimiento.tipo === 'Salida'"
-                            [class.ajuste]="movimiento.tipo === 'Ajuste'">
-                            {{ movimiento.tipo }}
-                          </span>
-                        </td>
-                        <td>{{ movimiento.cantidad }}</td>
-                        <td>{{ formatCurrency(movimiento.costoUnitario) }}</td>
-                        <td>{{ formatCurrency(movimiento.cantidad * movimiento.costoUnitario) }}</td>
-                        <td>{{ movimiento.referencia || '-' }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            } @else {
-              <div class="empty-movements">
-                <i class="fas fa-history"></i>
-                <p>No hay movimientos registrados</p>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-}
-@if (showDetailsModal()) {
-  <div class="modal-overlay" (click)="closeDetailsModal()">
-    <div class="modal-container modal-large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2><i class="fas fa-eye"></i> Detalles de Materia Prima</h2>
-        <button class="btn-close" (click)="closeDetailsModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        @if (selectedMateriaPrima()) {
-          <div class="details-grid">
-            <div class="details-section">
-              <h4>Información General</h4>
-              <div class="details-item">
-                <label>Nombre:</label>
-                <span>{{ selectedMateriaPrima()!.nombre }}</span>
-              </div>
-              <div class="details-item">
-                <label>Descripción:</label>
-                <span>{{ selectedMateriaPrima()!.descripcion || 'Sin descripción' }}</span>
-              </div>
-              <div class="details-item">
-                <label>Proveedor:</label>
-                <span>{{ selectedMateriaPrima()!.proveedorNombre || 'Sin proveedor' }}</span>
-              </div>
-              <div class="details-item">
-                <label>Estado:</label>
-                <span 
-                  class="status-badge"
-                  [class.active]="selectedMateriaPrima()!.activo"
-                  [class.inactive]="!selectedMateriaPrima()!.activo">
-                  {{ selectedMateriaPrima()!.activo ? 'Activa' : 'Inactiva' }}
-                </span>
-              </div>
-            </div>
-            
-            <div class="details-section">
-              <h4>Información de Inventario</h4>
-              <div class="details-item">
-                <label>Unidad de Medida:</label>
-                <span>{{ selectedMateriaPrima()!.unidadMedida }}</span>
-              </div>
-              <div class="details-item">
-                <label>Stock Actual:</label>
-                <span [class]="getStockStatusClass(selectedMateriaPrima()!)">
-                  {{ selectedMateriaPrima()!.stock }} {{ selectedMateriaPrima()!.unidadMedida }}
-                </span>
-              </div>
-              <div class="details-item">
-                <label>Stock Mínimo:</label>
-                <span>{{ selectedMateriaPrima()!.stockMinimo }} {{ selectedMateriaPrima()!.unidadMedida }}</span>
-              </div>
-            </div>
-            
-            <div class="details-section">
-              <h4>Información de Costos</h4>
-              <div class="details-item">
-                <label>Costo Unitario Actual:</label>
-                <span>{{ formatCurrency(selectedMateriaPrima()!.costoUnitario) }}</span>
-              </div>
-              <div class="details-item">
-                <label>Valor Total Inventario:</label>
-                <span>{{ formatCurrency(selectedMateriaPrima()!.valorInventario || 0) }}</span>
-              </div>
-              <div class="details-item">
-                <label>Costo Promedio:</label>
-                <span>{{ formatCurrency(calcularCostoPromedio(selectedMateriaPrima()!)) }}</span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-}
+</div>

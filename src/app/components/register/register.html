@@ -1,282 +1,212 @@
-<div class="register-page">
-  <div class="register-container">
-    <div class="register-background">
-      <div class="background-overlay"></div>
-    </div>
-    
-    <div class="register-content">
-      <div class="register-form-container">
-        <div class="register-header">
-          <div class="logo">
-            <span class="logo-icon">🌱</span>
-            <span class="logo-text">SmartAgro</span>
+<!-- Contenedor principal -->
+<div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 md:p-8">
+  <div class="w-full max-w-6xl rounded-2xl bg-white/95 shadow-2xl backdrop-blur-md overflow-hidden">
+
+    <!-- Grid de formulario + info -->
+    <div class="grid lg:grid-cols-2 min-h-[700px]">
+
+      <!-- Lado izquierdo: formulario -->
+      <div class="relative flex flex-col justify-center p-6 sm:p-8 lg:p-12 overflow-y-auto">
+
+        <!-- Logo -->
+        <header class="text-center mb-8">
+          <div class="flex items-center justify-center gap-2 mb-3">
+            <span class="text-3xl">🌱</span>
+            <span class="text-2xl font-bold text-green-800">SmartAgro</span>
           </div>
-          <h1>Solicitar Cuenta</h1>
-          <p>Completa el formulario y nos contactaremos contigo para crear tu cuenta</p>
+          <h1 class="text-2xl font-bold text-green-800">Solicitar Cuenta</h1>
+          <p class="text-sm text-gray-600 mt-1">Completa el formulario y nos pondremos en contacto.</p>
+        </header>
+
+        <!-- Formulario -->
+        <form *ngIf="!submitted()" [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="space-y-5">
+
+          <!-- Alertas -->
+          <div *ngIf="error()"
+               class="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+            <span>⚠️</span>
+            <span>{{ error() }}</span>
+          </div>
+
+          <!-- Fila de Nombre / Apellidos -->
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="nombre" class="block mb-1 text-sm font-semibold text-green-800">Nombre *</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">👤</span>
+                <input id="nombre" type="text" formControlName="nombre"
+                       [ngClass]="{'border-red-500': isFieldInvalid('nombre')}"
+                       class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                       placeholder="Tu nombre" autocomplete="given-name" />
+              </div>
+              <span *ngIf="getFieldError('nombre')" class="text-xs text-red-600 mt-1 block">
+                {{ getFieldError('nombre') }}
+              </span>
+            </div>
+
+            <div>
+              <label for="apellidos" class="block mb-1 text-sm font-semibold text-green-800">Apellidos *</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">👤</span>
+                <input id="apellidos" type="text" formControlName="apellidos"
+                       [ngClass]="{'border-red-500': isFieldInvalid('apellidos')}"
+                       class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                       placeholder="Tus apellidos" autocomplete="family-name" />
+              </div>
+              <span *ngIf="getFieldError('apellidos')" class="text-xs text-red-600 mt-1 block">
+                {{ getFieldError('apellidos') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="email" class="block mb-1 text-sm font-semibold text-green-800">Email *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">📧</span>
+              <input id="email" type="email" formControlName="email"
+                     [ngClass]="{'border-red-500': isFieldInvalid('email')}"
+                     class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                     placeholder="tu@email.com" autocomplete="email" />
+            </div>
+            <span *ngIf="getFieldError('email')" class="text-xs text-red-600 mt-1 block">
+              {{ getFieldError('email') }}
+            </span>
+          </div>
+
+          <!-- Botón -->
+          <button type="submit"
+                  [disabled]="loading()"
+                  class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-600 to-lime-500 px-4 py-3 text-white font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-75 disabled:cursor-not-allowed">
+            <span *ngIf="loading()" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span>{{ loading() ? 'Enviando solicitud...' : '📨 Enviar Solicitud' }}</span>
+          </button>
+        </form>
+
+        <!-- Estado éxito -->
+        <div *ngIf="submitted()" class="text-center space-y-6">
+          <div *ngIf="success()"
+               class="flex items-center justify-center gap-2 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
+            <span>✅</span>
+            <span>{{ success() }}</span>
+          </div>
+
+          <div class="text-center space-y-4">
+            <div class="text-4xl">🎉</div>
+            <h2 class="text-xl font-bold text-green-800">¡Solicitud Recibida!</h2>
+            <p class="text-sm text-gray-600">
+              Hemos recibido tu solicitud y te contactaremos en las próximas 24 h.
+            </p>
+
+            <!-- Pasos -->
+            <div class="text-left max-w-sm mx-auto space-y-2">
+              <h3 class="font-semibold text-green-800">¿Qué sigue?</h3>
+              <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs flex items-center justify-center font-bold">1</span>
+                <span class="text-sm text-gray-600">Revisaremos tu solicitud.</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs flex items-center justify-center font-bold">2</span>
+                <span class="text-sm text-gray-600">Te contactaremos para confirmar detalles.</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs flex items-center justify-center font-bold">3</span>
+                <span class="text-sm text-gray-600">Crearemos tu cuenta y te enviaremos las credenciales.</span>
+              </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex flex-col sm:flex-row gap-3 mt-6">
+              <button (click)="resetForm()"
+                      class="w-full sm:w-auto px-4 py-2 rounded-lg border border-green-600 text-green-600 font-semibold hover:bg-green-50 transition">
+                📝 Enviar otra solicitud
+              </button>
+              <button (click)="goToLogin()"
+                      class="w-full sm:w-auto px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">
+                🔐 Ir al Login
+              </button>
+            </div>
+          </div>
         </div>
 
-        @if (!submitted()) {
-          <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="register-form">
-            @if (error()) {
-              <div class="alert alert-error">
-                <span class="alert-icon">⚠️</span>
-                {{ error() }}
-              </div>
-            }
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="nombre" class="form-label">Nombre *</label>
-                <div class="input-container">
-                  <span class="input-icon">👤</span>
-                  <input
-                    type="text"
-                    id="nombre"
-                    formControlName="nombre"
-                    class="form-input"
-                    [class.error]="isFieldInvalid('nombre')"
-                    placeholder="Tu nombre"
-                    autocomplete="given-name">
-                </div>
-                @if (getFieldError('nombre')) {
-                  <span class="field-error">{{ getFieldError('nombre') }}</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="apellidos" class="form-label">Apellidos *</label>
-                <div class="input-container">
-                  <span class="input-icon">👤</span>
-                  <input
-                    type="text"
-                    id="apellidos"
-                    formControlName="apellidos"
-                    class="form-input"
-                    [class.error]="isFieldInvalid('apellidos')"
-                    placeholder="Tus apellidos"
-                    autocomplete="family-name">
-                </div>
-                @if (getFieldError('apellidos')) {
-                  <span class="field-error">{{ getFieldError('apellidos') }}</span>
-                }
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="email" class="form-label">Email *</label>
-              <div class="input-container">
-                <span class="input-icon">📧</span>
-                <input
-                  type="email"
-                  id="email"
-                  formControlName="email"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('email')"
-                  placeholder="tu@email.com"
-                  autocomplete="email">
-              </div>
-              @if (getFieldError('email')) {
-                <span class="field-error">{{ getFieldError('email') }}</span>
-              }
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="telefono" class="form-label">Teléfono</label>
-                <div class="input-container">
-                  <span class="input-icon">📱</span>
-                  <input
-                    type="tel"
-                    id="telefono"
-                    formControlName="telefono"
-                    class="form-input"
-                    [class.error]="isFieldInvalid('telefono')"
-                    placeholder="4771234567"
-                    autocomplete="tel">
-                </div>
-                @if (getFieldError('telefono')) {
-                  <span class="field-error">{{ getFieldError('telefono') }}</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="empresa" class="form-label">Empresa / Finca</label>
-                <div class="input-container">
-                  <span class="input-icon">🏢</span>
-                  <input
-                    type="text"
-                    id="empresa"
-                    formControlName="empresa"
-                    class="form-input"
-                    placeholder="Nombre de tu empresa o finca"
-                    autocomplete="organization">
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="mensaje" class="form-label">
-                Cuéntanos sobre tu proyecto *
-                <span class="character-count">({{ getCharacterCount() }}/500)</span>
-              </label>
-              <div class="textarea-container">
-                <span class="input-icon textarea-icon">💬</span>
-                <textarea
-                  id="mensaje"
-                  formControlName="mensaje"
-                  class="form-textarea"
-                  [class.error]="isFieldInvalid('mensaje')"
-                  placeholder="Describe qué tipo de sistema de riego necesitas, el tamaño de tu cultivo, tus objetivos, etc."
-                  rows="4"
-                  maxlength="500"></textarea>
-              </div>
-              @if (getFieldError('mensaje')) {
-                <span class="field-error">{{ getFieldError('mensaje') }}</span>
-              }
-            </div>
-
-            <button
-              type="submit"
-              class="btn btn-primary btn-full"
-              [disabled]="loading()">
-              @if (loading()) {
-                <span class="btn-spinner"></span>
-                Enviando solicitud...
-              } @else {
-                📨 Enviar Solicitud
-              }
-            </button>
-          </form>
-        } @else {
-          <div class="success-container">
-            @if (success()) {
-              <div class="alert alert-success">
-                <span class="alert-icon">✅</span>
-                {{ success() }}
-              </div>
-            }
-
-            <div class="success-content">
-              <div class="success-icon">🎉</div>
-              <h2>¡Solicitud Recibida!</h2>
-              <p>
-                Hemos recibido tu solicitud de cuenta. Nuestro equipo la revisará y 
-                te contactaremos en las próximas 24 horas para proceder con la creación 
-                de tu cuenta.
-              </p>
-
-              <div class="next-steps">
-                <h3>¿Qué sigue?</h3>
-                <div class="steps-list">
-                  <div class="step-item">
-                    <span class="step-number">1</span>
-                    <span class="step-text">Revisaremos tu solicitud</span>
-                  </div>
-                  <div class="step-item">
-                    <span class="step-number">2</span>
-                    <span class="step-text">Te contactaremos para confirmar detalles</span>
-                  </div>
-                  <div class="step-item">
-                    <span class="step-number">3</span>
-                    <span class="step-text">Crearemos tu cuenta y te enviaremos las credenciales</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="success-actions">
-                <button class="btn btn-outline" (click)="resetForm()">
-                  📝 Enviar Otra Solicitud
-                </button>
-                <button class="btn btn-primary" (click)="goToLogin()">
-                  🔐 Ir al Login
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
-        <div class="register-footer">
-          <p>
-            ¿Ya tienes una cuenta? 
-            <a routerLink="/login" class="link">Inicia sesión aquí</a>
+        <!-- Footer enlaces -->
+        <footer class="mt-8 text-center space-y-3 text-sm">
+          <p class="text-gray-600">
+            ¿Ya tienes una cuenta?
+            <a routerLink="/login" class="font-semibold text-green-600 hover:underline">Inicia sesión aquí</a>
           </p>
-          
-          <div class="contact-urgent">
-            <h4>¿Necesitas ayuda urgente?</h4>
-            <div class="contact-info">
+
+          <!-- Contacto urgente -->
+          <div class="border-t pt-4">
+            <h4 class="font-semibold text-green-800 mb-1">¿Necesitas ayuda urgente?</h4>
+            <div class="text-xs text-gray-500 space-y-1">
               <p><strong>📞 Teléfono:</strong> +52 (477) 123-4567</p>
-              <p><strong>📧 Email:</strong> soportesmartagro.com</p>
-              <p><strong>🕒 Horario:</strong> Lunes a Viernes, 8:00 AM - 6:00 PM</p>
+              <p><strong>📧 Email:</strong> soporte@smartagro.com</p>
+              <p><strong>🕒 Horario:</strong> Lun-Vie 8:00 AM - 6:00 PM</p>
             </div>
           </div>
-        </div>
+        </footer>
       </div>
-      
-      <div class="register-info">
-        <div class="info-content">
-          <h2>¿Por qué solicitar una cuenta?</h2>
-          <p>
-            Al tener una cuenta en SmartAgro podrás acceder a beneficios exclusivos 
-            y gestionar todos tus sistemas desde un solo lugar.
+
+      <!-- Lado derecho: info -->
+      <div class="hidden lg:flex flex-col justify-center bg-gradient-to-br from-green-800 to-lime-600 text-white p-8">
+        <div class="max-w-sm mx-auto text-center">
+          <h2 class="text-2xl font-bold mb-3">¿Por qué solicitar una cuenta?</h2>
+          <p class="text-sm opacity-90 mb-6">
+            Accede a beneficios exclusivos y gestiona todos tus sistemas desde un solo lugar.
           </p>
-          
-          <div class="benefits-list">
-            <div class="benefit-item">
-              <span class="benefit-icon">🎯</span>
-              <div class="benefit-text">
-                <h4>Cotizaciones Personalizadas</h4>
-                <p>Recibe cotizaciones adaptadas a tus necesidades específicas</p>
-              </div>
-            </div>
-            
-            <div class="benefit-item">
-              <span class="benefit-icon">📞</span>
-              <div class="benefit-text">
-                <h4>Soporte Técnico Prioritario</h4>
-                <p>Acceso directo a nuestro equipo de expertos</p>
-              </div>
-            </div>
-            
-            <div class="benefit-item">
-              <span class="benefit-icon">📋</span>
-              <div class="benefit-text">
-                <h4>Historial de Compras</h4>
-                <p>Gestiona todas tus adquisiciones y garantías</p>
-              </div>
-            </div>
-            
-            <div class="benefit-item">
-              <span class="benefit-icon">🔧</span>
-              <div class="benefit-text">
-                <h4>Mantenimiento Programado</h4>
-                <p>Programa y gestiona el mantenimiento de tus sistemas</p>
-              </div>
-            </div>
 
-            <div class="benefit-item">
-              <span class="benefit-icon">📱</span>
-              <div class="benefit-text">
-                <h4>Panel de Control</h4>
-                <p>Monitorea todos tus sistemas desde una sola plataforma</p>
+          <ul class="space-y-4 text-left">
+            <li class="flex items-start gap-3">
+              <span class="text-xl">🎯</span>
+              <div>
+                <h4 class="font-semibold">Cotizaciones personalizadas</h4>
+                <p class="text-xs opacity-80">Adaptadas a tus necesidades específicas.</p>
               </div>
-            </div>
-
-            <div class="benefit-item">
-              <span class="benefit-icon">📊</span>
-              <div class="benefit-text">
-                <h4>Reportes Detallados</h4>
-                <p>Analiza el rendimiento y eficiencia de tus cultivos</p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-xl">📞</span>
+              <div>
+                <h4 class="font-semibold">Soporte técnico prioritario</h4>
+                <p class="text-xs opacity-80">Acceso directo a nuestros expertos.</p>
               </div>
-            </div>
-          </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-xl">📋</span>
+              <div>
+                <h4 class="font-semibold">Historial de compras</h4>
+                <p class="text-xs opacity-80">Gestiona adquisiciones y garantías.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-xl">🔧</span>
+              <div>
+                <h4 class="font-semibold">Mantenimiento programado</h4>
+                <p class="text-xs opacity-80">Programa y gestiona tus sistemas.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-xl">📱</span>
+              <div>
+                <h4 class="font-semibold">Panel de control</h4>
+                <p class="text-xs opacity-80">Monitorea todo desde una plataforma.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-xl">📊</span>
+              <div>
+                <h4 class="font-semibold">Reportes detallados</h4>
+                <p class="text-xs opacity-80">Analiza rendimiento y eficiencia.</p>
+              </div>
+            </li>
+          </ul>
 
-          <div class="security-note">
-            <div class="security-icon">🔒</div>
-            <div class="security-content">
-              <h4>Seguridad y Privacidad</h4>
-              <p>
-                Todas las cuentas son creadas y verificadas manualmente por nuestro equipo 
-                para garantizar la seguridad de nuestros clientes.
+          <div class="mt-8 flex items-start gap-3 border-t border-white/20 pt-4">
+            <span class="text-xl">🔒</span>
+            <div class="text-left">
+              <h4 class="font-semibold">Seguridad y privacidad</h4>
+              <p class="text-xs opacity-80">
+                Las cuentas son creadas y verificadas manualmente por nuestro equipo.
               </p>
             </div>
           </div>

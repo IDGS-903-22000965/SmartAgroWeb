@@ -1,541 +1,618 @@
-<div class="usuarios-admin-page">
-  <div class="page-header">
-    <h1>Gestión de Usuarios</h1>
-    <button (click)="abrirModalCrear()" class="btn btn-primary">
-      <span>➕</span>
-      Nuevo Usuario
-    </button>
-  </div>
-  @if (stats()) {
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-value">{{ stats()!.totalUsuarios }}</div>
-        <div class="stat-label">Total Usuarios</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div class="stat-value">{{ stats()!.usuariosActivos }}</div>
-        <div class="stat-label">Usuarios Activos</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">👨‍💼</div>
-        <div class="stat-value">{{ stats()!.administradores }}</div>
-        <div class="stat-label">Administradores</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">👤</div>
-        <div class="stat-value">{{ stats()!.clientes }}</div>
-        <div class="stat-label">Clientes</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">📈</div>
-        <div class="stat-value">{{ stats()!.registrosEsteMes }}</div>
-        <div class="stat-label">Registros Este Mes</div>
+<!-- Gestión de Usuarios con el MISMO estilo exacto de gestión de comentarios -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header de la página -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">Gestión de Usuarios</h1>
+          <p class="text-gray-600">Administrar usuarios del sistema</p>
+        </div>
+        
+        <div class="flex gap-4">
+          <button (click)="abrirModalCrear()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            ➕ Nuevo Usuario
+          </button>
+        </div>
       </div>
     </div>
-  }
-  <div class="filtros-section">
-    <div class="filtros-container">
-      <input 
-        type="text" 
-        placeholder="Buscar usuarios..." 
-        [(ngModel)]="filtros.busqueda"
-        (input)="aplicarFiltros()"
-        class="form-input">
-      
-      <select [(ngModel)]="filtros.rol" (change)="aplicarFiltros()" class="form-select">
-        <option value="">Todos los roles</option>
-        @for (rol of rolesDisponibles; track rol) {
-          <option [value]="rol">{{ rol }}</option>
-        }
-      </select>
-      
-      <select [(ngModel)]="filtros.estado" (change)="aplicarFiltros()" class="form-select">
-        <option value="">Todos los estados</option>
-        <option value="true">Activos</option>
-        <option value="false">Inactivos</option>
-      </select>
+
+    <!-- Estadísticas -->
+    @if (stats()) {
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl p-4 text-center shadow-lg border border-blue-200/50">
+          <span class="block text-2xl font-bold text-blue-700">{{ stats()!.totalUsuarios }}</span>
+          <span class="text-sm text-blue-600 font-medium">Total Usuarios</span>
+        </div>
+        <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-xl p-4 text-center shadow-lg border border-green-200/50">
+          <span class="block text-2xl font-bold text-green-700">{{ stats()!.usuariosActivos }}</span>
+          <span class="text-sm text-green-600 font-medium">Usuarios Activos</span>
+        </div>
+        <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-4 text-center shadow-lg border border-purple-200/50">
+          <span class="block text-2xl font-bold text-purple-700">{{ stats()!.administradores }}</span>
+          <span class="text-sm text-purple-600 font-medium">Administradores</span>
+        </div>
+        <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-4 text-center shadow-lg border border-orange-200/50">
+          <span class="block text-2xl font-bold text-orange-700">{{ stats()!.clientes }}</span>
+          <span class="text-sm text-orange-600 font-medium">Clientes</span>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl p-4 text-center shadow-lg border border-emerald-200/50">
+          <span class="block text-2xl font-bold text-emerald-700">{{ stats()!.registrosEsteMes }}</span>
+          <span class="text-sm text-emerald-600 font-medium">Registros Este Mes</span>
+        </div>
+      </div>
+    }
+
+    <!-- Filtros -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Buscador -->
+        <div class="flex-1">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar usuarios..."
+              [(ngModel)]="filtros.busqueda"
+              (input)="aplicarFiltros()"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+          </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="flex gap-2 overflow-x-auto">
+          <select 
+            [(ngModel)]="filtros.rol" 
+            (change)="aplicarFiltros()" 
+            class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 focus:ring-2 focus:ring-green-500">
+            <option value="">Todos los roles</option>
+            @for (rol of rolesDisponibles; track rol) {
+              <option [value]="rol">{{ rol }}</option>
+            }
+          </select>
+
+          <select 
+            [(ngModel)]="filtros.estado" 
+            (change)="aplicarFiltros()" 
+            class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 focus:ring-2 focus:ring-green-500">
+            <option value="">Todos los estados</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="table-container">
+
+    <!-- Estados de carga/error/vacío -->
     @if (loading()) {
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Cargando usuarios...</p>
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Cargando usuarios...</p>
       </div>
     } @else if (usuarios.length === 0) {
-      <div class="loading-container">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
-        <h3>No hay usuarios</h3>
-        <p>No se encontraron usuarios que coincidan con los filtros aplicados.</p>
-        <button (click)="limpiarFiltros()" class="btn btn-outline" style="margin-top: 1rem;">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">👤</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay usuarios</h3>
+        <p class="text-gray-600 mb-4">No se encontraron usuarios que coincidan con los filtros aplicados</p>
+        <button (click)="limpiarFiltros()" class="bg-gradient-to-r from-green-600 to-lime-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
           Limpiar Filtros
         </button>
       </div>
     } @else {
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Estado</th>
-            <th>Fecha Registro</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (usuario of usuarios; track usuario.id) {
-            <tr>
-              <td>
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                  <div class="user-avatar">{{ getInitials(usuario) }}</div>
-                  <div class="user-info">
-                    <strong>{{ usuario.nombre }} {{ usuario.apellidos }}</strong>
-                    @if (usuario.telefono) {
-                      <div class="user-email">📱 {{ usuario.telefono }}</div>
-                    }
-                  </div>
+      <!-- Lista de usuarios -->
+      <div class="space-y-6">
+        @for (usuario of usuarios; track usuario.id) {
+          <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300" [class]="{'opacity-75': !usuario.activo}">
+            
+            <!-- Header del usuario -->
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4">
+              <div class="flex items-start gap-4 mb-4 lg:mb-0">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                  {{ getInitials(usuario) }}
                 </div>
-              </td>
-              <td>
-                <div class="user-email">{{ usuario.email }}</div>
-              </td>
-              <td>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <div>
+                  <h3 class="font-bold text-gray-900">{{ usuario.nombre }} {{ usuario.apellidos }}</h3>
+                  <p class="text-green-700 font-medium">{{ usuario.email }}</p>
+                  <span class="text-sm text-gray-500">Registrado: {{ formatDate(usuario.fechaRegistro) }}</span>
+                  @if (usuario.telefono) {
+                    <p class="text-sm text-gray-600 mt-1">📱 {{ usuario.telefono }}</p>
+                  }
+                </div>
+              </div>
+              
+              <div class="flex flex-col items-end gap-2">
+                <div class="flex gap-2 flex-wrap">
                   @for (role of usuario.roles; track role) {
-                    <span class="role-badge" [class]="getRoleBadgeClass(role)">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="getRoleBadgeClass(role)">
                       {{ role }}
                     </span>
                   }
                 </div>
-              </td>
-              <td>
-                <span class="status-badge" [class.active]="usuario.activo" [class.inactive]="!usuario.activo">
+                <div class="px-3 py-1 rounded-full text-sm font-medium" [class]="usuario.activo ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700 border border-green-200' : 'bg-gradient-to-r from-red-100 to-red-200 text-red-700 border border-red-200'">
                   {{ usuario.activo ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              <td>
-                <span style="color: #64748b; font-size: 0.875rem;">
-                  {{ formatDate(usuario.fechaRegistro) }}
-                </span>
-              </td>
-              <td>
-                <div class="action-buttons">
-                  <button (click)="editarUsuario(usuario)" class="btn-action btn-edit" title="Editar">
-                    ✏️
-                  </button>
-                  <button (click)="abrirResetPassword(usuario)" class="btn-action btn-reset" title="Restablecer Contraseña">
-                    🔑
-                  </button>
-                  <button (click)="toggleEstadoUsuario(usuario)" class="btn-action btn-toggle" 
-                          [title]="usuario.activo ? 'Desactivar' : 'Activar'">
-                    {{ usuario.activo ? '🚫' : '✅' }}
-                  </button>
-                  <button (click)="eliminarUsuario(usuario)" class="btn-action btn-delete" title="Eliminar">
-                    🗑️
-                  </button>
                 </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
-  </div>
-  @if (totalUsuarios > pageSize) {
-    <div class="pagination-container">
-      <div class="pagination-info">
-        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalUsuarios) }} de {{ totalUsuarios }} usuarios
-      </div>
-      <div class="pagination-controls">
-        <button 
-          (click)="cambiarPagina(currentPage - 1)" 
-          [disabled]="currentPage === 1"
-          class="btn">
-          ← Anterior
-        </button>
-        
-        @for (page of getPaginas(); track page) {
-          <button 
-            (click)="cambiarPagina(page)"
-            [class.active]="page === currentPage"
-            class="btn">
-            {{ page }}
-          </button>
-        }
-        
-        <button 
-          (click)="cambiarPagina(currentPage + 1)" 
-          [disabled]="currentPage === totalPaginas"
-          class="btn">
-          Siguiente →
-        </button>
-      </div>
-    </div>
-  }
-</div>
-@if (showCreateModal()) {
-  <div class="modal-overlay" (click)="cerrarModales()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Crear Nuevo Usuario</h2>
-        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
-      </div>
-      
-      <div class="modal-body">
-        @if (error()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
-            ⚠️ {{ error() }}
-          </div>
-        }
-
-        @if (success()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
-            ✅ {{ success() }}
-          </div>
-        }
-
-        <form [formGroup]="createUserForm" (ngSubmit)="crearUsuario()">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="form-group">
-              <label for="nombre" class="form-label">Nombre *</label>
-              <input
-                type="text"
-                id="nombre"
-                formControlName="nombre"
-                class="form-input"
-                [class.error]="isFieldInvalid(createUserForm, 'nombre')"
-                placeholder="Nombre del usuario">
-              @if (getFieldError(createUserForm, 'nombre')) {
-                <span class="field-error">{{ getFieldError(createUserForm, 'nombre') }}</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="apellidos" class="form-label">Apellidos *</label>
-              <input
-                type="text"
-                id="apellidos"
-                formControlName="apellidos"
-                class="form-input"
-                [class.error]="isFieldInvalid(createUserForm, 'apellidos')"
-                placeholder="Apellidos del usuario">
-              @if (getFieldError(createUserForm, 'apellidos')) {
-                <span class="field-error">{{ getFieldError(createUserForm, 'apellidos') }}</span>
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="email" class="form-label">Email *</label>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              class="form-input"
-              [class.error]="isFieldInvalid(createUserForm, 'email')"
-              placeholder="email@ejemplo.com">
-            @if (getFieldError(createUserForm, 'email')) {
-              <span class="field-error">{{ getFieldError(createUserForm, 'email') }}</span>
-            }
-          </div>
-
-          <div class="form-group">
-            <label for="password" class="form-label">Contraseña *</label>
-            <input
-              type="password"
-              id="password"
-              formControlName="password"
-              class="form-input"
-              [class.error]="isFieldInvalid(createUserForm, 'password')"
-              placeholder="Mínimo 6 caracteres">
-            @if (getFieldError(createUserForm, 'password')) {
-              <span class="field-error">{{ getFieldError(createUserForm, 'password') }}</span>
-            }
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="form-group">
-              <label for="telefono" class="form-label">Teléfono</label>
-              <input
-                type="tel"
-                id="telefono"
-                formControlName="telefono"
-                class="form-input"
-                placeholder="1234567890">
-            </div>
-
-            <div class="form-group">
-              <label for="rol" class="form-label">Rol *</label>
-              <select
-                id="rol"
-                formControlName="rol"
-                class="form-select"
-                [class.error]="isFieldInvalid(createUserForm, 'rol')">
-                @for (rol of rolesDisponibles; track rol) {
-                  <option [value]="rol">{{ rol }}</option>
-                }
-              </select>
-              @if (getFieldError(createUserForm, 'rol')) {
-                <span class="field-error">{{ getFieldError(createUserForm, 'rol') }}</span>
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="direccion" class="form-label">Dirección</label>
-            <input
-              type="text"
-              id="direccion"
-              formControlName="direccion"
-              class="form-input"
-              placeholder="Dirección completa">
-          </div>
-
-          <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-              <input
-                type="checkbox"
-                formControlName="activo"
-                style="width: auto;">
-              Usuario Activo
-            </label>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="loadingModal() || !createUserForm.valid">
-              @if (loadingModal()) {
-                <span class="btn-spinner"></span>
-                Creando...
-              } @else {
-                Crear Usuario
-              }
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-}
-@if (showEditModal() && usuarioEditando) {
-  <div class="modal-overlay" (click)="cerrarModales()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Editar Usuario</h2>
-        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
-      </div>
-      
-      <div class="modal-body">
-        @if (error()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
-            ⚠️ {{ error() }}
-          </div>
-        }
-
-        @if (success()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
-            ✅ {{ success() }}
-          </div>
-        }
-
-        <form [formGroup]="editUserForm" (ngSubmit)="actualizarUsuario()">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="form-group">
-              <label for="editNombre" class="form-label">Nombre *</label>
-              <input
-                type="text"
-                id="editNombre"
-                formControlName="nombre"
-                class="form-input"
-                [class.error]="isFieldInvalid(editUserForm, 'nombre')"
-                placeholder="Nombre del usuario">
-              @if (getFieldError(editUserForm, 'nombre')) {
-                <span class="field-error">{{ getFieldError(editUserForm, 'nombre') }}</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="editApellidos" class="form-label">Apellidos *</label>
-              <input
-                type="text"
-                id="editApellidos"
-                formControlName="apellidos"
-                class="form-input"
-                [class.error]="isFieldInvalid(editUserForm, 'apellidos')"
-                placeholder="Apellidos del usuario">
-              @if (getFieldError(editUserForm, 'apellidos')) {
-                <span class="field-error">{{ getFieldError(editUserForm, 'apellidos') }}</span>
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="editEmail" class="form-label">Email *</label>
-            <input
-              type="email"
-              id="editEmail"
-              formControlName="email"
-              class="form-input"
-              [class.error]="isFieldInvalid(editUserForm, 'email')"
-              placeholder="email@ejemplo.com">
-            @if (getFieldError(editUserForm, 'email')) {
-              <span class="field-error">{{ getFieldError(editUserForm, 'email') }}</span>
-            }
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="form-group">
-              <label for="editTelefono" class="form-label">Teléfono</label>
-              <input
-                type="tel"
-                id="editTelefono"
-                formControlName="telefono"
-                class="form-input"
-                placeholder="1234567890">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Roles</label>
-              <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-                @for (rol of rolesDisponibles; track rol) {
-                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input
-                      type="checkbox"
-                      [checked]="editUserForm.get('roles')?.value?.includes(rol)"
-                      (change)="onRoleChange(rol, $event)"
-                      style="width: auto;">
-                    {{ rol }}
-                  </label>
-                }
               </div>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label for="editDireccion" class="form-label">Dirección</label>
-            <input
-              type="text"
-              id="editDireccion"
-              formControlName="direccion"
-              class="form-input"
-              placeholder="Dirección completa">
-          </div>
+            <!-- Información adicional del usuario -->
+            @if (usuario.direccion) {
+              <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl p-4 mb-4">
+                <h4 class="font-semibold text-gray-800 mb-2">Información Adicional:</h4>
+                <div class="text-sm">
+                  <span class="font-medium text-gray-600">📍 Dirección:</span>
+                  <p class="text-gray-800">{{ usuario.direccion }}</p>
+                </div>
+              </div>
+            }
 
-          <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-              <input
-                type="checkbox"
-                formControlName="activo"
-                style="width: auto;">
-              Usuario Activo
-            </label>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="loadingModal() || !editUserForm.valid">
-              @if (loadingModal()) {
-                <span class="btn-spinner"></span>
-                Actualizando...
-              } @else {
-                Actualizar Usuario
-              }
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-}
-@if (showResetPasswordModal() && usuarioResetPassword) {
-  <div class="modal-overlay" (click)="cerrarModales()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Restablecer Contraseña</h2>
-        <button type="button" (click)="cerrarModales()" class="btn-close">✕</button>
-      </div>
-      
-      <div class="modal-body">
-        <p style="margin-bottom: 1.5rem; color: #64748b;">
-          Restableciendo contraseña para: <strong>{{ usuarioResetPassword.nombre }} {{ usuarioResetPassword.apellidos }}</strong>
-        </p>
-
-        @if (error()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
-            ⚠️ {{ error() }}
+            <!-- Acciones -->
+            <div class="flex gap-3 flex-wrap">
+              <button 
+                (click)="editarUsuario(usuario)"
+                class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                ✏️ Editar
+              </button>
+              
+              <button 
+                (click)="abrirResetPassword(usuario)"
+                class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                🔑 Restablecer Contraseña
+              </button>
+              
+              <button 
+                (click)="toggleEstadoUsuario(usuario)"
+                class="px-4 py-2 bg-gradient-to-r text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium"
+                [class]="usuario.activo ? 'from-red-600 to-red-500' : 'from-green-600 to-green-500'">
+                {{ usuario.activo ? '🚫 Desactivar' : '✅ Activar' }}
+              </button>
+              
+              <button 
+                (click)="eliminarUsuario(usuario)"
+                class="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium">
+                🗑️ Eliminar
+              </button>
+            </div>
           </div>
         }
-
-        @if (success()) {
-          <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.2);">
-            ✅ {{ success() }}
-          </div>
-        }
-
-        <form [formGroup]="resetPasswordForm" (ngSubmit)="restablecerPassword()">
-          <div class="form-group">
-            <label for="newPassword" class="form-label">Nueva Contraseña *</label>
-            <input
-              type="password"
-              id="newPassword"
-              formControlName="newPassword"
-              class="form-input"
-              [class.error]="isFieldInvalid(resetPasswordForm, 'newPassword')"
-              placeholder="Mínimo 6 caracteres">
-            @if (getFieldError(resetPasswordForm, 'newPassword')) {
-              <span class="field-error">{{ getFieldError(resetPasswordForm, 'newPassword') }}</span>
-            }
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              formControlName="confirmPassword"
-              class="form-input"
-              [class.error]="isFieldInvalid(resetPasswordForm, 'confirmPassword')"
-              placeholder="Repite la nueva contraseña">
-            @if (getFieldError(resetPasswordForm, 'confirmPassword')) {
-              <span class="field-error">{{ getFieldError(resetPasswordForm, 'confirmPassword') }}</span>
-            }
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" (click)="cerrarModales()" class="btn btn-outline">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="loadingModal() || !resetPasswordForm.valid">
-              @if (loadingModal()) {
-                <span class="btn-spinner"></span>
-                Restableciendo...
-              } @else {
-                Restablecer Contraseña
-              }
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    }
+
+    <!-- Paginación -->
+    @if (totalUsuarios > pageSize) {
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mt-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="text-gray-600">
+            Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalUsuarios) }} de {{ totalUsuarios }} usuarios
+          </div>
+          <div class="flex gap-2 overflow-x-auto">
+            <button 
+              (click)="cambiarPagina(currentPage - 1)" 
+              [disabled]="currentPage === 1"
+              class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              ← Anterior
+            </button>
+            
+            @for (page of getPaginas(); track page) {
+              <button 
+                (click)="cambiarPagina(page)"
+                class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200"
+                [class]="page === currentPage ? 
+                  'bg-gradient-to-r from-green-600 to-lime-500 text-white shadow-lg' : 
+                  'bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200'">
+                {{ page }}
+              </button>
+            }
+            
+            <button 
+              (click)="cambiarPagina(currentPage + 1)" 
+              [disabled]="currentPage === totalPaginas"
+              class="px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 bg-white/80 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Crear Usuario -->
+    @if (showCreateModal()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="cerrarModales()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Crear Nuevo Usuario</h2>
+            <button (click)="cerrarModales()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
+          </div>
+          
+          <form [formGroup]="createUserForm" (ngSubmit)="crearUsuario()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              
+              @if (error()) {
+                <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-4 border border-red-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                      <h4 class="font-semibold text-red-800">Error</h4>
+                      <p class="text-red-700">{{ error() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (success()) {
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border border-green-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                      <h4 class="font-semibold text-green-800">Éxito</h4>
+                      <p class="text-green-700">{{ success() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Información básica -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Nombre *</label>
+                  <input
+                    type="text"
+                    formControlName="nombre"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(createUserForm, 'nombre')}"
+                    placeholder="Nombre del usuario">
+                  @if (getFieldError(createUserForm, 'nombre')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(createUserForm, 'nombre') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Apellidos *</label>
+                  <input
+                    type="text"
+                    formControlName="apellidos"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(createUserForm, 'apellidos')}"
+                    placeholder="Apellidos del usuario">
+                  @if (getFieldError(createUserForm, 'apellidos')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(createUserForm, 'apellidos') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Email *</label>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(createUserForm, 'email')}"
+                    placeholder="email@ejemplo.com">
+                  @if (getFieldError(createUserForm, 'email')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(createUserForm, 'email') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Contraseña *</label>
+                  <input
+                    type="password"
+                    formControlName="password"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(createUserForm, 'password')}"
+                    placeholder="Mínimo 6 caracteres">
+                  @if (getFieldError(createUserForm, 'password')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(createUserForm, 'password') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    formControlName="telefono"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="1234567890">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Dirección</label>
+                  <input
+                    type="text"
+                    formControlName="direccion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Dirección completa">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="flex items-center text-sm font-semibold text-green-800">
+                    <input 
+                      type="checkbox" 
+                      formControlName="activo" 
+                      class="mr-2 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+                    Usuario Activo
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="cerrarModales()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="loadingModal() || !createUserForm.valid">
+                @if (loadingModal()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creando...
+                  </div>
+                } @else {
+                  Crear Usuario
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Editar Usuario -->
+    @if (showEditModal() && usuarioEditando) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="cerrarModales()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Editar Usuario</h2>
+            <button (click)="cerrarModales()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
+          </div>
+          
+          <form [formGroup]="editUserForm" (ngSubmit)="actualizarUsuario()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              
+              @if (error()) {
+                <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-4 border border-red-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                      <h4 class="font-semibold text-red-800">Error</h4>
+                      <p class="text-red-700">{{ error() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (success()) {
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border border-green-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                      <h4 class="font-semibold text-green-800">Éxito</h4>
+                      <p class="text-green-700">{{ success() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Información básica -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Nombre *</label>
+                  <input
+                    type="text"
+                    formControlName="nombre"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(editUserForm, 'nombre')}">
+                  @if (getFieldError(editUserForm, 'nombre')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(editUserForm, 'nombre') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Apellidos *</label>
+                  <input
+                    type="text"
+                    formControlName="apellidos"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(editUserForm, 'apellidos')}">
+                  @if (getFieldError(editUserForm, 'apellidos')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(editUserForm, 'apellidos') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Email *</label>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(editUserForm, 'email')}">
+                  @if (getFieldError(editUserForm, 'email')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(editUserForm, 'email') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    formControlName="telefono"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Roles</label>
+                  <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
+                    <div class="flex gap-4 flex-wrap">
+                      @for (rol of rolesDisponibles; track rol) {
+                        <label class="flex items-center text-sm font-medium text-gray-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            [checked]="editUserForm.get('roles')?.value?.includes(rol)"
+                            (change)="onRoleChange(rol, $event)"
+                            class="mr-2 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+                          {{ rol }}
+                        </label>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Dirección</label>
+                  <input
+                    type="text"
+                    formControlName="direccion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    placeholder="Dirección completa">
+                </div>
+
+                <div class="lg:col-span-2">
+                  <label class="flex items-center text-sm font-semibold text-green-800">
+                    <input 
+                      type="checkbox" 
+                      formControlName="activo" 
+                      class="mr-2 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+                    Usuario Activo
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="cerrarModales()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="loadingModal() || !editUserForm.valid">
+                @if (loadingModal()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Actualizando...
+                  </div>
+                } @else {
+                  Actualizar Usuario
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Restablecer Contraseña -->
+    @if (showResetPasswordModal() && usuarioResetPassword) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="cerrarModales()">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-lg max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+          
+          <!-- Header del modal -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200/50">
+            <h2 class="text-2xl font-bold text-green-800">Restablecer Contraseña</h2>
+            <button (click)="cerrarModales()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+              ✕
+            </button>
+          </div>
+          
+          <form [formGroup]="resetPasswordForm" (ngSubmit)="restablecerPassword()">
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50 mb-6">
+                <p class="text-blue-800">
+                  Restableciendo contraseña para: <strong>{{ usuarioResetPassword.nombre }} {{ usuarioResetPassword.apellidos }}</strong>
+                </p>
+              </div>
+
+              @if (error()) {
+                <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-4 border border-red-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                      <h4 class="font-semibold text-red-800">Error</h4>
+                      <p class="text-red-700">{{ error() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (success()) {
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border border-green-200/50 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                      <h4 class="font-semibold text-green-800">Éxito</h4>
+                      <p class="text-green-700">{{ success() }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Nueva Contraseña *</label>
+                  <input
+                    type="password"
+                    formControlName="newPassword"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(resetPasswordForm, 'newPassword')}"
+                    placeholder="Mínimo 6 caracteres">
+                  @if (getFieldError(resetPasswordForm, 'newPassword')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(resetPasswordForm, 'newPassword') }}</span>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-green-800 mb-2">Confirmar Contraseña *</label>
+                  <input
+                    type="password"
+                    formControlName="confirmPassword"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    [class]="{'border-red-300 bg-red-50': isFieldInvalid(resetPasswordForm, 'confirmPassword')}"
+                    placeholder="Repite la nueva contraseña">
+                  @if (getFieldError(resetPasswordForm, 'confirmPassword')) {
+                    <span class="text-red-500 text-sm mt-1 block">{{ getFieldError(resetPasswordForm, 'confirmPassword') }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div class="flex gap-3 p-6 border-t border-gray-200/50">
+              <button type="button" (click)="cerrarModales()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="loadingModal() || !resetPasswordForm.valid">
+                @if (loadingModal()) {
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Restableciendo...
+                  </div>
+                } @else {
+                  Restablecer Contraseña
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
   </div>
-}
+</div>
+    
+
+  

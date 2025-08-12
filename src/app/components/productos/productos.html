@@ -1,149 +1,199 @@
-<div class="productos-page">
-  <section class="productos-hero">
-    <div class="container">
-      <div class="hero-content">
-        <h1>Nuestros Productos</h1>
-        <p>Sistemas de riego inteligente diseñados para revolucionar tu agricultura</p>
+<!-- Página de Productos con el MISMO estilo exacto de register/login -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600">
+  
+  <!-- Hero Section -->
+  <section class="pt-8 pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 lg:p-12 text-center">
+        <h1 class="text-4xl lg:text-6xl font-bold text-green-800 mb-4">Nuestros Productos</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          Sistemas de riego inteligente diseñados para revolucionar tu agricultura
+        </p>
       </div>
     </div>
   </section>
-<section class="filters-section">
-  <div class="container">
-    <div class="filters-bar">
-      <div class="search-filter">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Buscar productos..."
-            [value]="searchTerm()"
-            (input)="onSearchChange($event)"
-            class="search-input">
-        </div>
-      </div>
 
-      <div class="filter-controls">
-        <div class="filter-group">
-          <label class="filter-label">Precio:</label>
-          <select 
-            [value]="selectedPriceRange()"
-            (change)="onPriceRangeChange($event)"
-            class="filter-select">
-            @for (range of priceRanges; track range.value) {
-              <option [value]="range.value">{{ range.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label">Ordenar:</label>
-          <select 
-            [value]="sortBy()"
-            (change)="onSortChange($event)"
-            class="filter-select">
-            @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+  <!-- Filtros Section -->
+  <section class="pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+        
+        <!-- Barra de filtros -->
+        <div class="flex flex-col lg:flex-row gap-6">
+          
+          <!-- Búsqueda -->
+          <div class="flex-1">
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                [value]="searchTerm()"
+                (input)="onSearchChange($event)"
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/90 backdrop-blur-sm">
+            </div>
           </div>
 
-          <button (click)="clearFilters()" class="clear-filters-btn">
-            Limpiar Filtros
-          </button>
+          <!-- Controles de filtro -->
+          <div class="flex flex-col sm:flex-row gap-4 items-end">
+            <!-- Filtro de precio -->
+            <div class="min-w-0 flex-shrink-0">
+              <label class="block text-sm font-semibold text-green-800 mb-1">Precio:</label>
+              <select 
+                [value]="selectedPriceRange()"
+                (change)="onPriceRangeChange($event)"
+                class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/90 backdrop-blur-sm min-w-[140px]">
+                @for (range of priceRanges; track range.value) {
+                  <option [value]="range.value">{{ range.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Ordenamiento -->
+            <div class="min-w-0 flex-shrink-0">
+              <label class="block text-sm font-semibold text-green-800 mb-1">Ordenar:</label>
+              <select 
+                [value]="sortBy()"
+                (change)="onSortChange($event)"
+                class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/90 backdrop-blur-sm min-w-[140px]">
+                @for (option of sortOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Botón limpiar filtros -->
+            <button (click)="clearFilters()" class="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:-translate-y-0.5 transition-all duration-200 font-medium whitespace-nowrap">
+              Limpiar Filtros
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </section>
-  <section class="products-section">
-    <div class="container">
-      @if (loading()) {
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando productos...</p>
-        </div>
-      } @else if (error()) {
-        <div class="error-state">
-          <div class="error-icon">⚠️</div>
-          <h3>Error al cargar productos</h3>
-          <p>{{ error() }}</p>
-          <button (click)="retry()" class="retry-btn">Reintentar</button>
-        </div>
-      } @else if (filteredProducts().length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          <h3>No se encontraron productos</h3>
-          <p>Intenta ajustar los filtros de búsqueda</p>
-          <button (click)="clearFilters()" class="clear-filters-btn">Limpiar Filtros</button>
-        </div>
-      } @else {
-        <div class="results-info">
-          <p>Mostrando {{ filteredProducts().length }} producto(s)</p>
-        </div>
 
-        <div class="products-grid">
-          @for (producto of filteredProducts(); track producto.id) {
-            <div class="product-card">
-              <div class="product-image">
-                @if (producto.imagenPrincipal) {
-                  <img [src]="producto.imagenPrincipal" [alt]="producto.nombre">
-                } @else {
-                  <div class="image-placeholder">
-                    <span class="placeholder-icon">🌿</span>
-                  </div>
-                }
-                <div class="product-overlay">
-                  <a [routerLink]="['/producto', producto.id]" class="view-details-btn">
-                    Ver Detalles
-                  </a>
-                </div>
-              </div>
+  <!-- Productos Section -->
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+        
+        @if (loading()) {
+          <!-- Estado de carga -->
+          <div class="text-center py-16">
+            <div class="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-600 font-medium">Cargando productos...</p>
+          </div>
+        } @else if (error()) {
+          <!-- Estado de error -->
+          <div class="text-center py-16">
+            <div class="text-6xl mb-4">⚠️</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Error al cargar productos</h3>
+            <p class="text-gray-600 mb-6">{{ error() }}</p>
+            <button (click)="retry()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+              Reintentar
+            </button>
+          </div>
+        } @else if (filteredProducts().length === 0) {
+          <!-- Estado vacío -->
+          <div class="text-center py-16">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">No se encontraron productos</h3>
+            <p class="text-gray-600 mb-6">Intenta ajustar los filtros de búsqueda</p>
+            <button (click)="clearFilters()" class="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-semibold">
+              Limpiar Filtros
+            </button>
+          </div>
+        } @else {
+          
+          <!-- Info de resultados -->
+          <div class="mb-6">
+            <p class="text-gray-600 font-medium">Mostrando {{ filteredProducts().length }} producto(s)</p>
+          </div>
 
-              <div class="product-content">
-                <div class="product-header">
-                  <h3 class="product-title">{{ producto.nombre }}</h3>
-                  @if (getProductRating(producto) > 0) {
-                    <div class="product-rating">
-                      <div class="stars">
-                        @for (star of [1,2,3,4,5]; track star) {
-                          <span class="star" [class.filled]="star <= getProductRating(producto)">⭐</span>
-                        }
-                      </div>
-                      <span class="rating-value">({{ getProductRating(producto) }})</span>
+          <!-- Grid de productos -->
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @for (producto of filteredProducts(); track producto.id) {
+              <div class="group bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100/50 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 shadow-lg">
+                
+                <!-- Imagen del producto -->
+                <div class="relative h-64 bg-gradient-to-br from-green-100 to-lime-100 overflow-hidden">
+                  @if (producto.imagenPrincipal) {
+                    <img [src]="producto.imagenPrincipal" [alt]="producto.nombre" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center">
+                      <div class="text-6xl text-green-500">🌿</div>
                     </div>
                   }
+                  
+                  <!-- Overlay en hover -->
+                  <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <a [routerLink]="['/producto', producto.id]" class="px-6 py-3 bg-white text-green-700 font-semibold rounded-lg hover:bg-green-50 transition-colors duration-200">
+                      Ver Detalles
+                    </a>
+                  </div>
                 </div>
 
-                <p class="product-description">{{ producto.descripcion }}</p>
-
-                @if (getProductFeatures(producto).length > 0) {
-                  <div class="product-features">
-                    <h4>Características principales:</h4>
-                    <ul class="features-list">
-                      @for (feature of getProductFeatures(producto).slice(0, 3); track feature) {
-                        <li>{{ feature }}</li>
-                      }
-                    </ul>
+                <!-- Contenido del producto -->
+                <div class="p-6 space-y-4">
+                  
+                  <!-- Header con título y rating -->
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-700 transition-colors duration-200">
+                      {{ producto.nombre }}
+                    </h3>
+                    @if (getProductRating(producto) > 0) {
+                      <div class="flex items-center gap-2">
+                        <div class="flex gap-1">
+                          @for (star of [1,2,3,4,5]; track star) {
+                            <span [class]="star <= getProductRating(producto) ? 'text-yellow-500' : 'text-gray-300'">⭐</span>
+                          }
+                        </div>
+                        <span class="text-sm text-gray-600">({{ getProductRating(producto) }})</span>
+                      </div>
+                    }
                   </div>
-                }
 
-                <div class="product-footer">
-                  <div class="product-price">
-                    ${{ producto.precioVenta | number:'1.2-2' }}
-                  </div>
-                  <div class="product-actions">
-                    <a [routerLink]="['/producto', producto.id]" class="btn btn-outline">
-                      Ver Más
-                    </a>
-                    <a routerLink="/cotizacion" class="btn btn-primary">
-                      Cotizar
-                    </a>
+                  <!-- Descripción -->
+                  <p class="text-gray-600 leading-relaxed">{{ producto.descripcion }}</p>
+
+                  <!-- Características principales -->
+                  @if (getProductFeatures(producto).length > 0) {
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200/50">
+                      <h4 class="text-sm font-semibold text-blue-800 mb-2">Características principales:</h4>
+                      <ul class="space-y-1">
+                        @for (feature of getProductFeatures(producto).slice(0, 3); track feature) {
+                          <li class="text-sm text-blue-700 flex items-center gap-2">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
+                            {{ feature }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+
+                  <!-- Footer con precio y acciones -->
+                  <div class="pt-4 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="text-3xl font-bold text-green-700">
+                        ${{ producto.precioVenta | number:'1.2-2' }}
+                      </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                      <a [routerLink]="['/producto', producto.id]" class="flex-1 px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 hover:-translate-y-0.5 transition-all duration-200 font-medium text-center">
+                        Ver Más
+                      </a>
+                      <a routerLink="/cotizacion" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium text-center">
+                        Cotizar
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          }
-        </div>
-      }
+            }
+          </div>
+        }
+      </div>
     </div>
   </section>
 </div>

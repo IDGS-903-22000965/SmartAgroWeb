@@ -1,261 +1,347 @@
-<div class="dashboard-cliente">
-  <div class="dashboard-header">
-    <div class="welcome-section">
-      <h1>¡Bienvenido, {{ user?.nombre }}! 👋</h1>
-      <p>Este es tu panel de control personal</p>
+<!-- Dashboard Cliente con diseño Tailwind manteniendo funcionalidad Angular completa -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto dashboard-cliente">
+    
+    <!-- Header del dashboard -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8 dashboard-header">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0 welcome-section">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">
+            ¡Bienvenido, {{ user?.nombre }}! 👋
+          </h1>
+          <p class="text-gray-600">Este es tu panel de control personal</p>
+        </div>
+        
+        <div class="flex gap-4 header-stats">
+          <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl p-4 text-center shadow-lg border border-blue-200/50 header-stat">
+            <span class="block text-2xl mb-1 stat-icon">📅</span>
+            <span class="text-sm text-blue-600 font-medium">{{ fechaActual }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="header-stats">
-      <div class="header-stat">
-  <span class="stat-icon">📅</span>
-  <span>{{ fechaActual }}</span>
-</div>
 
+    <!-- Estados de carga/error -->
+    <div *ngIf="loading" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center loading-container">
+      <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4 spinner"></div>
+      <p class="text-gray-600 font-medium">Cargando tu dashboard...</p>
     </div>
-  </div>
-  <div *ngIf="loading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando tu dashboard...</p>
-  </div>
-  <div *ngIf="error && !loading" class="error-container">
-    <div class="error-message">
-      <h3>⚠️ Error</h3>
-      <p>{{ error }}</p>
-      <button class="btn btn-primary" (click)="loadDashboard()">
+
+    <div *ngIf="error && !loading" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center error-container">
+      <div class="text-6xl mb-4">⚠️</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Error</h3>
+      <p class="text-gray-600 mb-4">{{ error }}</p>
+      <button class="px-6 py-3 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium" (click)="loadDashboard()">
         Reintentar
       </button>
     </div>
-  </div>
-  <div *ngIf="!loading && !error && dashboard" class="dashboard-content">
-    <div *ngIf="dashboard.notificacionesImportantes?.length" class="notifications-section">
-      <h2>🔔 Notificaciones Importantes</h2>
-      <div class="notifications-list">
-        <div 
-          *ngFor="let notification of dashboard.notificacionesImportantes.slice(0, 3)" 
-          class="notification-item"
-          [ngClass]="getPriorityClass(notification.prioridad)"
-        >
-          <span class="notification-icon">{{ notification.icono }}</span>
-          <div class="notification-content">
-            <h4>{{ notification.titulo }}</h4>
-            <p>{{ notification.mensaje }}</p>
-            <small>{{ formatDate(notification.fecha) }}</small>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card primary">
-        <div class="stat-header">
-          <h3>💰 Resumen de Compras</h3>
-          <span class="stat-icon">🛒</span>
-        </div>
-        <div class="stat-content">
-          <div class="main-stat">
-            <span class="stat-number">{{ dashboard.resumenCompras.totalCompras }}</span>
-            <span class="stat-label">Compras Realizadas</span>
-          </div>
-          <div class="sub-stats">
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.totalGastado) }}</span>
-              <span class="sub-stat-label">Total Gastado</span>
-            </div>
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.promedioGasto) }}</span>
-              <span class="sub-stat-label">Promedio por Compra</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="stat-card success">
-        <div class="stat-header">
-          <h3>📦 Mis Productos</h3>
-          <span class="stat-icon">📋</span>
-        </div>
-        <div class="stat-content">
-          <div class="main-stat">
-            <span class="stat-number">{{ dashboard.productosAdquiridos.totalProductosUnicos }}</span>
-            <span class="stat-label">Productos Únicos</span>
-          </div>
-          <div class="sub-stats">
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ dashboard.productosAdquiridos.productosConGarantiaVigente }}</span>
-              <span class="sub-stat-label">Con Garantía Vigente</span>
-            </div>
-            <div class="sub-stat favorite-product">
-              <span class="sub-stat-label">Más Comprado:</span>
-              <span class="sub-stat-text">{{ dashboard.productosAdquiridos.productoMasComprado }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="stat-card info">
-        <div class="stat-header">
-          <h3>⭐ Mis Comentarios</h3>
-          <span class="stat-icon">💬</span>
-        </div>
-        <div class="stat-content">
-          <div class="main-stat">
-            <span class="stat-number">{{ dashboard.estadoComentarios.totalComentarios }}</span>
-            <span class="stat-label">Comentarios Totales</span>
-          </div>
-          <div class="sub-stats">
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ dashboard.estadoComentarios.comentariosAprobados }}</span>
-              <span class="sub-stat-label">Aprobados</span>
-            </div>
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ dashboard.estadoComentarios.comentariosPendientes }}</span>
-              <span class="sub-stat-label">Pendientes</span>
-            </div>
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ dashboard.estadoComentarios.calificacionPromedio }}/5</span>
-              <span class="sub-stat-label">Calificación Promedio</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="stat-card warning">
-        <div class="stat-header">
-          <h3>📊 Este Mes</h3>
-          <span class="stat-icon">📅</span>
-        </div>
-        <div class="stat-content">
-          <div class="main-stat">
-            <span class="stat-number">{{ dashboard.resumenCompras.comprasEsteMes }}</span>
-            <span class="stat-label">Compras Este Mes</span>
-          </div>
-          <div class="sub-stats">
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.gastoEsteMes) }}</span>
-              <span class="sub-stat-label">Gastado Este Mes</span>
-            </div>
-            <div class="sub-stat">
-              <span class="sub-stat-number">{{ dashboard.resumenCompras.ventasPendientes }}</span>
-              <span class="sub-stat-label">Pedidos Pendientes</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="main-sections">
-      <div class="recent-activity">
-        <h2>📋 Actividad Reciente</h2>
-        <div *ngIf="dashboard.actividadReciente?.length; else noActivity" class="activity-list">
+
+    <!-- Contenido del dashboard -->
+    <div *ngIf="!loading && !error && dashboard" class="dashboard-content space-y-8">
+      
+      <!-- Notificaciones Importantes -->
+      <div *ngIf="dashboard.notificacionesImportantes?.length" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 notifications-section">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-bell text-orange-600"></i> Notificaciones Importantes
+        </h2>
+        <div class="space-y-4 notifications-list">
           <div 
-            *ngFor="let activity of dashboard.actividadReciente" 
-            class="activity-item"
-          >
-            <span class="activity-icon">{{ getActivityIcon(activity.tipo) }}</span>
-            <div class="activity-content">
-              <h4>{{ activity.descripcion }}</h4>
-              <div class="activity-meta">
-                <span class="activity-date">{{ formatDate(activity.fecha) }}</span>
-                <span class="activity-status" [ngClass]="'status-' + activity.estado.toLowerCase()">
-                  {{ activity.estado }}
-                </span>
+            *ngFor="let notification of dashboard.notificacionesImportantes.slice(0, 3)" 
+            class="flex items-start gap-4 p-4 rounded-xl border-l-4 notification-item"
+            [ngClass]="{
+              'bg-red-50 border-l-red-500': notification.prioridad === 'alta',
+              'bg-yellow-50 border-l-yellow-500': notification.prioridad === 'media',
+              'bg-blue-50 border-l-blue-500': notification.prioridad === 'baja'
+            }">
+            <span class="text-2xl notification-icon">{{ notification.icono }}</span>
+            <div class="flex-1 notification-content">
+              <h4 class="font-bold text-gray-900">{{ notification.titulo }}</h4>
+              <p class="text-gray-700 mt-1">{{ notification.mensaje }}</p>
+              <small class="text-gray-500 mt-2 block">{{ formatDate(notification.fecha) }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de Estadísticas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stats-grid">
+        
+        <!-- Resumen de Compras -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 stat-card primary">
+          <div class="flex items-center justify-between mb-4 stat-header">
+            <h3 class="text-lg font-bold text-gray-900">💰 Resumen de Compras</h3>
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg stat-icon">
+              🛒
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="main-stat mb-4">
+              <span class="block text-3xl font-bold text-gray-900 stat-number">{{ dashboard.resumenCompras.totalCompras }}</span>
+              <span class="text-gray-600 stat-label">Compras Realizadas</span>
+            </div>
+            <div class="space-y-2 sub-stats">
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Total Gastado:</span>
+                <span class="font-semibold text-gray-900 sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.totalGastado) }}</span>
+              </div>
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Promedio:</span>
+                <span class="font-semibold text-gray-900 sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.promedioGasto) }}</span>
               </div>
             </div>
           </div>
         </div>
-        <ng-template #noActivity>
-          <div class="no-activity">
-            <p>No hay actividad reciente</p>
-          </div>
-        </ng-template>
-      </div>
-      <div class="quick-access">
-        <h2>🚀 Accesos Rápidos</h2>
-        <div class="quick-access-grid">
-          <a 
-            *ngFor="let access of dashboard.accesosRapidos" 
-            [routerLink]="access.url"
-            class="quick-access-item"
-            [style.border-left-color]="access.color"
-          >
-            <span class="access-icon">{{ access.icono }}</span>
-            <div class="access-content">
-              <h4>{{ access.titulo }}</h4>
-              <p>{{ access.descripcion }}</p>
-            </div>
-            <span class="access-arrow">→</span>
-          </a>
-        </div>
-      </div>
-    </div>
-    <div class="general-stats">
-      <h2>📈 Estadísticas Generales</h2>
-      <div class="general-stats-grid">
-        <div class="general-stat-item">
-          <div class="general-stat-icon">👤</div>
-          <div class="general-stat-content">
-            <h4>{{ dashboard.estadisticasGenerales.diasComoCliente }} días</h4>
-            <p>Como cliente SmartAgro</p>
-            <small>Desde {{ formatDate(dashboard.estadisticasGenerales.fechaRegistro) }}</small>
-          </div>
-        </div>
 
-        <div *ngIf="dashboard.estadisticasGenerales.productosFavoritos?.length" class="general-stat-item">
-          <div class="general-stat-icon">❤️</div>
-          <div class="general-stat-content">
-            <h4>Productos Favoritos</h4>
-            <div class="favorite-products">
-              <span 
-                *ngFor="let producto of dashboard.estadisticasGenerales.productosFavoritos.slice(0, 3)" 
-                class="favorite-tag"
-              >
-                {{ producto }}
-              </span>
+        <!-- Mis Productos -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 stat-card success">
+          <div class="flex items-center justify-between mb-4 stat-header">
+            <h3 class="text-lg font-bold text-gray-900">📦 Mis Productos</h3>
+            <div class="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg stat-icon">
+              📋
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="main-stat mb-4">
+              <span class="block text-3xl font-bold text-gray-900 stat-number">{{ dashboard.productosAdquiridos.totalProductosUnicos }}</span>
+              <span class="text-gray-600 stat-label">Productos Únicos</span>
+            </div>
+            <div class="space-y-2 sub-stats">
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Con Garantía:</span>
+                <span class="font-semibold text-gray-900 sub-stat-number">{{ dashboard.productosAdquiridos.productosConGarantiaVigente }}</span>
+              </div>
+              <div class="sub-stat favorite-product">
+                <span class="text-sm text-gray-600 sub-stat-label">Más Comprado:</span>
+                <span class="text-xs text-gray-800 font-medium mt-1 block sub-stat-text">{{ dashboard.productosAdquiridos.productoMasComprado }}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="general-stat-item">
-          <div class="general-stat-icon">🎯</div>
-          <div class="general-stat-content">
-            <h4>Estado de Cuenta</h4>
-            <p>{{ dashboard.resumenCompras.ventasEntregadas }} entregas completadas</p>
-            <small>{{ dashboard.resumenCompras.ventasPendientes }} pedidos en proceso</small>
+        <!-- Mis Comentarios -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 stat-card info">
+          <div class="flex items-center justify-between mb-4 stat-header">
+            <h3 class="text-lg font-bold text-gray-900">⭐ Mis Comentarios</h3>
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg stat-icon">
+              💬
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="main-stat mb-4">
+              <span class="block text-3xl font-bold text-gray-900 stat-number">{{ dashboard.estadoComentarios.totalComentarios }}</span>
+              <span class="text-gray-600 stat-label">Comentarios Totales</span>
+            </div>
+            <div class="space-y-2 sub-stats">
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Aprobados:</span>
+                <span class="font-semibold text-green-700 sub-stat-number">{{ dashboard.estadoComentarios.comentariosAprobados }}</span>
+              </div>
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Pendientes:</span>
+                <span class="font-semibold text-yellow-700 sub-stat-number">{{ dashboard.estadoComentarios.comentariosPendientes }}</span>
+              </div>
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Calificación:</span>
+                <span class="font-semibold text-gray-900 sub-stat-number">{{ dashboard.estadoComentarios.calificacionPromedio }}/5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Este Mes -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 stat-card warning">
+          <div class="flex items-center justify-between mb-4 stat-header">
+            <h3 class="text-lg font-bold text-gray-900">📊 Este Mes</h3>
+            <div class="w-10 h-10 bg-gradient-to-br from-orange-600 to-red-500 rounded-full flex items-center justify-center text-white shadow-lg stat-icon">
+              📅
+            </div>
+          </div>
+          <div class="stat-content">
+            <div class="main-stat mb-4">
+              <span class="block text-3xl font-bold text-gray-900 stat-number">{{ dashboard.resumenCompras.comprasEsteMes }}</span>
+              <span class="text-gray-600 stat-label">Compras Este Mes</span>
+            </div>
+            <div class="space-y-2 sub-stats">
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Gastado:</span>
+                <span class="font-semibold text-gray-900 sub-stat-number">{{ formatCurrency(dashboard.resumenCompras.gastoEsteMes) }}</span>
+              </div>
+              <div class="flex justify-between items-center sub-stat">
+                <span class="text-sm text-gray-600 sub-stat-label">Pendientes:</span>
+                <span class="font-semibold text-orange-700 sub-stat-number">{{ dashboard.resumenCompras.ventasPendientes }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secciones Principales -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 main-sections">
+        
+        <!-- Actividad Reciente -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 recent-activity">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-history text-blue-600"></i> Actividad Reciente
+          </h2>
+          <div *ngIf="dashboard.actividadReciente?.length; else noActivity" class="space-y-4 activity-list">
+            <div 
+              *ngFor="let activity of dashboard.actividadReciente" 
+              class="flex items-start gap-4 p-4 bg-gray-50/80 backdrop-blur-sm rounded-xl activity-item">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg activity-icon">
+                {{ getActivityIcon(activity.tipo) }}
+              </div>
+              <div class="flex-1 activity-content">
+                <h4 class="font-semibold text-gray-900">{{ activity.descripcion }}</h4>
+                <div class="flex items-center gap-3 mt-2 activity-meta">
+                  <span class="text-sm text-gray-500 activity-date">
+                    <i class="fas fa-clock"></i> {{ formatDate(activity.fecha) }}
+                  </span>
+                  <span class="px-2 py-1 rounded-full text-xs font-medium activity-status" [ngClass]="{
+                    'bg-green-100 text-green-800': activity.estado.toLowerCase() === 'completado',
+                    'bg-yellow-100 text-yellow-800': activity.estado.toLowerCase() === 'pendiente',
+                    'bg-blue-100 text-blue-800': activity.estado.toLowerCase() === 'procesando',
+                    'bg-red-100 text-red-800': activity.estado.toLowerCase() === 'cancelado'
+                  }">
+                    {{ activity.estado }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noActivity>
+            <div class="text-center py-8 no-activity">
+              <div class="text-4xl mb-2">📝</div>
+              <p class="text-gray-600">No hay actividad reciente</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Accesos Rápidos -->
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 quick-access">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-rocket text-green-600"></i> Accesos Rápidos
+          </h2>
+          <div class="space-y-3 quick-access-grid">
+            <a 
+              *ngFor="let access of dashboard.accesosRapidos" 
+              [routerLink]="access.url"
+              class="flex items-center gap-4 p-4 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:bg-green-50 hover:shadow-lg transition-all duration-200 border-l-4 quick-access-item"
+              [style.border-left-color]="access.color">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-600 to-lime-500 rounded-full flex items-center justify-center text-white shadow-lg access-icon">
+                {{ access.icono }}
+              </div>
+              <div class="flex-1 access-content">
+                <h4 class="font-semibold text-gray-900">{{ access.titulo }}</h4>
+                <p class="text-sm text-gray-600">{{ access.descripcion }}</p>
+              </div>
+              <div class="text-green-600 access-arrow">
+                <i class="fas fa-arrow-right"></i>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas Generales -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 general-stats">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-chart-line text-purple-600"></i> Estadísticas Generales
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 general-stats-grid">
+          
+          <!-- Días como cliente -->
+          <div class="flex items-start gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50 general-stat-item">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg general-stat-icon">
+              👤
+            </div>
+            <div class="general-stat-content">
+              <h4 class="text-xl font-bold text-gray-900">{{ dashboard.estadisticasGenerales.diasComoCliente }} días</h4>
+              <p class="text-gray-600">Como cliente SmartAgro</p>
+              <small class="text-gray-500">Desde {{ formatDate(dashboard.estadisticasGenerales.fechaRegistro) }}</small>
+            </div>
+          </div>
+
+          <!-- Productos Favoritos -->
+          <div *ngIf="dashboard.estadisticasGenerales.productosFavoritos?.length" class="flex items-start gap-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200/50 general-stat-item">
+            <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg general-stat-icon">
+              ❤️
+            </div>
+            <div class="general-stat-content">
+              <h4 class="text-lg font-bold text-gray-900 mb-2">Productos Favoritos</h4>
+              <div class="flex flex-wrap gap-2 favorite-products">
+                <span 
+                  *ngFor="let producto of dashboard.estadisticasGenerales.productosFavoritos.slice(0, 3)" 
+                  class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium favorite-tag">
+                  {{ producto }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado de Cuenta -->
+          <div class="flex items-start gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 general-stat-item">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg general-stat-icon">
+              🎯
+            </div>
+            <div class="general-stat-content">
+              <h4 class="text-lg font-bold text-gray-900">Estado de Cuenta</h4>
+              <p class="text-gray-700">{{ dashboard.resumenCompras.ventasEntregadas }} entregas completadas</p>
+              <small class="text-gray-500">{{ dashboard.resumenCompras.ventasPendientes }} pedidos en proceso</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones Sugeridas -->
+      <div *ngIf="dashboard.notificacionesImportantes?.length" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 suggested-actions">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-lightbulb text-yellow-600"></i> Acciones Sugeridas
+        </h2>
+        <div class="space-y-4 actions-list">
+          
+          <!-- Compartir experiencia -->
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200/50 action-item" *ngIf="dashboard.estadoComentarios.comentariosPendientes === 0">
+            <div class="w-12 h-12 bg-gradient-to-br from-yellow-600 to-orange-500 rounded-full flex items-center justify-center text-white shadow-lg action-icon">
+              ⭐
+            </div>
+            <div class="flex-1 action-content">
+              <h4 class="font-bold text-gray-900">Comparte tu experiencia</h4>
+              <p class="text-gray-600">¿Has probado alguno de tus productos? ¡Danos tu opinión!</p>
+            </div>
+            <a routerLink="/cliente/comentarios" class="px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium action-button">
+              Comentar
+            </a>
+          </div>
+
+          <!-- Explorar recursos -->
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 action-item">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg action-icon">
+              📚
+            </div>
+            <div class="flex-1 action-content">
+              <h4 class="font-bold text-gray-900">Explora los recursos</h4>
+              <p class="text-gray-600">Descarga manuales y accede a documentación técnica</p>
+            </div>
+            <a routerLink="/cliente/documentacion" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium action-button">
+              Ver Recursos
+            </a>
+          </div>
+
+          <!-- Revisar garantías -->
+          <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 action-item" *ngIf="dashboard.productosAdquiridos.productosConGarantiaVigente > 0">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg action-icon">
+              🛡️
+            </div>
+            <div class="flex-1 action-content">
+              <h4 class="font-bold text-gray-900">Revisa tus garantías</h4>
+              <p class="text-gray-600">Tienes {{ dashboard.productosAdquiridos.productosConGarantiaVigente }} productos con garantía vigente</p>
+            </div>
+            <a routerLink="/cliente/documentacion" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium action-button">
+              Ver Garantías
+            </a>
           </div>
         </div>
       </div>
     </div>
-    <div *ngIf="dashboard.notificacionesImportantes?.length" class="suggested-actions">
-      <h2>💡 Acciones Sugeridas</h2>
-      <div class="actions-list">
-        <div class="action-item" *ngIf="dashboard.estadoComentarios.comentariosPendientes === 0">
-          <span class="action-icon">⭐</span>
-          <div class="action-content">
-            <h4>Comparte tu experiencia</h4>
-            <p>¿Has probado alguno de tus productos? ¡Danos tu opinión!</p>
-          </div>
-          <a routerLink="/cliente/comentarios" class="action-button">
-            Comentar
-          </a>
-        </div>
-
-        <div class="action-item">
-          <span class="action-icon">📚</span>
-          <div class="action-content">
-            <h4>Explora los recursos</h4>
-            <p>Descarga manuales y accede a documentación técnica</p>
-          </div>
-          <a routerLink="/cliente/documentacion" class="action-button">
-            Ver Recursos
-          </a>
-        </div>
-
-        <div class="action-item" *ngIf="dashboard.productosAdquiridos.productosConGarantiaVigente > 0">
-          <span class="action-icon">🛡️</span>
-          <div class="action-content">
-            <h4>Revisa tus garantías</h4>
-            <p>Tienes {{ dashboard.productosAdquiridos.productosConGarantiaVigente }} productos con garantía vigente</p>
-          </div>
-          <a routerLink="/cliente/documentacion" class="action-button">
-            Ver Garantías
-          </a>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>

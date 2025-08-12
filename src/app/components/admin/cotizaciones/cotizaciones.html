@@ -1,263 +1,232 @@
-<div class="cotizaciones-container">
-    <div class="header-section">
-    <h1>Gestión de Cotizaciones</h1>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>{{ contarPendientes() }}</h3>
-        <p>Pendientes</p>
-      </div>
-      <div class="stat-card">
-        <h3>{{ contarAprobadas() }}</h3>
-        <p>Aprobadas</p>
-      </div>
-      <div class="stat-card">
-        <h3>{{ contarExpiradas() }}</h3>
-        <p>Expiradas</p>
-      </div>
-    </div>
-  </div>
+<!-- Gestión de Cotizaciones con el mismo estilo que Gestión de Comentarios -->
+<div class="min-h-screen bg-gradient-to-br from-green-900 via-green-700 to-lime-600 p-4 lg:p-8">
+  <div class="max-w-7xl mx-auto">
 
-    <div class="filters-section">
-    <div class="filter-group">
-      <label>Estado:</label>
-      <select (change)="onEstadoChange($event)" [value]="selectedEstado()">
-        <option 
-          *ngFor="let option of estadoOptions; trackBy: trackByValue" 
-          [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label>Búsqueda:</label>
-      <input 
-        type="text" 
-        placeholder="Buscar por número, cliente, email..."
-        (input)="onSearchChange($event)"
-        [value]="searchTerm()">
-    </div>
-
-    <div class="filter-group">
-      <label>Fecha:</label>
-      <select (change)="onDateRangeChange($event)" [value]="selectedDateRange()">
-        <option 
-          *ngFor="let option of dateRangeOptions; trackBy: trackByValue" 
-          [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-    </div>
-
-    <button class="btn btn-secondary" (click)="exportToCSV()">
-      Exportar CSV
-    </button>
-  </div>
-
-    <div *ngIf="loading()" class="loading-state">
-    <div class="spinner"></div>
-    <p>Cargando cotizaciones...</p>
-  </div>
-
-    <div *ngIf="error()" class="error-state">
-    <p>{{ error() }}</p>
-    <button class="btn btn-primary" (click)="retry()">Reintentar</button>
-  </div>
-
-    <div *ngIf="!loading() && !error()" class="cotizaciones-list">
-    <div *ngIf="filteredCotizaciones().length === 0" class="empty-state">
-      <p>No se encontraron cotizaciones con los filtros aplicados.</p>
-    </div>
-
-    <div class="cotizacion-card" *ngFor="let cotizacion of filteredCotizaciones()">
-      <div class="card-header">
-        <div class="cotizacion-info">
-          <h3>{{ cotizacion.numeroCotizacion }}</h3>
-          <span class="badge" [class]="'badge-' + getEstadoColor(cotizacion.estado)">
-            {{ cotizacion.estado }}
-          </span>
-        </div>
-        <div class="cotizacion-date">
-          {{ formatDate(cotizacion.fechaCotizacion) }}
-        </div>
-      </div>
-
-      <div class="card-body">
-        <div class="client-info">
-          <p><strong>Cliente:</strong> {{ cotizacion.nombreCliente }}</p>
-          <p><strong>Email:</strong> {{ cotizacion.emailCliente }}</p>
-          <p><strong>Cultivo:</strong> {{ cotizacion.tipoCultivo }}</p>
-          <p><strong>Área:</strong> {{ cotizacion.areaCultivo }} m²</p>
+    <!-- Header -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-4 lg:mb-0">
+          <h1 class="text-3xl lg:text-4xl font-bold text-green-800 mb-2">Gestión de Cotizaciones</h1>
+          <p class="text-gray-600">Administra y convierte cotizaciones en ventas</p>
         </div>
 
-        <div class="cotizacion-summary">
-          <p><strong>Total:</strong> {{ formatCurrency(cotizacion.total) }}</p>
-          <p *ngIf="!isExpired(cotizacion)">
-            <strong>Vence en:</strong> {{ getDaysUntilExpiration(cotizacion) }} días
-          </p>
-          <p *ngIf="isExpired(cotizacion)" class="text-danger">
-            <strong>⚠️ Expirada</strong>
-          </p>
+        <div class="flex gap-4">
+          <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-4 text-center shadow-lg border border-orange-200/50">
+            <span class="block text-2xl font-bold text-orange-700">{{ contarPendientes() }}</span>
+            <span class="text-sm text-orange-600 font-medium">Pendientes</span>
+          </div>
+          <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-xl p-4 text-center shadow-lg border border-green-200/50">
+            <span class="block text-2xl font-bold text-green-700">{{ contarAprobadas() }}</span>
+            <span class="text-sm text-green-600 font-medium">Aprobadas</span>
+          </div>
+          <div class="bg-gradient-to-br from-red-100 to-red-200 rounded-xl p-4 text-center shadow-lg border border-red-200/50">
+            <span class="block text-2xl font-bold text-red-700">{{ contarExpiradas() }}</span>
+            <span class="text-sm text-red-600 font-medium">Expiradas</span>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div class="card-actions">
-        <button 
-          class="btn btn-outline-primary" 
-          (click)="openDetailsModal(cotizacion)">
-          Ver Detalles
-        </button>
+    <!-- Filtros -->
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <!-- Estado -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select (change)="onEstadoChange($event)" [value]="selectedEstado()" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80 backdrop-blur-sm">
+            <option *ngFor="let option of estadoOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
 
-                <div class="action-buttons">
-                    <ng-container *ngIf="cotizacion.estado === 'Pendiente' && !isExpired(cotizacion)">
-            <button 
-              class="btn btn-success" 
-              (click)="updateEstado(cotizacion, 'Aprobada')"
-              [disabled]="updatingStatus()">
+        <!-- Búsqueda -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input type="text" placeholder="Buscar por número, cliente, email..." (input)="onSearchChange($event)" [value]="searchTerm()" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl bg-white/80 backdrop-blur-sm">
+          </div>
+        </div>
+
+        <!-- Fecha -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+          <select (change)="onDateRangeChange($event)" [value]="selectedDateRange()" class="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white/80 backdrop-blur-sm">
+            <option *ngFor="let option of dateRangeOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+
+        
+      </div>
+    </div>
+
+    <!-- Estados -->
+    <div *ngIf="loading()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+      <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-600 font-medium">Cargando cotizaciones...</p>
+    </div>
+
+    <div *ngIf="error()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+      <div class="text-6xl mb-4">⚠️</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Error al cargar cotizaciones</h3>
+      <p class="text-gray-600 mb-4">{{ error() }}</p>
+      <button (click)="retry()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl hover:shadow-lg transition-all font-medium">
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Lista de cotizaciones -->
+    <div *ngIf="!loading() && !error()" class="space-y-6">
+      <div *ngIf="filteredCotizaciones().length === 0" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-12 text-center">
+        <div class="text-6xl mb-4">📄</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay cotizaciones</h3>
+        <p class="text-gray-600">No se encontraron cotizaciones con los filtros aplicados.</p>
+      </div>
+
+      <!-- Tarjetas -->
+      <div *ngFor="let cotizacion of filteredCotizaciones()" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+
+        <!-- Header -->
+        <div class="flex flex-col lg:flex-row justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">{{ cotizacion.numeroCotizacion }}</h3>
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium mt-1" [ngClass]="{
+              'bg-orange-100 text-orange-700': cotizacion.estado === 'Pendiente',
+              'bg-green-100 text-green-700': cotizacion.estado === 'Aprobada',
+              'bg-red-100 text-red-700': cotizacion.estado === 'Rechazada' || isExpired(cotizacion),
+              'bg-gray-100 text-gray-700': cotizacion.estado === 'Expirada'
+            }">
+              {{ cotizacion.estado }}
+            </span>
+          </div>
+          <div class="text-right mt-2 lg:mt-0">
+            <p class="text-sm text-gray-500">{{ formatDate(cotizacion.fechaCotizacion) }}</p>
+            <p *ngIf="!isExpired(cotizacion)" class="text-sm text-green-600 font-medium">Vence en {{ getDaysUntilExpiration(cotizacion) }} días</p>
+            <p *ngIf="isExpired(cotizacion)" class="text-sm text-red-600 font-medium">⚠️ Expirada</p>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-50/80 rounded-xl p-4">
+            <p><strong>Cliente:</strong> {{ cotizacion.nombreCliente }}</p>
+            <p><strong>Email:</strong> {{ cotizacion.emailCliente }}</p>
+            <p><strong>Cultivo:</strong> {{ cotizacion.tipoCultivo }}</p>
+            <p><strong>Área:</strong> {{ cotizacion.areaCultivo }} m²</p>
+          </div>
+          <div class="bg-gray-50/80 rounded-xl p-4">
+            <p class="text-lg font-bold text-green-700">Total: {{ formatCurrency(cotizacion.total) }}</p>
+            <p><strong>Dirección:</strong> {{ cotizacion.direccionInstalacion }}</p>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex flex-wrap gap-3">
+          <button (click)="openDetailsModal(cotizacion)" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-lg hover:shadow-lg transition-all font-medium">
+            Ver Detalles
+          </button>
+
+          <ng-container *ngIf="cotizacion.estado === 'Pendiente' && !isExpired(cotizacion)">
+            <button (click)="updateEstado(cotizacion, 'Aprobada')" [disabled]="updatingStatus()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50">
               {{ updatingStatus() ? 'Procesando...' : 'Aprobar' }}
             </button>
-            <button 
-              class="btn btn-danger" 
-              (click)="updateEstado(cotizacion, 'Rechazada')"
-              [disabled]="updatingStatus()">
+            <button (click)="updateEstado(cotizacion, 'Rechazada')" [disabled]="updatingStatus()" class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50">
               Rechazar
             </button>
           </ng-container>
 
-                    <ng-container *ngIf="canConvertToSale(cotizacion)">
-            <button 
-              class="btn btn-primary" 
-              (click)="openConvertModal(cotizacion)">
-              🛒 Convertir a Venta
-            </button>
-          </ng-container>
+          <button *ngIf="canConvertToSale(cotizacion)" (click)="openConvertModal(cotizacion)" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all font-medium">
+            🛒 Convertir a Venta
+          </button>
 
-                    <ng-container *ngIf="isAlreadySold(cotizacion)">
-            <span class="badge badge-info">✅ Ya convertida a venta</span>
-          </ng-container>
+          <span *ngIf="isAlreadySold(cotizacion)" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+            ✅ Ya convertida a venta
+          </span>
 
-                    <ng-container *ngIf="isExpired(cotizacion)">
-            <span class="badge badge-secondary">⚠️ Expirada</span>
-          </ng-container>
+          <span *ngIf="isExpired(cotizacion)" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+            ⚠️ Expirada
+          </span>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
-<div *ngIf="showConvertModal()" class="modal-overlay" (click)="closeConvertModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Convertir Cotización a Venta</h2>
-      <button class="close-btn" (click)="closeConvertModal()">×</button>
+<!-- Modal Convertir a Venta -->
+<div *ngIf="showConvertModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeConvertModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-lg max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Convertir Cotización a Venta</h2>
+      <button (click)="closeConvertModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
     </div>
 
-    <div class="modal-body" *ngIf="selectedCotizacion()">
-      <div class="cotizacion-summary">
-        <h3>{{ selectedCotizacion()?.numeroCotizacion }}</h3>
-        <p><strong>Cliente:</strong> {{ selectedCotizacion()?.nombreCliente }}</p>
-        <p><strong>Total:</strong> {{ formatCurrency(selectedCotizacion()?.total || 0) }}</p>
+    <form #convertForm="ngForm" (ngSubmit)="convertToSale(metodoPago.value, direccionEntrega.value, observaciones.value)" class="p-6 space-y-4">
+      <div>
+        <label class="block font-medium text-gray-700">Método de Pago *</label>
+        <select #metodoPago required class="w-full mt-1 px-3 py-2 border rounded-xl bg-white/80">
+          <option value="">Seleccione</option>
+          <option>Efectivo</option>
+          <option>Tarjeta de Crédito</option>
+          <option>Tarjeta de Débito</option>
+          <option>Transferencia</option>
+          <option>Cheque</option>
+        </select>
       </div>
 
-      <form #convertForm="ngForm" (ngSubmit)="convertToSale(metodoPago.value, direccionEntrega.value, observaciones.value)">
-        <div class="form-group">
-          <label for="metodoPago">Método de Pago *</label>
-          <select 
-            #metodoPago 
-            id="metodoPago" 
-            required 
-            class="form-control">
-            <option value="">Seleccione método de pago</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
-            <option value="Transferencia">Transferencia Bancaria</option>
-            <option value="Cheque">Cheque</option>
-          </select>
-        </div>
+      <div>
+        <label class="block font-medium text-gray-700">Dirección de Entrega</label>
+        <textarea #direccionEntrega rows="3" class="w-full mt-1 px-3 py-2 border rounded-xl bg-white/80" [placeholder]="'Por defecto: ' + selectedCotizacion()?.direccionInstalacion"></textarea>
+      </div>
 
-        <div class="form-group">
-          <label for="direccionEntrega">Dirección de Entrega</label>
-          <textarea 
-            #direccionEntrega 
-            id="direccionEntrega" 
-            class="form-control"
-            rows="3"
-            [placeholder]="'Por defecto: ' + selectedCotizacion()?.direccionInstalacion"></textarea>
-          <small class="form-text text-muted">
-            Deje vacío para usar la dirección de instalación de la cotización
-          </small>
-        </div>
+      <div>
+        <label class="block font-medium text-gray-700">Observaciones</label>
+        <textarea #observaciones rows="3" class="w-full mt-1 px-3 py-2 border rounded-xl bg-white/80" placeholder="Opcional..."></textarea>
+      </div>
 
-        <div class="form-group">
-          <label for="observaciones">Observaciones</label>
-          <textarea 
-            #observaciones 
-            id="observaciones" 
-            class="form-control"
-            rows="3"
-            placeholder="Observaciones adicionales (opcional)"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button 
-            type="button" 
-            class="btn btn-secondary" 
-            (click)="closeConvertModal()">
-            Cancelar
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            [disabled]="!convertForm.valid || convertingToSale()">
-            {{ convertingToSale() ? 'Creando Venta...' : 'Crear Venta' }}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div class="flex gap-3">
+        <button type="button" (click)="closeConvertModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
+        <button type="submit" [disabled]="!convertForm.valid || convertingToSale()" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-lime-500 text-white rounded-xl hover:shadow-lg transition disabled:opacity-50">
+          {{ convertingToSale() ? 'Creando...' : 'Crear Venta' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
-<div *ngIf="showDetailsModal()" class="modal-overlay" (click)="closeDetailsModal()">
-  <div class="modal-content large" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Detalles de Cotización</h2>
-      <button class="close-btn" (click)="closeDetailsModal()">×</button>
+<!-- Modal Detalles -->
+<div *ngIf="showDetailsModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeDetailsModal()">
+  <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-2xl font-bold text-green-800">Detalles de Cotización</h2>
+      <button (click)="closeDetailsModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">✕</button>
     </div>
 
-    <div class="modal-body" *ngIf="selectedCotizacion()">
-            <div class="details-grid">
-        <div class="detail-section">
-          <h3>Información del Cliente</h3>
+    <div *ngIf="selectedCotizacion()" class="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50/80 rounded-xl p-4">
+          <h3 class="font-bold text-green-800 mb-2">Cliente</h3>
           <p><strong>Nombre:</strong> {{ selectedCotizacion()?.nombreCliente }}</p>
           <p><strong>Email:</strong> {{ selectedCotizacion()?.emailCliente }}</p>
           <p><strong>Teléfono:</strong> {{ selectedCotizacion()?.telefonoCliente || 'No proporcionado' }}</p>
         </div>
-
-        <div class="detail-section">
-          <h3>Información del Proyecto</h3>
+        <div class="bg-gray-50/80 rounded-xl p-4">
+          <h3 class="font-bold text-green-800 mb-2">Proyecto</h3>
           <p><strong>Dirección:</strong> {{ selectedCotizacion()?.direccionInstalacion }}</p>
-          <p><strong>Tipo de Cultivo:</strong> {{ selectedCotizacion()?.tipoCultivo }}</p>
+          <p><strong>Cultivo:</strong> {{ selectedCotizacion()?.tipoCultivo }}</p>
           <p><strong>Área:</strong> {{ selectedCotizacion()?.areaCultivo }} m²</p>
-          <p><strong>Tipo de Suelo:</strong> {{ selectedCotizacion()?.tipoSuelo }}</p>
-        </div>
-
-        <div class="detail-section">
-          <h3>Recursos Disponibles</h3>
-          <p><strong>Fuente de Agua:</strong> {{ selectedCotizacion()?.fuenteAguaDisponible ? 'Sí' : 'No' }}</p>
-          <p><strong>Energía Eléctrica:</strong> {{ selectedCotizacion()?.energiaElectricaDisponible ? 'Sí' : 'No' }}</p>
-        </div>
-
-        <div class="detail-section">
-          <h3>Información Financiera</h3>
-          <p><strong>Subtotal:</strong> {{ formatCurrency(selectedCotizacion()?.subtotal || 0) }}</p>
-          <p><strong>Impuestos:</strong> {{ formatCurrency(selectedCotizacion()?.impuestos || 0) }}</p>
-          <p><strong>Total:</strong> {{ formatCurrency(selectedCotizacion()?.total || 0) }}</p>
+          <p><strong>Suelo:</strong> {{ selectedCotizacion()?.tipoSuelo }}</p>
         </div>
       </div>
 
-      <div class="detail-section" *ngIf="selectedCotizacion()?.requerimientosEspeciales">
-        <h3>Requerimientos Especiales</h3>
+      <div class="bg-gray-50/80 rounded-xl p-4">
+        <h3 class="font-bold text-green-800 mb-2">Resumen Financiero</h3>
+        <p><strong>Subtotal:</strong> {{ formatCurrency(selectedCotizacion()?.subtotal || 0) }}</p>
+        <p><strong>Impuestos:</strong> {{ formatCurrency(selectedCotizacion()?.impuestos || 0) }}</p>
+        <p class="text-lg font-bold text-green-700"><strong>Total:</strong> {{ formatCurrency(selectedCotizacion()?.total || 0) }}</p>
+      </div>
+
+      <div *ngIf="selectedCotizacion()?.requerimientosEspeciales" class="bg-gray-50/80 rounded-xl p-4">
+        <h3 class="font-bold text-green-800 mb-2">Requerimientos Especiales</h3>
         <p>{{ selectedCotizacion()?.requerimientosEspeciales }}</p>
       </div>
     </div>
